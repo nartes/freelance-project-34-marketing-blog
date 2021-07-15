@@ -331,7 +331,7 @@ def kernel_4(
         t6.append(
             dict(
                 text=o,
-                score=t4[0],
+                score=t4[0][0],
             )
         )
         pprint.pprint(
@@ -374,3 +374,9 @@ def kernel_5(
         o_2=o_2,
         input_texts=t1
     )
+
+    t3 = sorted(
+        t2['t6'],
+        key=lambda x: x['score'][0],
+    )
+    pprint.pprint(t3)
