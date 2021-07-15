@@ -295,4 +295,4 @@ def kernel_3(
     #   Try printing first 2 elements of xtrain_seq you will see every word is represented as a digit now
 
     # %% [code]
-    xtrain_seq[:1]
+    o_2['xtrain_seq'][:1]
