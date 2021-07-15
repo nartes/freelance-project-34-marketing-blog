@@ -342,6 +342,7 @@ def kernel_4(
                 t4=t4,
             )
         )
+    pprint.pprint(t6)
 
     return dict(
         t6=t6,
