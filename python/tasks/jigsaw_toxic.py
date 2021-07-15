@@ -356,8 +356,8 @@ def kernel_5(
         o_1 = kernel_1_sample_scrap(max_articles=5)
 
     if o_2 is None:
-        o_2 = python.tasks.jigsaw_toxic.kernel_2()
-        o_3 = python.tasks.jigsaw_toxic.kernel_3(
+        o_2 = kernel_2()
+        o_3 = kernel_3(
             o_2=o_2,
             nb_epochs=1
         )
@@ -370,7 +370,7 @@ def kernel_5(
         ], []
     )
 
-    t2 = python.tasks.jigsaw_toxic.kernel_4(
+    t2 = kernel_4(
         o_2=o_2,
         input_texts=t1
     )
