@@ -11,3 +11,9 @@ def kernel_1_sample_scrap():
     t2 = pyquery.PyQuery(t1)
     t3 = t2('.comment_content')
     pprint.pprint(t3)
+
+    return dict(
+        t1=t1,
+        t2=t2,
+        t3=t3,
+    )
