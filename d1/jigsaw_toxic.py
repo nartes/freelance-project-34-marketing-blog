@@ -301,7 +301,7 @@ for word, i in tqdm(word_index.items()):
         embedding_matrix[i] = embedding_vector
 
 # %% [code]
-%%time
+#%%time
 with strategy.scope():
     
     # A simple LSTM with glove embeddings and one dense layer
@@ -355,7 +355,7 @@ scores_model.append({'Model': 'LSTM','AUC_Score': roc_auc(scores,yvalid)})
 # ## Code Implementation
 
 # %% [code]
-%%time
+#%%time
 with strategy.scope():
     # GRU with glove embeddings and two dense layers
      model = Sequential()
@@ -397,7 +397,7 @@ scores_model
 # ## Code Implementation
 
 # %% [code]
-%%time
+#%%time
 with strategy.scope():
     # A simple bidirectional LSTM with glove embeddings and one dense layer
     model = Sequential()
