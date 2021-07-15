@@ -4,6 +4,18 @@ import pyquery
 
 
 def kernel_1_sample_scrap():
+    with requests.get(
+        'https://dev.to',
+    ) as p:
+        t10 = p.content.decode('utf-8')
+    t11 = pyquery.PyQuery(t10)
+    t13 = t11('.crayons-story__title > a')
+    t12 = [
+        pyquery.PyQuery(o).attr('href')
+        for o in t13
+    ]
+    pprint.pprint(t12)
+
     t8 = []
     for t7 in [
         'https://dev.to/kunaal438/media-query-everything-you-need-for-responsive-design-b8g',
@@ -43,4 +55,5 @@ def kernel_1_sample_scrap():
         t3=t3,
         t6=t6,
         t8=t8,
+        t12=t12,
     )
