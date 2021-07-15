@@ -309,7 +309,7 @@ def kernel_4(
 
     if input_texts is None:
         input_texts = [
-            'blahb blahb blah'
+            'blahb blahb blah',
             'Hello World!',
             'This is very good!',
             'A very non toxic comment! This is so polite and polished one!'
@@ -334,11 +334,15 @@ def kernel_4(
                 score=t4[0],
             )
         )
+        pprint.pprint(
+            dict(
+                t1=t1,
+                t2=t2,
+                t3=t3,
+                t4=t4,
+            )
+        )
 
     return dict(
-        t1=t1,
-        t2=t2,
-        t3=t3,
-        t4=t4,
         t6=t6,
     )
