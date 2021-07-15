@@ -353,7 +353,7 @@ def kernel_5(
     o_2=None,
 ):
     if o_1 is None:
-        o_1 = kernel_1_sample_scrap(max_articles=5)
+        o_1 = kernel_1_sample_scrap(max_articles=50)
 
     if o_2 is None:
         o_2 = kernel_2()
