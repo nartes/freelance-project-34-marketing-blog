@@ -222,10 +222,8 @@ def kernel_2():
     return dict(
         model=model,
         xtrain_pad=xtrain_pad,
-        ytrain=ytrain,
         strategy=strategy,
         xvalid_pad=xvalid_pad,
-        yvalid=yvalid,
         xtrain_seq=xtrain_seq,
         token=token,
         max_len=max_len,
