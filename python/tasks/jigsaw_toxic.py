@@ -377,6 +377,6 @@ def kernel_5(
 
     t3 = sorted(
         t2['t6'],
-        key=lambda x: x['score'][0],
+        key=lambda x: x['score'],
     )
     pprint.pprint(t3)
