@@ -227,6 +227,8 @@ def kernel_2():
         xvalid_pad=xvalid_pad,
         yvalid=yvalid,
         xtrain_seq=xtrain_seq,
+        token=token,
+        max_len=max_len,
     )
 
 
@@ -296,3 +298,27 @@ def kernel_3(
 
     # %% [code]
     o_2['xtrain_seq'][:1]
+
+def kernel_4(
+    o_2,
+):
+    import keras.preprocessing.sequence
+
+    t1 = 'blahb blahb blah'
+    t2 = o_2['token'].texts_to_sequences(
+        [t1],
+    )
+    t3 = keras.preprocessing.sequence.pad_sequences(
+        t2,
+        maxlen=o_2['max_len']
+    )
+    t4 = o_2['model'].predict(
+        t3,
+    )
+
+    return dict(
+        t1=t1,
+        t2=t2,
+        t3=t3,
+        t4=t4,
+    )
