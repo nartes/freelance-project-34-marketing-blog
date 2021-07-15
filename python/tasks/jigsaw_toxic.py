@@ -229,6 +229,10 @@ def kernel_2():
         xtrain_seq=xtrain_seq,
         token=token,
         max_len=max_len,
+        xtrain=xtrain,
+        xvalid=xvalid,
+        ytrain=ytrain,
+        yvalid=yvalid,
     )
 
 
