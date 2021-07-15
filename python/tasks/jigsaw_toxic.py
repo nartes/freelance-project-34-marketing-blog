@@ -347,3 +347,30 @@ def kernel_4(
     return dict(
         t6=t6,
     )
+
+def kernel_5(
+    o_1=None,
+    o_2=None,
+):
+    if o_1 is None:
+        o_1 = kernel_1_sample_scrap(max_articles=5)
+
+    if o_2 is None:
+        o_2 = python.tasks.jigsaw_toxic.kernel_2()
+        o_3 = python.tasks.jigsaw_toxic.kernel_3(
+            o_2=o_2,
+            nb_epochs=1
+        )
+
+    t1 = sum(
+        [
+            [
+                o['text'] for o in o2['comments']
+            ] for o2 in o_1['t8']
+        ], []
+    )
+
+    t2 = python.tasks.jigsaw_toxic.kernel_4(
+        o_2=o_2,
+        input_texts=t1
+    )
