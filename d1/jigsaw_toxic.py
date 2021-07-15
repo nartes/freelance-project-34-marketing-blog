@@ -637,7 +637,7 @@ def build_model(transformer, max_len=512):
 # If you want to use any another model just replace the model name in transformers._____ and use accordingly
 
 # %% [code]
-%%time
+#%%time
 with strategy.scope():
     transformer_layer = (
         transformers.TFDistilBertModel
