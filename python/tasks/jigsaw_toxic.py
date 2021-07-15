@@ -303,24 +303,39 @@ def kernel_3(
 
 def kernel_4(
     o_2,
+    input_texts=None,
 ):
     import keras.preprocessing.sequence
 
-    t1 = 'blahb blahb blah'
-    t2 = o_2['token'].texts_to_sequences(
-        [t1],
-    )
-    t3 = keras.preprocessing.sequence.pad_sequences(
-        t2,
-        maxlen=o_2['max_len']
-    )
-    t4 = o_2['model'].predict(
-        t3,
-    )
+    if input_texts is None:
+        input_texts = [
+            'blahb blahb blah'
+        ]
+
+    t6 = []
+    for o in input_texts:
+        t1 = o
+        t2 = o_2['token'].texts_to_sequences(
+            [t1],
+        )
+        t3 = keras.preprocessing.sequence.pad_sequences(
+            t2,
+            maxlen=o_2['max_len']
+        )
+        t4 = o_2['model'].predict(
+            t3,
+        )
+        t6.append(
+            dict(
+                text=o,
+                score=t4[0],
+            )
+        )
 
     return dict(
         t1=t1,
         t2=t2,
         t3=t3,
         t4=t4,
+        t6=t6,
     )
