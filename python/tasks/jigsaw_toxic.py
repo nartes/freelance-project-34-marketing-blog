@@ -18,9 +18,11 @@ def kernel_1_sample_scrap():
         for o in t3:
             t4 = pyquery.PyQuery(o)
             t5 = t4('.comment__header > a').attr['href']
+            t9 = t4('.comment__body').text()
             t6.append(
                 dict(
                     author=t5,
+                    text=t9,
                 )
             )
 
