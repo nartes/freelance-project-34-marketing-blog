@@ -185,7 +185,7 @@ xvalid_pad = sequence.pad_sequences(xvalid_seq, maxlen=max_len)
 word_index = token.word_index
 
 # %% [code]
-%%time
+#%%time
 with strategy.scope():
     # A simpleRNN without any pretrained embeddings and one dense layer
     model = Sequential()
