@@ -9,11 +9,21 @@ def kernel_1_sample_scrap():
     ) as p:
         t1 = p.content.decode('utf-8')
     t2 = pyquery.PyQuery(t1)
-    t3 = t2('.comment_content')
+    t3 = t2('.comment__content')
+    t6 = []
+    for o in t3:
+        t4 = pyquery.PyQUery(o)
+        t5 = t4('.comment__header > a').attr['href']
+        t6.append(
+            author=t5,
+        )
+
     pprint.pprint(t3)
+    pprint.pprint(t6)
 
     return dict(
         t1=t1,
         t2=t2,
         t3=t3,
+        t6=t6,
     )
