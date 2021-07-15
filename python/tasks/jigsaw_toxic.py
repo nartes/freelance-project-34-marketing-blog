@@ -33,6 +33,8 @@ def kernel_1_sample_scrap():
             )
         )
 
+    pprint.pprint(t8)
+
     return dict(
         t1=t1,
         t2=t2,
