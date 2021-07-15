@@ -1,6 +1,7 @@
 import pprint
 import requests
 import pyquery
+import os
 
 
 def kernel_1_sample_scrap(
