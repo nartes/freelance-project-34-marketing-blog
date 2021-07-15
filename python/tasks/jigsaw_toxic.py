@@ -12,10 +12,12 @@ def kernel_1_sample_scrap():
     t3 = t2('.comment__content')
     t6 = []
     for o in t3:
-        t4 = pyquery.PyQUery(o)
+        t4 = pyquery.PyQuery(o)
         t5 = t4('.comment__header > a').attr['href']
         t6.append(
-            author=t5,
+            dict(
+                author=t5,
+            )
         )
 
     pprint.pprint(t3)
