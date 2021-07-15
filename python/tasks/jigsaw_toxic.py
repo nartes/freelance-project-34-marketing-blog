@@ -310,6 +310,9 @@ def kernel_4(
     if input_texts is None:
         input_texts = [
             'blahb blahb blah'
+            'Hello World!',
+            'This is very good!',
+            'A very non toxic comment! This is so polite and polished one!'
         ]
 
     t6 = []
