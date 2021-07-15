@@ -3,7 +3,12 @@ import requests
 import pyquery
 
 
-def kernel_1_sample_scrap():
+def kernel_1_sample_scrap(
+    max_articles=None,
+):
+    if max_articles is None:
+        max_articles = 1
+
     with requests.get(
         'https://dev.to',
     ) as p:
@@ -15,11 +20,13 @@ def kernel_1_sample_scrap():
         for o in t13
     ]
     pprint.pprint(t12)
+    t14 = [
+        'https://dev.to/%s' % o
+        for o in t12
+    ]
 
     t8 = []
-    for t7 in [
-        'https://dev.to/kunaal438/media-query-everything-you-need-for-responsive-design-b8g',
-    ]:
+    for t7 in t14[:max_articles]:
         with requests.get(
             t7,
         ) as p:
