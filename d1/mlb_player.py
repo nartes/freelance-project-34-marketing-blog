@@ -341,6 +341,8 @@ params = {
 }
 
 
+# Slow from this point !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 oof1, model1, score1 = fit_lgbm(
     x_train1, y_train1['target1'],
     x_valid1, y_valid1['target1'],
