@@ -65,8 +65,23 @@ def kernel_2(
             t3.to_netcdf(t4)
             print('cached %s' % t4)
 
-        t1[k] = xarray.load_dataset(t4)
-        print('loaded %s' % t4)
+        if k == 'events':
+            t5 = '%s-v2.nc' % k
+            if not os.path.exists(t5):
+                t2 = xarray.load_dataset(t4)
+                t3 = t2.sel(
+                    index=numpy.arange(
+                        2017653 - 10 * 1000,
+                        2017653 + 1
+                    )
+                )
+                t3.to_netcdf(t5)
+            t1[k] = xarray.load_dataset(t5)
+            print('loaded %s' % t5)
+        else:
+            t1[k] = xarray.load_dataset(t4)
+            print('loaded %s' % t4)
+
 
     return dict(
         t1=t1,
