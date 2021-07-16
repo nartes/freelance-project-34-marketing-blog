@@ -46,7 +46,8 @@ assert os.system(r'''cp ../input/fork-of-1-35-lightgbm-ann-2505f2-c4e96a/* .''')
 assert os.system(r'''ls''') == 0
 
 # %% [code] {"jupyter":{"outputs_hidden":false},"execution":{"iopub.status.busy":"2021-06-26T07:16:48.801992Z","iopub.execute_input":"2021-06-26T07:16:48.802645Z","iopub.status.idle":"2021-06-26T07:16:48.813801Z","shell.execute_reply.started":"2021-06-26T07:16:48.802592Z","shell.execute_reply":"2021-06-26T07:16:48.812863Z"}}
-%%capture
+#%%capture
+
 """
 !pip install pandarallel 
 
