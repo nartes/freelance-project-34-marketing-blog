@@ -39,16 +39,22 @@ def kernel_1():
 
 def kernel_2(o_1):
     t2 = '/kaggle/input/mlb-player-digital-engagement-forecasting/train.csv'
-    t1 = pandas.DataFrame(
-        sum(
-            [
-                json.loads(o)
-                for o in o_1['t3'][t2].playerTwitterFollowers.values
-                if isinstance(o, str)
-            ],
-            []
-        )
-    ).to_xarray()
+    t1 = {
+        pandas.DataFrame(
+            sum(
+                [
+                    json.loads(o)
+                    for o in o_1['t3'][t2][k].values
+                    if isinstance(o, str)
+                ],
+                []
+            )
+        ).to_xarray()
+        for k in [
+            'playerTwitterFollowers',
+            'teamTwitterFollowers'
+        ]
+    }
 
     return dict(
         t1=t1,
