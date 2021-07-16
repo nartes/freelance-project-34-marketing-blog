@@ -53,7 +53,7 @@ def kernel_2(o_1):
         for k in [
             'playerTwitterFollowers',
             'teamTwitterFollowers',
-            'game',
+            'games',
             'events'
         ]
     }
