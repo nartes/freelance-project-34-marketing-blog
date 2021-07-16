@@ -17,7 +17,7 @@ def kernel_1():
         )
 
         t3 = {
-            o : pandas.read_csv(o)
+            o : pandas.read_csv(o).to_xarray()
             for o in t2
         }
 
