@@ -49,7 +49,7 @@ def kernel_2(
         'events'
     ]:
         t4 = '%s.nc' % k
-        if not os.path.exists(k):
+        if not os.path.exists(t4):
             print('started %s' % t4)
             t2 = '/kaggle/input/mlb-player-digital-engagement-forecasting/train.csv'
             t3 = pandas.DataFrame(
