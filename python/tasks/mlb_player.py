@@ -52,7 +52,9 @@ def kernel_2(o_1):
         ).to_xarray()
         for k in [
             'playerTwitterFollowers',
-            'teamTwitterFollowers'
+            'teamTwitterFollowers',
+            'game',
+            'events'
         ]
     }
 
