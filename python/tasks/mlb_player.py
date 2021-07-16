@@ -1,4 +1,5 @@
 import xarray
+import numpy
 import json
 import glob
 import io
