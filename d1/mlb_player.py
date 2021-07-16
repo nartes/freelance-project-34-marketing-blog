@@ -40,6 +40,8 @@
 # train.csvを以下のようにして各カラムをcsvファイルとして保管しています。
 
 # %% [code] {"execution":{"iopub.status.busy":"2021-06-26T07:16:47.242749Z","iopub.execute_input":"2021-06-26T07:16:47.243324Z","iopub.status.idle":"2021-06-26T07:16:48.030215Z","shell.execute_reply.started":"2021-06-26T07:16:47.243266Z","shell.execute_reply":"2021-06-26T07:16:48.029Z"}}
+import os
+
 assert os.system(r'''cp ../input/fork-of-1-35-lightgbm-ann-2505f2-c4e96a/* .''') == 0
 
 # %% [code] {"execution":{"iopub.status.busy":"2021-06-26T07:16:48.031858Z","iopub.execute_input":"2021-06-26T07:16:48.032396Z","iopub.status.idle":"2021-06-26T07:16:48.799514Z","shell.execute_reply.started":"2021-06-26T07:16:48.032357Z","shell.execute_reply":"2021-06-26T07:16:48.798628Z"}}
