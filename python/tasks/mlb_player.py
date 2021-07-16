@@ -40,7 +40,7 @@ def kernel_1():
 def kernel_2(o_1):
     t2 = '/kaggle/input/mlb-player-digital-engagement-forecasting/train.csv'
     t1 = {
-        pandas.DataFrame(
+        k : pandas.DataFrame(
             sum(
                 [
                     json.loads(o)
