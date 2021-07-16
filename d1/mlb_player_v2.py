@@ -24,6 +24,7 @@ def display(*args, **kwargs):
         dict(
             args=args,
             kwargs=kwargs,
+        ),
     )
 
 import gc
