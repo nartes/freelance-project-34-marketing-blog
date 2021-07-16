@@ -50,6 +50,7 @@ def kernel_2(
     ]:
         t4 = '%s.nc' % k
         if not os.path.exists(k):
+            print('started %s' % t4)
             t2 = '/kaggle/input/mlb-player-digital-engagement-forecasting/train.csv'
             t3 = pandas.DataFrame(
                 sum(
@@ -61,7 +62,11 @@ def kernel_2(
                     []
                 )
             ).to_xarray()
+            t3.to_netcdf(t4)
+            print('cached %s' % t4)
+
         t1[k] = xarray.load_dataset(t4)
+        print('loaded %s' % t4)
 
     return dict(
         t1=t1,
