@@ -18,6 +18,14 @@
 # https://www.kaggle.com/ryanholbrook/getting-started-with-mlb-player-digital-engagement
 
 # %% [code] {"papermill":{"duration":1.060051,"end_time":"2021-06-11T18:42:34.209063","exception":false,"start_time":"2021-06-11T18:42:33.149012","status":"completed"},"tags":[],"execution":{"iopub.status.busy":"2021-06-14T09:06:08.741917Z","iopub.execute_input":"2021-06-14T09:06:08.742307Z","iopub.status.idle":"2021-06-14T09:06:09.566612Z","shell.execute_reply.started":"2021-06-14T09:06:08.742273Z","shell.execute_reply":"2021-06-14T09:06:09.565664Z"}}
+import pprint
+def display(*args, **kwargs):
+    pprint.pprint(
+        dict(
+            args=args,
+            kwargs=kwargs,
+    )
+
 import gc
 import sys
 import warnings
