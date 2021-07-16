@@ -810,6 +810,8 @@ daily_data_unnested_dfs = pd.DataFrame(data = {
   'dfName': training.drop('date', axis = 1).columns.values.tolist()
   })
 
+# Slow from this point !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+
 daily_data_unnested_dfs['df'] = [pd.DataFrame() for row in 
   daily_data_unnested_dfs.iterrows()]
 
