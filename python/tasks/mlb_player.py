@@ -103,7 +103,7 @@ def kernel_3(should_exist=None):
     o_1 = None
     o_2 = None
 
-    t4 = '/kaggle/garbage'
+    t4 = '/kaggle/input/garbage'
     t5 = {}
     for k, v in t3:
         if v is None:
