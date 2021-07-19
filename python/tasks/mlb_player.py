@@ -196,7 +196,9 @@ def kernel_4(
     """
 
     t1 = numpy.where(o_3['t5']['events']['gamePk'] == 634280)[0]
-    t2 = o_3['t5']['events'].sel(index=t1)
+    t5 = o_3['t5']['events'].index.data
+    t6 = t5[t1]
+    t2 = o_3['t5']['events'].sel(index=t6)
     t3 = o_3['t5']['games'].to_dataframe().iloc[-1].to_dict()
     assert t3['gamePk'] == 634280
 
