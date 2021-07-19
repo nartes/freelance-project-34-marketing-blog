@@ -154,3 +154,54 @@ def kernel_4(
         )
         for k in range(-10, -1)
     ]
+
+
+    t4 = 'https://www.youtube.com/watch?v=reaC7BHgL3M'
+
+    r"""
+        {
+            "gamePk":634280,
+            "gameType":"R",
+            "season":2021,
+            "gameDate":"2021-04-30",
+            "gameTimeUTC":"2021-04-30T23:37:00Z",
+            "resumeDate":"",
+            "resumedFrom":"",
+            "codedGameState":"F",
+            "detailedGameState":"Final",
+            "isTie":0.0,
+            "gameNumber":1,
+            "doubleHeader":"N",
+            "dayNight":"night",
+            "scheduledInnings":9,
+            "gamesInSeries":3.0,
+            "seriesDescription":"Regular Season",
+            "homeId":141,
+            "homeName":"Toronto Blue Jays",
+            "homeAbbrev":"TOR",
+            "homeWins":12,
+            "homeLosses":12,
+            "homeWinPct":0.5,
+            "homeWinner":true,
+            "homeScore":13.0,
+            "awayId":144,
+            "awayName":"Atlanta Braves",
+            "awayAbbrev":"ATL",
+            "awayWins":12.0,
+            "awayLosses":14.0,
+            "awayWinPct":0.462,
+            "awayWinner":false,
+            "awayScore":5.0
+        }
+    """
+
+    t1 = numpy.where(o_3['t5']['events']['gamePk'] == 634280)
+    t2 = o_3['t5']['events'].sel(index=t1)
+    t3 = o_3['t5']['games'].to_dataframe().iloc[-1].to_dict()
+    assert t3['gamePk'] == 634280
+
+    dict(
+        t2=t2,
+        t3=t3,
+        t4=t4,
+    )
