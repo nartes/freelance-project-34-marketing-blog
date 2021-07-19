@@ -203,8 +203,11 @@ def kernel_4(
     pprint.pprint(t3)
     assert t3['gamePk'] == 634280
 
+    t7 = 'https://www.youtube.com/watch?v=T0MUK91ZWys'
+
     return dict(
         t2=t2,
         t3=t3,
         t4=t4,
+        t7=t7,
     )
