@@ -248,7 +248,7 @@ def kernel_6():
         finally:
             if not t2 is None:
                 t2.release()
-        t7.append(
+        t8.append(
             dict(
                 video_path=o,
                 frames=t7,
