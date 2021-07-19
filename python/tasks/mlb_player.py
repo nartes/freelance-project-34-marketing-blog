@@ -282,3 +282,6 @@ def kernel_6():
         t8=t8,
         t9=t9,
     )
+
+def kernel_7():
+    pass
