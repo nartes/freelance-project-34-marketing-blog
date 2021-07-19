@@ -88,7 +88,10 @@ def kernel_2(
         t1=t1,
     )
 
-def kernel_3():
+def kernel_3(should_exist=None):
+    if should_exist is None:
+        should_exist = False
+
     t3 = [
         ('playerTwitterFollowers', None),
         ('teamTwitterFollowers', None),
@@ -116,6 +119,9 @@ def kernel_3():
         if os.path.exists(t1):
             t2 = xarray.load_dataset(t1)
         else:
+            if should_exist:
+                raise NotImplementedError
+
             if o_1 is None:
                 o_1 = kernel_1()
             if o_2 is none:
