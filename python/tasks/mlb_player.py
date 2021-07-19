@@ -203,7 +203,7 @@ def kernel_4(
     pprint.pprint(t3)
     assert t3['gamePk'] == 634280
 
-    dict(
+    return dict(
         t2=t2,
         t3=t3,
         t4=t4,
