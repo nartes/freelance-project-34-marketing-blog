@@ -1,3 +1,4 @@
+import pprint
 import xarray
 import numpy
 import json
@@ -120,7 +121,7 @@ def kernel_3(should_exist=None):
             t2 = xarray.load_dataset(t1)
         else:
             if should_exist:
-                pprint.pprint(t1)
+                pprint.pprint([k, v, t1])
                 raise NotImplementedError
 
             if o_1 is None:
