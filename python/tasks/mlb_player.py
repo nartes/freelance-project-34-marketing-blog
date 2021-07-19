@@ -199,7 +199,7 @@ def kernel_4(
     t5 = o_3['t5']['events'].index.data
     t6 = t5[t1]
     t2 = o_3['t5']['events'].sel(index=t6)
-    t3 = o_3['t5']['games'].to_dataframe().iloc[-19].to_dict()
+    t3 = o_3['t5']['games'].to_dataframe().iloc[-2].to_dict()
     pprint.pprint(t3)
     assert t3['gamePk'] == 634280
 
