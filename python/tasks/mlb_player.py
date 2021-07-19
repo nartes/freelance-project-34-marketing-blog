@@ -87,3 +87,18 @@ def kernel_2(
     return dict(
         t1=t1,
     )
+
+def kernel_3():
+    t1 = '/kaggle/garbage/events-v2.nc'
+    if os.path.exists(t1):
+        t2 = xarray.load_dataset(t1)
+    else:
+        o_1 = kernel_1()
+        o_2 = kernel_2(
+            o_1=o_1
+        )
+        t2 = o_2['events']
+
+    return dict(
+        t2=t2,
+    )
