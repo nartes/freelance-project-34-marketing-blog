@@ -138,7 +138,9 @@ def kernel_3(should_exist=None):
         t5=t5,
     )
 
-def kernel_4(o_3=o_3):
+def kernel_4(
+    o_3=None,
+):
     [
         print(
             o_3['t5']['events'].to_dataframe().iloc[k].to_json(indent=4)
