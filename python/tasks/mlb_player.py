@@ -226,6 +226,7 @@ def kernel_5(o_4):
 
 def kernel_6():
     import easyocr
+    import cv2
     t6 = easyocr.Reader(['en'])
 
     t1 = glob.glob('*.mp4')
