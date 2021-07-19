@@ -89,16 +89,43 @@ def kernel_2(
     )
 
 def kernel_3():
-    t1 = '/kaggle/garbage/events-v2.nc'
-    if os.path.exists(t1):
-        t2 = xarray.load_dataset(t1)
-    else:
-        o_1 = kernel_1()
-        o_2 = kernel_2(
-            o_1=o_1
-        )
-        t2 = o_2['events']
+    t3 = [
+        ('playerTwitterFollowers', None),
+        ('teamTwitterFollowers', None),
+        ('games', None),
+        ('events', 'events-v2.nc'),
+    ]
+
+    o_1 = None
+    o_2 = None
+
+    t4 = '/kaggle/garbage'
+    t5 = {}
+    for k, v in t3:
+        if v is None:
+            t1 = os.path.join(
+                t4,
+                '%s.nc' % k,
+            )
+        else:
+            t1 = os.path.join(
+                t4,
+                v,
+            )
+
+        if os.path.exists(t1):
+            t2 = xarray.load_dataset(t1)
+        else:
+            if o_1 is None:
+                o_1 = kernel_1()
+            if o_2 is none:
+                o_2 = kernel_2(
+                    o_1=o_1
+                )
+
+            t2 = o_2['events']
+        t5[k] = t2
 
     return dict(
-        t2=t2,
+        t5=t5,
     )
