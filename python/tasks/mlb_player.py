@@ -233,6 +233,7 @@ def kernel_6():
     t8 = []
     for o in t1:
         t7 = []
+        t2 = None
         try:
             t2 = cv2.VideoCapture(o)
             for k in range(10):
@@ -244,7 +245,8 @@ def kernel_6():
                     t5
                 )
         finally:
-            t2.release()
+            if not t2 is None:
+                t2.release()
         t7.append(
             dict(
                 video_path=o,
