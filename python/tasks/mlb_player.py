@@ -223,3 +223,35 @@ def kernel_5(o_4):
                 o,
             ]
         )
+
+def kernel_6():
+    import easyocr
+    t6 = easyocr.Reader(['en'])
+
+    t1 = glob.glob('*.mp4')
+
+    t8 = []
+    for o in t1:
+        t7 = []
+        try:
+            t2 = cv2.VideoCapture(o)
+            for k in range(10):
+                t3 = t2.read()
+                assert t3[0]
+                t4 = t3[1]
+                t5 = t6.readtext(t4)
+                t7.append(
+                    t5
+                )
+        finally:
+            t2.release()
+        t7.append(
+            dict(
+                video_path=o,
+                frames=t7,
+            )
+        )
+
+    return dict(
+        t8=t8,
+    )
