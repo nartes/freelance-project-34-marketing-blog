@@ -10,6 +10,7 @@
 # In[1]:
 
 
+import os
 def get_ipython():
     return os
 
