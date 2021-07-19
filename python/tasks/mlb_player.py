@@ -211,3 +211,14 @@ def kernel_4(
         t4=t4,
         t7=t7,
     )
+
+def kernel_5(o_4):
+    for o in [o_4['t4'], o_4['t7']]:
+        subprocess.check_call(
+            [
+                'youtube-dl',
+                '-f',
+                '18',
+                o,
+            ]
+        )

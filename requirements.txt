@@ -3,3 +3,4 @@ jupyter
 notebook
 requests
 pyquery
+youtube-dl
