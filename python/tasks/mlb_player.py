@@ -137,3 +137,11 @@ def kernel_3(should_exist=None):
     return dict(
         t5=t5,
     )
+
+def kernel_4(o_3=o_3):
+    [
+        print(
+            o_3['t5']['events'].to_dataframe().iloc[k].to_json(indent=4)
+            for k in range(-10, -1)
+        )
+    ]
