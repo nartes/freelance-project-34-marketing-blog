@@ -144,6 +144,6 @@ def kernel_4(
     [
         print(
             o_3['t5']['events'].to_dataframe().iloc[k].to_json(indent=4)
-            for k in range(-10, -1)
         )
+        for k in range(-10, -1)
     ]
