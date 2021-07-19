@@ -7,6 +7,7 @@ import io
 import os
 import pandas
 import pickle
+import subprocess
 
 def kernel_1():
     t4 = 'kernel_1-t3.dat'
