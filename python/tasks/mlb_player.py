@@ -255,6 +255,30 @@ def kernel_6():
             )
         )
 
+    t9 = []
+    for o in t1:
+        cap = None
+
+        try:
+            cap = cv2.VideoCapture(o)
+            fps = cap.get(cv2.CAP_PROP_FPS)      # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            duration = frame_count/fps
+        finally:
+            if not cap is None:
+                cap.release()
+
+        t9.append(
+            dict(
+                video_path=o,
+                fps=fps,
+                frame_count=frame_count,
+                duration=duration,
+            )
+        )
+
+
     return dict(
         t8=t8,
+        t9=t9,
     )
