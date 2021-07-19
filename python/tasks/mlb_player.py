@@ -147,3 +147,10 @@ def kernel_4(
         )
         for k in range(-10, -1)
     ]
+
+    [
+        print(
+            o_3['t5']['games'].to_dataframe().iloc[k].to_json(indent=4)
+        )
+        for k in range(-10, -1)
+    ]
