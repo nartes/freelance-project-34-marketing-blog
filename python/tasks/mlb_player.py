@@ -124,7 +124,7 @@ def kernel_3(should_exist=None):
 
             if o_1 is None:
                 o_1 = kernel_1()
-            if o_2 is none:
+            if o_2 is None:
                 o_2 = kernel_2(
                     o_1=o_1
                 )
