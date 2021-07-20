@@ -756,7 +756,11 @@ def kernel_7(
         img_ori,
         name=None,
         scale_param=None,
+        display=None,
     ):
+        if display is None:
+            display = True
+
         if scale_param is None:
             scale_param = [0.5, 1.0, 1.5, 2.0]
 
@@ -784,18 +788,19 @@ def kernel_7(
         subsets, img_points = draw_key_point(subsets, peaks, img_ori)
 
         # After predicting Heatmaps and PAF's, proceeed to link joints correctly
-        img_canvas = link_key_point(img_points, candidates, subsets)
+        if display:
+            img_canvas = link_key_point(img_points, candidates, subsets)
 
 
-        f = plt.figure(figsize=(15, 10))
+            f = plt.figure(figsize=(15, 10))
 
-        plt.subplot(1, 2, 1)
-        plt.imshow(img_points[...,::-1])
+            plt.subplot(1, 2, 1)
+            plt.imshow(img_points[...,::-1])
 
-        plt.subplot(1, 2, 2)
-        plt.imshow(img_canvas[...,::-1])
+            plt.subplot(1, 2, 2)
+            plt.imshow(img_canvas[...,::-1])
 
-        f.savefig(name)
+            f.savefig(name)
 
 
     # In[5]:
@@ -821,7 +826,7 @@ def kernel_8(
 def kernel_9_benchmark(
     o_7,
 ):
-    t1 = o_7['cv2'].imread('../input/indonesian-traditional-dance/tgagrakanyar/tga_0000.jpg'
+    t1 = o_7['cv2'].imread('../input/indonesian-traditional-dance/tgagrakanyar/tga_0000.jpg')
     t5 = 10
     t2 = datetime.datetime.now()
     for k in range(t5):
