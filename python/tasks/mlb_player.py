@@ -241,6 +241,7 @@ def kernel_6(
     if max_frames is None:
         max_frames = 10
 
+    import tqdm
     import cv2
 
     t1 = glob.glob('*.mp4')
@@ -251,7 +252,7 @@ def kernel_6(
         t2 = None
         try:
             t2 = cv2.VideoCapture(o)
-            for k in range(10):
+            for k in tqdm.tqdm(range(max_frames)):
                 t3 = t2.read()
                 assert t3[0]
                 t4 = t3[1]
