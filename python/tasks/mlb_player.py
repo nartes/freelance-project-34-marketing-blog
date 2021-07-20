@@ -910,3 +910,45 @@ def kernel_11_benchmark(
     pprint.pprint(
         ['kernel_11_benchmark', dict(t4=t4, t5=t5)]
     )
+
+def kernel_13(
+    o_6=None,
+):
+    t2 = [
+        '/kaggle/working',
+        '/kaggle/garbage'
+    ]
+    t3 = [
+        os.path.join(
+            o,
+            'kernel_13-object-detection.nc',
+        )
+        for o in t2
+    ]
+    t4 = [
+        o
+        for o in t3
+        if os.path.exists(o)
+    ]
+    if not len(t4) > 0:
+        t1 = pandas.concat(
+            sum(
+                [
+                    [
+                        o2['t11'][0].assign(
+                            frame_id=k,
+                            video_path=o['video_path']
+                        )
+                        for k, o2 in enumerate(o['frames'])
+                    ] for o in o_6['t8']
+                ],
+                []
+            )
+        ).to_xarray()
+        t1.to_netcdf(t3[0])
+
+    t1 = xarray.load_dataset(t4[0])
+
+    return dict(
+        t1=t1,
+    )
