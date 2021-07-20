@@ -224,13 +224,24 @@ def kernel_5(o_4):
             ]
         )
 
+def kernel_12():
+    import easyocr
+    t6 = easyocr.Reader(['en'])
+
+    return dict(
+        t6=t6,
+    )
+
 def kernel_6(
     o_7=None,
     o_10=None,
+    o_12=None,
+    max_frames=None,
 ):
-    import easyocr
+    if max_frames is None:
+        max_frames = 10
+
     import cv2
-    t6 = easyocr.Reader(['en'])
 
     t1 = glob.glob('*.mp4')
 
@@ -244,7 +255,11 @@ def kernel_6(
                 t3 = t2.read()
                 assert t3[0]
                 t4 = t3[1]
-                t5 = t6.readtext(t4)
+                if not o_12 is None:
+                    t5 = o_12['t6'].readtext(t4)
+                else:
+                    t5 = None
+
                 if not o_7 is None:
                     t10 = o_7['estimate_pose'](t4)
                 else:
