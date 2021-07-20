@@ -226,6 +226,7 @@ def kernel_5(o_4):
 
 def kernel_6(
     o_7=None,
+    o_10=None,
 ):
     import easyocr
     import cv2
@@ -245,9 +246,19 @@ def kernel_6(
                 t4 = t3[1]
                 t5 = t6.readtext(t4)
                 if not o_7 is None:
-                    o_7['estimate_pose'](t4)
+                    t10 = o_7['estimate_pose'](t4)
+                else:
+                    t10 = None
+                if not o_10 is None:
+                    t11 = o_10['model'](t4)
+                else:
+                    t11 = None
+
                 t7.append(
-                    t5
+                    dict(
+                        t5=t5,
+                        t10=t10,
+                        t11=t11,
                 )
         finally:
             if not t2 is None:
