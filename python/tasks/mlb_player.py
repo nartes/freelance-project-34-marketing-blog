@@ -845,27 +845,27 @@ def kernel_9_benchmark(
     )
 
 def kernel_10():
-	import torch
+    import torch
 
-	# Model
-	model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5x, custom
+    # Model
+    model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5x, custom
 
-	# Images
-	img = 'https://ultralytics.com/images/zidane.jpg'  # or file, PIL, OpenCV, numpy, multiple
+    # Images
+    img = 'https://ultralytics.com/images/zidane.jpg'  # or file, PIL, OpenCV, numpy, multiple
 
-	# Inference
-	results = model(img)
+    # Inference
+    results = model(img)
 
-	# Results
-	results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
+    # Results
+    results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
 
-	return dict(
-		model=model,
-	)
+    return dict(
+        model=model,
+    )
 
 def kernel_11_benchmark(
-	o_7,
-	o_10,
+    o_7,
+    o_10,
 ):
     import datetime
 
@@ -874,7 +874,7 @@ def kernel_11_benchmark(
     t2 = datetime.datetime.now()
     for k in range(t5):
         t6 = o_10['model'](img_ori)
-		t7 = t6.pandas().xywhn
+        t7 = t6.pandas().xywhn
 
     t3 = datetime.datetime.now()
     t4 = (t3 - t2).total_seconds() / t5
