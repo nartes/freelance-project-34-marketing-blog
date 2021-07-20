@@ -973,16 +973,16 @@ def kernel_14(
     if run_benchmark is None:
         run_benchmark = False
 
-    o_3 = python.tasks.mlb_player.kernel_3(should_exist=True)
-    o_4 = python.tasks.mlb_player.kernel_4(o_3=o_3)
-    o_5 = python.tasks.mlb_player.kernel_5(o_4=o_4)
-    o_7 = python.tasks.mlb_player.kernel_7()
+    o_3 = kernel_3(should_exist=True)
+    o_4 = kernel_4(o_3=o_3)
+    o_5 = kernel_5(o_4=o_4)
+    o_7 = kernel_7()
 
-    o_10 = python.tasks.mlb_player.kernel_10()
-    o_12 = python.tasks.mlb_player.kernel_12()
+    o_10 = kernel_10()
+    o_12 = kernel_12()
 
     if not skip_o_6:
-        o_6 = python.tasks.mlb_player.kernel_6(
+        o_6 = kernel_6(
             o_7=None,
             o_10=o_10,
             o_12=None,
@@ -991,14 +991,14 @@ def kernel_14(
     else:
         o_6 = None
 
-    o_13 = python.tasks.mlb_player.kernel_13(
+    o_13 = kernel_13(
         o_6=o_6,
     )
     
     if run_benchmark:
-        o_11 = python.tasks.mlb_player.kernel_11_benchmark(o_7=o_7, o_10=o_10)
-        o_9 = python.tasks.mlb_player.kernel_9_benchmark(o_7=o_7)
-        o_8 = python.tasks.mlb_player.kernel_8(o_7=o_7)
+        o_11 = kernel_11_benchmark(o_7=o_7, o_10=o_10)
+        o_9 = kernel_9_benchmark(o_7=o_7)
+        o_8 = kernel_8(o_7=o_7)
 
     return dict(
         o_13=o_13,
