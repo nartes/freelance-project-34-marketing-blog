@@ -431,9 +431,14 @@ import gdown
 # In[3]:
 
 
-url = 'https://drive.google.com/u/0/uc?export=download&confirm=f_Ix&id=0B1asvDK18cu_MmY1ZkpaOUhhRHM'
 model = 'coco_pose_iter_440000.pth.tar'
-gdown.download(url, model, quiet=False)
+if not os.path.exists(model):
+    url = 'https://drive.google.com/u/0/uc?export=download&confirm=f_Ix&id=0B1asvDK18cu_MmY1ZkpaOUhhRHM'
+    gdown.download(
+        url,
+        model,
+        quiet=False
+    )
 
 
 # In[4]:
