@@ -838,7 +838,7 @@ def kernel_9_benchmark(
             scale_param=[1.0],
         )
     t3 = datetime.datetime.now()
-    t4 = (t3 - t2).totalseconds() / t5
+    t4 = (t3 - t2).total_seconds() / t5
     pprint.pprint(
         ['kernel_9_benchmark', dict(t4=t4, t5=t5)]
     )
