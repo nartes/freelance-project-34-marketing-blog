@@ -283,7 +283,9 @@ def kernel_6():
         t9=t9,
     )
 
-def kernel_7():
+def kernel_7(
+    use_gpu=None,
+):
     #!/usr/bin/env python
     # coding: utf-8
 
