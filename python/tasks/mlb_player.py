@@ -843,3 +843,41 @@ def kernel_9_benchmark(
     pprint.pprint(
         ['kernel_9_benchmark', dict(t4=t4, t5=t5)]
     )
+
+def kernel_10():
+	import torch
+
+	# Model
+	model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5x, custom
+
+	# Images
+	img = 'https://ultralytics.com/images/zidane.jpg'  # or file, PIL, OpenCV, numpy, multiple
+
+	# Inference
+	results = model(img)
+
+	# Results
+	results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
+
+	return dict(
+		model=model,
+	)
+
+def kernel_11_benchmark(
+	o_7,
+	o_10,
+):
+    import datetime
+
+    t1 = o_7['cv2'].imread('../input/indonesian-traditional-dance/tgagrakanyar/tga_0000.jpg')
+    t5 = 10
+    t2 = datetime.datetime.now()
+    for k in range(t5):
+        t6 = o_10['model'](img_ori)
+		t7 = t6.pandas().xywhn
+
+    t3 = datetime.datetime.now()
+    t4 = (t3 - t2).total_seconds() / t5
+    pprint.pprint(
+        ['kernel_11_benchmark', dict(t4=t4, t5=t5)]
+    )
