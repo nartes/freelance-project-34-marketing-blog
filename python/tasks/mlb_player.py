@@ -793,7 +793,7 @@ def kernel_7(
     return dict(
         cv2=cv2,
         estimate_pose=estimate_pose,
-        model=model,
+        model_pose=model_pose,
     )
 
 
