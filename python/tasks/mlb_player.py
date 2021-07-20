@@ -259,6 +259,7 @@ def kernel_6(
                         t5=t5,
                         t10=t10,
                         t11=t11,
+                    ),
                 )
         finally:
             if not t2 is None:
