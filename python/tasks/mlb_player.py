@@ -272,6 +272,7 @@ def kernel_6(
 
                 t7.append(
                     dict(
+                        frame_id=k,
                         t5=t5,
                         t10=t10,
                         t11=t11,
