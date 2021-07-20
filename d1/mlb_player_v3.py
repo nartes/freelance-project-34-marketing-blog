@@ -14,7 +14,7 @@ import os
 def get_ipython():
     return os
 
-get_ipython().system('pip install -qq git+https://www.github.com/ildoonet/tf-pose-estimation')
+get_ipython().system('pip install -qq https://www.github.com/ildoonet/tf-pose-estimation')
 
 
 # In[2]:
