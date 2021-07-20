@@ -250,7 +250,7 @@ def kernel_6(
                 else:
                     t10 = None
                 if not o_10 is None:
-                    t11 = o_10['model'](t4)
+                    t11 = o_10['model'](t4).pandas().xywhn
                 else:
                     t11 = None
 
