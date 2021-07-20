@@ -873,7 +873,7 @@ def kernel_11_benchmark(
     t5 = 10
     t2 = datetime.datetime.now()
     for k in range(t5):
-        t6 = o_10['model'](img_ori)
+        t6 = o_10['model'](t1)
         t7 = t6.pandas().xywhn
 
     t3 = datetime.datetime.now()
