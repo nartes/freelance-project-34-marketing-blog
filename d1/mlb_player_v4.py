@@ -422,7 +422,7 @@ if __name__ == '__main__':
 
 # Using gdown to download the model directly from Google Drive
 
-assert os.system(' conda install -y gdown') == 0
+#assert os.system(' conda install -y gdown') == 0
 import gdown
 
 

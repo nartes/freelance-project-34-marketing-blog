@@ -4,3 +4,4 @@ notebook
 requests
 pyquery
 youtube-dl
+gdown
