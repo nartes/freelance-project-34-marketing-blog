@@ -764,14 +764,15 @@ def kernel_7(
         if scale_param is None:
             scale_param = [0.5, 1.0, 1.5, 2.0]
 
-        if name is None:
-            name = tempfile.mktemp(
-                dir='/kaggle/working',
-                suffix='.png',
+        if display:
+            if name is None:
+                name = tempfile.mktemp(
+                    dir='/kaggle/working',
+                    suffix='.png',
+                )
+            pprint.pprint(
+                ['estimate_pose', dict(name=name)],
             )
-        pprint.pprint(
-            ['estimate_pose', dict(name=name)],
-        )
 
         # People might be at different scales in the image, perform inference at multiple scales to boost results
 
