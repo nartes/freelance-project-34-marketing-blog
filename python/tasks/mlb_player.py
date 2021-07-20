@@ -826,6 +826,8 @@ def kernel_8(
 def kernel_9_benchmark(
     o_7,
 ):
+    import datetime
+
     t1 = o_7['cv2'].imread('../input/indonesian-traditional-dance/tgagrakanyar/tga_0000.jpg')
     t5 = 10
     t2 = datetime.datetime.now()
