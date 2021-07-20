@@ -224,7 +224,9 @@ def kernel_5(o_4):
             ]
         )
 
-def kernel_6():
+def kernel_6(
+    o_7=None,
+):
     import easyocr
     import cv2
     t6 = easyocr.Reader(['en'])
@@ -242,6 +244,8 @@ def kernel_6():
                 assert t3[0]
                 t4 = t3[1]
                 t5 = t6.readtext(t4)
+                if not o_7 is None:
+                    o_7['estimate_pose'](t4)
                 t7.append(
                     t5
                 )
