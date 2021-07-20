@@ -836,6 +836,7 @@ def kernel_9_benchmark(
         o_7['estimate_pose'](
             img_ori=t1,
             scale_param=[1.0],
+            display=False,
         )
     t3 = datetime.datetime.now()
     t4 = (t3 - t2).total_seconds() / t5
