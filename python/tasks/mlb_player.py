@@ -965,9 +965,13 @@ def kernel_13(
 
 def kernel_14(
     skip_o_6=None,
+    run_benchmark=None,
 ):
     if skip_o_6 is None:
         skip_o_6 = True
+
+    if run_benchmark is None:
+        run_benchmark = False
 
     o_3 = python.tasks.mlb_player.kernel_3(should_exist=True)
     o_4 = python.tasks.mlb_player.kernel_4(o_3=o_3)
@@ -990,7 +994,12 @@ def kernel_14(
     o_13 = python.tasks.mlb_player.kernel_13(
         o_6=o_6,
     )
+    
+    if run_benchmark:
+        o_11 = python.tasks.mlb_player.kernel_11_benchmark(o_7=o_7, o_10=o_10)
+        o_9 = python.tasks.mlb_player.kernel_9_benchmark(o_7=o_7)
+        o_8 = python.tasks.mlb_player.kernel_8(o_7=o_7)
 
-    dict(
+    return dict(
         o_13=o_13,
     )
