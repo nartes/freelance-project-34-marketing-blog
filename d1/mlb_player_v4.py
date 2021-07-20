@@ -478,7 +478,12 @@ if use_gpu:
 # In[8]:
 
 
-def estimate_pose(img_ori):
+def estimate_pose(img_ori, name=None):
+    if name is None:
+        name = tempfile.mktemp(
+            dir='/kaggle/working',
+            suffix='.png',
+        )
     
     # People might be at different scales in the image, perform inference at multiple scales to boost results
     scale_param = [0.5, 1.0, 1.5, 2.0]
@@ -499,13 +504,15 @@ def estimate_pose(img_ori):
     img_canvas = link_key_point(img_points, candidates, subsets)
     
     
-    plt.figure(figsize=(15, 10))
+    f = plt.figure(figsize=(15, 10))
     
     plt.subplot(1, 2, 1)
     plt.imshow(img_points[...,::-1])
     
     plt.subplot(1, 2, 2)
     plt.imshow(img_canvas[...,::-1])
+
+    f.savefig(name)
 
 
 # In[9]:
