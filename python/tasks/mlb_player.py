@@ -934,7 +934,7 @@ def kernel_13(
     ]
 
 
-    if not len(t4) > 0:
+    if not len(t4) > 0 or not o_6 is None:
         t1 = pandas.concat(
             sum(
                 [
@@ -952,11 +952,45 @@ def kernel_13(
         t5 = t3[0]
         t1.to_netcdf(t5)
         del t1
-    else:
+    elif len(t4) > 0:
         t5 = t4[0]
+    else:
+        raise NotImplementedError
 
     t1 = xarray.load_dataset(t5)
 
     return dict(
         t1=t1,
+    )
+
+def kernel_14(
+    skip_o_6=None,
+):
+    if skip_o_6 is None:
+        skip_o_6 = True
+
+    o_3 = python.tasks.mlb_player.kernel_3(should_exist=True)
+    o_4 = python.tasks.mlb_player.kernel_4(o_3=o_3)
+    o_5 = python.tasks.mlb_player.kernel_5(o_4=o_4)
+    o_7 = python.tasks.mlb_player.kernel_7()
+
+    o_10 = python.tasks.mlb_player.kernel_10()
+    o_12 = python.tasks.mlb_player.kernel_12()
+
+    if not skip_o_6:
+        o_6 = python.tasks.mlb_player.kernel_6(
+            o_7=None,
+            o_10=o_10,
+            o_12=None,
+            max_frames=10000
+        )
+    else:
+        o_6 = None
+
+    o_13 = python.tasks.mlb_player.kernel_13(
+        o_6=o_6,
+    )
+
+    dict(
+        o_13=o_13,
     )
