@@ -916,7 +916,7 @@ def kernel_13(
 ):
     t2 = [
         '/kaggle/working',
-        '/kaggle/garbage'
+        '/kaggle/input/garbage'
     ]
 
     t3 = [
