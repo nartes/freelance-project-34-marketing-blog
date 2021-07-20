@@ -16,10 +16,12 @@
 # create=20171225
 
 import os
+import pprint
 import cv2
 import sys
 import math
 import time
+import tempfile
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -484,6 +486,9 @@ def estimate_pose(img_ori, name=None):
             dir='/kaggle/working',
             suffix='.png',
         )
+    pprint.pprint(
+        ['estimate_pose', dict(name=name)],
+    )
     
     # People might be at different scales in the image, perform inference at multiple scales to boost results
     scale_param = [0.5, 1.0, 1.5, 2.0]
