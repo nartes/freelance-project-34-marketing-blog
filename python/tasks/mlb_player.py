@@ -918,6 +918,7 @@ def kernel_13(
         '/kaggle/working',
         '/kaggle/garbage'
     ]
+
     t3 = [
         os.path.join(
             o,
@@ -925,11 +926,14 @@ def kernel_13(
         )
         for o in t2
     ]
+
     t4 = [
         o
         for o in t3
         if os.path.exists(o)
     ]
+
+
     if not len(t4) > 0:
         t1 = pandas.concat(
             sum(
@@ -945,9 +949,13 @@ def kernel_13(
                 []
             )
         ).to_xarray()
-        t1.to_netcdf(t3[0])
+        t5 = t3[0]
+        t1.to_netcdf(t5)
+        del t1
+    else:
+        t5 = t4[0]
 
-    t1 = xarray.load_dataset(t4[0])
+    t1 = xarray.load_dataset(t5)
 
     return dict(
         t1=t1,
