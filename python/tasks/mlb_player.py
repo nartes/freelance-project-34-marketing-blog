@@ -1003,3 +1003,18 @@ def kernel_14(
     return dict(
         o_13=o_13,
     )
+
+def kernel_15(
+    o_14,
+):
+    t1 = pandas.DataFrame(
+        numpy.unique(
+            o_14['o_13']['t1']['name'].data,
+            return_counts=True
+        )
+    ).T
+    pprint.pprint(
+        dict(
+            t1=t1,
+        )
+    )
