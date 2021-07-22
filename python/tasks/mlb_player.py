@@ -1058,9 +1058,6 @@ def kernel_15(
             (0, 255, 0),
             1,
         )
-        pprint.pprint(
-            locals()
-        )
         f = matplotlib.pyplot.figure()
         matplotlib.pyplot.title(
             'name %s, score %s, frame_id %d' % (
@@ -1073,12 +1070,7 @@ def kernel_15(
         f.savefig('kernel_15-%05d.png' % t7)
         matplotlib.pyplot.close(f)
 
+        pprint.pprint([t8, t21)
 
-    return dict(
-        t6=t6,
-        t7=t7,
-        t8=t8,
-        t12=t12,
-        t14=t14,
-        t21=t21,
-    )
+
+    return
