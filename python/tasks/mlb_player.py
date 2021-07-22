@@ -1024,7 +1024,7 @@ def kernel_15(
     t4 = numpy.where(t3.name.data == t2)[0]
 
     numpy.random.seed(0)
-    t22 = numpy.random.choice(t4, 10):
+    t22 = numpy.random.choice(t4, 10)
     import tqdm
     for k in tqdm.tqdm(t22):
         t5 = t4[-1]
