@@ -1025,6 +1025,7 @@ def kernel_15(
 
     numpy.random.seed(0)
     t22 = numpy.random.choice(t4, 10)
+    pprint.pprint(t22)
     import tqdm
     for t5 in tqdm.tqdm(t22):
         t6 = t3.video_path.data[t5]
