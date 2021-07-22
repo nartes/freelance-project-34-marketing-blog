@@ -1026,8 +1026,7 @@ def kernel_15(
     numpy.random.seed(0)
     t22 = numpy.random.choice(t4, 10)
     import tqdm
-    for k in tqdm.tqdm(t22):
-        t5 = t4[k]
+    for t5 in tqdm.tqdm(t22):
         t6 = t3.video_path.data[t5]
         t7 = t3.frame_id.data[t5]
         t8 = t3.to_dataframe().iloc[t5]
