@@ -1070,7 +1070,7 @@ def kernel_15(
         f.savefig('kernel_15-%05d.png' % t7)
         matplotlib.pyplot.close(f)
 
-        pprint.pprint([t8, t21)
+        pprint.pprint([t8, t21])
 
 
     return
