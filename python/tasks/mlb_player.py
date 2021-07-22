@@ -1022,43 +1022,56 @@ def kernel_15(
     t2 = 'baseball glove'
     t3 = o_14['o_13']['t1']
     t4 = numpy.where(t3.name.data == t2)[0]
-    t5 = t4[-1]
-    t6 = t3.video_path.data[t5]
-    t7 = t3.frame_id.data[t5]
-    t8 = t3.to_dataframe().iloc[t5]
-    pprint.pprint([t6, t7])
-    pprint.pprint(t8)
 
-    import cv2
-    import matplotlib.pyplot
+    for k in tqdm.tqdm(range(-10, -1)):
+        t5 = t4[-1]
+        t6 = t3.video_path.data[t5]
+        t7 = t3.frame_id.data[t5]
+        t8 = t3.to_dataframe().iloc[t5]
+        pprint.pprint([t6, t7])
+        pprint.pprint(t8)
 
-    t9 = cv2.VideoCapture(t6)
-    t9.set(cv2.CAP_PROP_POS_FRAMES, t7)
-    t10 = t9.read()
-    t9.release()
-    t11 = t10[1]
-    t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
-    t13 = t12.copy()
-    t15 = numpy.array([t8.xcenter, t8.ycenter, t8.width, t8.height])
-    t16 = numpy.array([t13.shape[1], t13.shape[0], t13.shape[1], t13.shape[0]])
-    t17 = t15 * t16
-    t18 = t17[:2] - t17[2:] / 2
-    t19 = t17[:2] + t17[2:] / 2
-    t20 = numpy.array([
-        t18[0], t18[1],
-        t19[0], t19[1],
-    ])
-    t21 = numpy.round(t20).astype(numpy.int32)
-    t14 = cv2.rectangle(
-        t13,
-        tuple(t21[:2]),
-        tuple(t21[2:]),
-        (0, 255, 0),
-        1,
-    )
-    pprint.pprint(
-        locals()
-    )
+        import cv2
+        import matplotlib.pyplot
+
+        t9 = cv2.VideoCapture(t6)
+        t9.set(cv2.CAP_PROP_POS_FRAMES, t7)
+        t10 = t9.read()
+        t9.release()
+        t11 = t10[1]
+        t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
+        t13 = t12.copy()
+        t15 = numpy.array([t8.xcenter, t8.ycenter, t8.width, t8.height])
+        t16 = numpy.array([t13.shape[1], t13.shape[0], t13.shape[1], t13.shape[0]])
+        t17 = t15 * t16
+        t18 = t17[:2] - t17[2:] / 2
+        t19 = t17[:2] + t17[2:] / 2
+        t20 = numpy.array([
+            t18[0], t18[1],
+            t19[0], t19[1],
+        ])
+        t21 = numpy.round(t20).astype(numpy.int32)
+        t14 = cv2.rectangle(
+            t13,
+            tuple(t21[:2]),
+            tuple(t21[2:]),
+            (0, 255, 0),
+            1,
+        )
+        pprint.pprint(
+            locals()
+        )
+        f = matplotlib.pyplot.figure()
+        matplotlib.pyplot.title(
+            'name %s, score %s, frame_id %d' % (
+                t8.name,
+                t8.confidence,
+                t8.frame_id,
+            )
+        )
+        matplotlib.pyplot.imshow(t14)
+        f.savefig('kernel_15-%05d.png' % t7)
+        matplotlib.pyplot.close(f)
 
 
     return dict(
