@@ -1023,8 +1023,10 @@ def kernel_15(
     t3 = o_14['o_13']['t1']
     t4 = numpy.where(t3.name.data == t2)[0]
 
+    numpy.random.seed(0)
+    t22 = numpy.random.choice(t4, 10):
     import tqdm
-    for k in tqdm.tqdm(range(-10, -1)):
+    for k in tqdm.tqdm(t22):
         t5 = t4[-1]
         t6 = t3.video_path.data[t5]
         t7 = t3.frame_id.data[t5]
