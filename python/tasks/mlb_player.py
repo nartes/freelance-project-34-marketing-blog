@@ -1035,7 +1035,7 @@ def kernel_15(
     t9 = cv2.VideoCapture(t6)
     t9.set(cv2.CAP_PROP_POS_FRAMES, t7)
     t10 = t9.read()
-    cv2.release()
+    t9.release()
     t11 = t10[1]
     t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
     matplotlib.pyplot.imshow(t12)
