@@ -1023,6 +1023,7 @@ def kernel_15(
     t3 = o_14['o_13']['t1']
     t4 = numpy.where(t3.name.data == t2)[0]
 
+    import tqdm
     for k in tqdm.tqdm(range(-10, -1)):
         t5 = t4[-1]
         t6 = t3.video_path.data[t5]
