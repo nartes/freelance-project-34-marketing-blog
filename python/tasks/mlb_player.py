@@ -1028,3 +1028,14 @@ def kernel_15(
     t8 = t3.to_dataframe().iloc[t5]
     pprint.pprint([t6, t7])
     pprint.pprint(t8)
+
+    import cv2
+    import matplotlib.pyplot
+
+    t9 = cv2.VideoCapture(t6)
+    t9.set(cv2.CAP_PROP_POS_FRAMES, t7)
+    t10 = cv2.read()
+    cv2.release()
+    t11 = t10[1]
+    t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
+    matplotlib.pyplot.imshow(t12)
