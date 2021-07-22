@@ -1023,5 +1023,8 @@ def kernel_15(
     t3 = o_14['o_13']['t1']
     t4 = numpy.where(t3.name.data == t2)[0]
     t5 = t4[-1]
-    t6 = t3.sel(index=t3.index.data[t5])
-    pprint.pprint(t6)
+    t6 = t3.video_path.data[t5]
+    t7 = t3.frame_id.data[t5]
+    t8 = t3.to_dataframe().iloc[t5]
+    pprint.pprint([t6, t7])
+    pprint.pprint(t8)
