@@ -1020,7 +1020,7 @@ def kernel_15(
     )
 
     t2 = 'baseball glove'
-    t3 = o_13['o_13']['t1']
+    t3 = o_14['o_13']['t1']
     t4 = numpy.where(t3.name.data == t2)[0]
     t5 = t4[-1]
     t6 = t3.sel(index=t3.index.data[t5])
