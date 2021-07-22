@@ -1038,9 +1038,26 @@ def kernel_15(
     t9.release()
     t11 = t10[1]
     t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
-    matplotlib.pyplot.figure()
-    matplotlib.pyplot.imshow(t12)
-    matplotlib.pyplot.show()
+    t13 = t12.copy()
+    t15 = numpy.array([t8.xcenter, t8.ycenter, t8.width, t8.height])
+    t16 = numpy.array([t13.shape[1], t13.shape[0], t13.shape[1], t13.shape[0]])
+    t17 = t15 .* t16
+    t18 = t17[:2] - t17[2:] / 2
+    t19 = t17[:2] + t17[2:] / 2
+    t20 = numpy.array([
+        t18[0], t18[1],
+        t19[0], t19[1],
+    ])
+    t21 = numpy.round(t20).astype(numpy.int32)
+    t14 = cv2rectangle(
+        t13,
+        tuple(t21[:2]),
+        tuple(t21[2:]),
+    )
+    pprint.pprint(
+        locals()
+    )
+
 
     return dict(
         t6=t6,
