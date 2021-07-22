@@ -1038,4 +1038,6 @@ def kernel_15(
     t9.release()
     t11 = t10[1]
     t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
+    matplotlib.pyplot.figure()
     matplotlib.pyplot.imshow(t12)
+    matplotlib.pyplot.show()
