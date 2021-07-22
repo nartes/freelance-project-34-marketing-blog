@@ -1041,3 +1041,10 @@ def kernel_15(
     matplotlib.pyplot.figure()
     matplotlib.pyplot.imshow(t12)
     matplotlib.pyplot.show()
+
+    return dict(
+        t6=t6,
+        t7=t7,
+        t8=t8,
+        t12=t12,
+    )
