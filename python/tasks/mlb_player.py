@@ -1041,7 +1041,7 @@ def kernel_15(
     t13 = t12.copy()
     t15 = numpy.array([t8.xcenter, t8.ycenter, t8.width, t8.height])
     t16 = numpy.array([t13.shape[1], t13.shape[0], t13.shape[1], t13.shape[0]])
-    t17 = t15 .* t16
+    t17 = t15 * t16
     t18 = t17[:2] - t17[2:] / 2
     t19 = t17[:2] + t17[2:] / 2
     t20 = numpy.array([
