@@ -1027,6 +1027,7 @@ def kernel_15(
     t22 = numpy.random.choice(t4, 10)
     pprint.pprint(t22)
     import tqdm
+    t24 = []
     for t5 in tqdm.tqdm(t22):
         t6 = t3.video_path.data[t5]
         t7 = t3.frame_id.data[t5]
@@ -1070,10 +1071,25 @@ def kernel_15(
             )
         )
         matplotlib.pyplot.imshow(t14)
-        f.savefig('kernel_15-%05d.png' % t7)
+        t25 = 'kernel_15-%05d.png' % t7
+        f.savefig(t25)
+        t24.append(t25)
         matplotlib.pyplot.close(f)
 
         pprint.pprint([t8, t21])
 
+    t23 = 'output.gif'
+    if os.path.exists(t23):
+        subprocess.check_call(['rm', t23])
 
-    return
+    subprocess.check_call(
+        [
+            'convert',
+            '-delay',
+            '100',
+            '-loop',
+            '0',
+            *t24,
+            t23,
+        ]
+    )
