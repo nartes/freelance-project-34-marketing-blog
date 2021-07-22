@@ -1049,10 +1049,12 @@ def kernel_15(
         t19[0], t19[1],
     ])
     t21 = numpy.round(t20).astype(numpy.int32)
-    t14 = cv2rectangle(
+    t14 = cv2.rectangle(
         t13,
         tuple(t21[:2]),
         tuple(t21[2:]),
+        (0, 255, 0),
+        1,
     )
     pprint.pprint(
         locals()
