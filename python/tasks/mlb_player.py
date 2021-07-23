@@ -1019,88 +1019,93 @@ def kernel_15(
         )
     )
 
-    t2 = 'baseball glove'
-    t3 = o_14['o_13']['t1']
-    t4 = numpy.where(t3.name.data == t2)[0]
+    for t2 in [
+        'baseball glove',
+        'baseball bat',
+        'sports ball',
+        'person',
+    ]:
+        t28 = t2.replace(' ', '-')
+        t3 = o_14['o_13']['t1']
+        t4 = numpy.where(t3.name.data == t2)[0]
 
-    numpy.random.seed(0)
-    t22 = numpy.random.choice(t4, 10)
-    pprint.pprint(t22)
-    import tqdm
-    t24 = []
-    t27 = []
-    for t5 in tqdm.tqdm(t22):
-        t6 = t3.video_path.data[t5]
-        t7 = t3.frame_id.data[t5]
-        t8 = t3.to_dataframe().iloc[t5]
-        #pprint.pprint([t6, t7])
-        #pprint.pprint(t8)
+        numpy.random.seed(0)
+        t22 = numpy.random.choice(t4, 10)
+        pprint.pprint(t22)
+        import tqdm
+        t24 = []
+        t27 = []
+        for t5 in tqdm.tqdm(t22):
+            t6 = t3.video_path.data[t5]
+            t7 = t3.frame_id.data[t5]
+            t8 = t3.to_dataframe().iloc[t5]
+            #pprint.pprint([t6, t7])
+            #pprint.pprint(t8)
 
-        import cv2
-        import matplotlib.pyplot
+            import cv2
+            import matplotlib.pyplot
 
-        t9 = cv2.VideoCapture(t6)
-        t9.set(cv2.CAP_PROP_POS_FRAMES, t7)
-        t10 = t9.read()
-        t9.release()
-        t11 = t10[1]
-        t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
-        t13 = t12.copy()
-        t15 = numpy.array([t8.xcenter, t8.ycenter, t8.width, t8.height])
-        t16 = numpy.array([t13.shape[1], t13.shape[0], t13.shape[1], t13.shape[0]])
-        t17 = t15 * t16
-        t18 = t17[:2] - t17[2:] / 2
-        t19 = t17[:2] + t17[2:] / 2
-        t20 = numpy.array([
-            t18[0], t18[1],
-            t19[0], t19[1],
-        ])
-        t21 = numpy.round(t20).astype(numpy.int32)
-        t14 = cv2.rectangle(
-            t13,
-            tuple(t21[:2]),
-            tuple(t21[2:]),
-            (0, 255, 0),
-            1,
-        )
-        f = matplotlib.pyplot.figure()
-        matplotlib.pyplot.title(
-            'name %s, score %s, frame_id %d' % (
-                t8.name,
-                t8.confidence,
-                t8.frame_id,
+            t9 = cv2.VideoCapture(t6)
+            t9.set(cv2.CAP_PROP_POS_FRAMES, t7)
+            t10 = t9.read()
+            t9.release()
+            t11 = t10[1]
+            t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
+            t13 = t12.copy()
+            t15 = numpy.array([t8.xcenter, t8.ycenter, t8.width, t8.height])
+            t16 = numpy.array([t13.shape[1], t13.shape[0], t13.shape[1], t13.shape[0]])
+            t17 = t15 * t16
+            t18 = t17[:2] - t17[2:] / 2
+            t19 = t17[:2] + t17[2:] / 2
+            t20 = numpy.array([
+                t18[0], t18[1],
+                t19[0], t19[1],
+            ])
+            t21 = numpy.round(t20).astype(numpy.int32)
+            t14 = cv2.rectangle(
+                t13,
+                tuple(t21[:2]),
+                tuple(t21[2:]),
+                (0, 255, 0),
+                1,
             )
+            f = matplotlib.pyplot.figure()
+            matplotlib.pyplot.title(
+                'name %s, score %s, frame_id %d' % (
+                    t8.name,
+                    t8.confidence,
+                    t8.frame_id,
+                )
+            )
+            matplotlib.pyplot.imshow(t14)
+            t25 = 'kernel_15-%s-%05d.jpg' % (
+                t28,
+                t7,
+            )
+            f.savefig(t25)
+            t24.append(t25)
+            matplotlib.pyplot.close(f)
+
+            t27.append([t8, t21])
+        pprint.pprint(
+            pandas.concat([
+                o[0]
+                for o in t27
+            ], axis=1).T
         )
-        matplotlib.pyplot.imshow(t14)
-        t28 = t8['name'].replace(' ', '-')
-        t25 = 'kernel_15-%s-%05d.jpg' % (
-            t28,
-            t7,
+
+        t23 = 'output-%s.gif' % t28
+        if os.path.exists(t23):
+            subprocess.check_call(['rm', t23])
+
+        subprocess.check_call(
+            [
+                'convert',
+                '-delay',
+                '100',
+                '-loop',
+                '0',
+                *t24,
+                t23,
+            ]
         )
-        f.savefig(t25)
-        t24.append(t25)
-        matplotlib.pyplot.close(f)
-
-        t27.append([t8, t21])
-    pprint.pprint(
-        pandas.concat([
-            o[0]
-            for o in t27
-        ], axis=1).T
-    )
-
-    t23 = 'output.gif'
-    if os.path.exists(t23):
-        subprocess.check_call(['rm', t23])
-
-    subprocess.check_call(
-        [
-            'convert',
-            '-delay',
-            '100',
-            '-loop',
-            '0',
-            *t24,
-            t23,
-        ]
-    )
