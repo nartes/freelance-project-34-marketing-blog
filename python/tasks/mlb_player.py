@@ -1019,6 +1019,10 @@ def kernel_15(
         )
     )
 
+    t29 = 'output-gif'
+    if not os.path.exists(t29):
+        os.makedirs(t29, exist_ok=True)
+
     for t2 in [
         'baseball glove',
         'baseball bat',
@@ -1028,6 +1032,10 @@ def kernel_15(
         t28 = t2.replace(' ', '-')
         t3 = o_14['o_13']['t1']
         t4 = numpy.where(t3.name.data == t2)[0]
+
+        t30 = 'output-png/%s' % t28
+        if not os.path.exists(t30):
+            os.makedirs(t30, exist_ok=True)
 
         numpy.random.seed(0)
         t22 = numpy.random.choice(t4, 10)
@@ -1078,9 +1086,12 @@ def kernel_15(
                 )
             )
             matplotlib.pyplot.imshow(t14)
-            t25 = 'kernel_15-%s-%05d.jpg' % (
-                t28,
-                t7,
+            t25 = os.path.join(
+                t30,
+                'kernel_15-%s-%05d.jpg' % (
+                    t28,
+                    t7,
+                )
             )
             f.savefig(t25)
             t24.append(t25)
@@ -1094,7 +1105,10 @@ def kernel_15(
             ], axis=1).T
         )
 
-        t23 = 'output-%s.gif' % t28
+        t23 = os.path.join(
+            t29,
+            'output-%s.gif' % t28
+        )
         if os.path.exists(t23):
             subprocess.check_call(['rm', t23])
 
