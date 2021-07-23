@@ -810,18 +810,26 @@ def kernel_7(
         # PAF's are just unit vectors along the limb encoding the direction of the limb
         # A dot product of possible joint connection will be high if actual limb else low
 
-        paf_info, heatmap_info = get_paf_and_heatmap(model_pose, img_ori, scale_param)
-        peaks = extract_heatmap_info(heatmap_info)
-        sp_k, con_all = extract_paf_info(img_ori, paf_info, peaks)
+        img_canvas = None
+        img_points = None
 
-        subsets, candidates = get_subsets(con_all, sp_k, peaks)
-        subsets, img_points = draw_key_point(subsets, peaks, img_ori)
+        try:
+            paf_info, heatmap_info = get_paf_and_heatmap(model_pose, img_ori, scale_param)
+            peaks = extract_heatmap_info(heatmap_info)
+            sp_k, con_all = extract_paf_info(img_ori, paf_info, peaks)
+
+            subsets, candidates = get_subsets(con_all, sp_k, peaks)
+
+            subsets, img_points = draw_key_point(subsets, peaks, img_ori)
+            img_canvas = link_key_point(img_points, candidates, subsets)
+        except ZeroDivisionError:
+            pprint.pprint('zero de')
+
+            img_points = img_ori.copy()
+            img_canvas = img_ori.copy()
 
         # After predicting Heatmaps and PAF's, proceeed to link joints correctly
         if display:
-            img_canvas = link_key_point(img_points, candidates, subsets)
-
-
             f = plt.figure(figsize=(15, 10))
 
             plt.subplot(1, 2, 1)
@@ -831,6 +839,7 @@ def kernel_7(
             plt.imshow(img_canvas[...,::-1])
 
             f.savefig(name)
+
         return dict(
             img_points=img_points,
             img_canvas=img_canvas,
@@ -1083,7 +1092,10 @@ def kernel_15(
                 1,
             )
 
-            t32 = o_14['o_7']['estimate_pose'](t13)
+            t32 = o_14['o_7']['estimate_pose'](
+                t13,
+                display=False,
+            )
 
             f = matplotlib.pyplot.figure(figsize=(15, 9))
             matplotlib.pyplot.title(
