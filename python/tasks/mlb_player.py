@@ -587,6 +587,8 @@ def kernel_7(
                     for j in range(nB):
                         vec = np.subtract(candB[j][:2], candA[i][:2])
                         norm = math.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
+                        if norm < 1e-8:
+                            raise ZeroDivisionError
                         vec = np.divide(vec, norm)
 
                         startend = zip(np.linspace(candA[i][0], candB[j][0], num=mid_num),
@@ -1105,9 +1107,9 @@ def kernel_15(
                     t8.frame_id,
                 )
             )
-            plt.subplot(1, 2, 1)
+            matplotlib.pyplot.subplot(1, 2, 1)
             matplotlib.pyplot.imshow(t14)
-            plt.subplot(1, 2, 2)
+            matplotlib.pyplot.subplot(1, 2, 2)
             matplotlib.pyplot.imshow(t32['img_canvas'])
             t25 = os.path.join(
                 t30,
