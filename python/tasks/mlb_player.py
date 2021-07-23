@@ -1100,7 +1100,7 @@ def kernel_15(
                 display=False,
             )
 
-            f = matplotlib.pyplot.figure(figsize=(16, 8))
+            f = matplotlib.pyplot.figure(figsize=(8, 12))
             f.suptitle(
                 'name %s, frame_id %d' % (
                     t8['name'],
