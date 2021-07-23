@@ -1100,7 +1100,11 @@ def kernel_15(
                 display=False,
             )
 
-            f = matplotlib.pyplot.figure(figsize=(15, 9))
+            f = matplotlib.pyplot.figure(figsize=(8, 16))
+            matplotlib.pyplot.subplot(2, 1, 1)
+            matplotlib.pyplot.imshow(t14)
+            matplotlib.pyplot.subplot(2, 1, 2)
+            matplotlib.pyplot.imshow(t32['img_canvas'])
             matplotlib.pyplot.title(
                 'name %s, score %s, frame_id %d' % (
                     t8['name'],
@@ -1108,10 +1112,6 @@ def kernel_15(
                     t8.frame_id,
                 )
             )
-            matplotlib.pyplot.subplot(1, 2, 1)
-            matplotlib.pyplot.imshow(t14)
-            matplotlib.pyplot.subplot(1, 2, 2)
-            matplotlib.pyplot.imshow(t32['img_canvas'])
             t25 = os.path.join(
                 t30,
                 'kernel_15-%s-%05d.jpg' % (
