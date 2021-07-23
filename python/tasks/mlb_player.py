@@ -1072,7 +1072,7 @@ def kernel_15(
             )
         )
         matplotlib.pyplot.imshow(t14)
-        t28 = t8.name.replace(' ', '-')
+        t28 = t8['name'].replace(' ', '-')
         t25 = 'kernel_15-%s-%05d.jpg' % (
             t28,
             t7,
