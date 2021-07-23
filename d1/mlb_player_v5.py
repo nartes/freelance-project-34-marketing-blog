@@ -1,16 +1,18 @@
 ! pip install pyyaml==5.2
 ! pip install scipy==1.1.0
-! pip install torch==1.2.0 torchvision==0.4.0
-! pip install pillow==6.2.2
+#! pip install torch==1.2.0 torchvision==0.4.0
+#! pip install pillow==6.2.2
 import torch
 print(torch.__version__)
 import yaml, scipy
 print(yaml.__version__)
 print(scipy.__version__)
 
+import os
 !rm -rf /kaggle/working/AlphaPose
 os.chdir('/kaggle/working/')
-!git clone https://github.com/MVIG-SJTU/AlphaPose.git
+#!git clone https://github.com/MVIG-SJTU/AlphaPose.git
+!git clone https://github.com/WildflowerSchools/AlphaPose
     
 !python -m pip install cython
 !apt-get install libyaml-dev
@@ -47,7 +49,9 @@ for o1, o2 in [
 import os
 os.chdir('/kaggle/working/AlphaPose')
 ! ls
-! python3 scripts/demo_inference.py --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint pretrained_models/fast_res50_256x192.pth --indir examples/demo/ --save_img
+! mkdir -p /kaggle/working/test-input && mkdir -p /kaggle/working/test-output && cp examples/demo/*.jpg /kaggle/working/test-input
+#! cd /kaggle/working/AlphaPose && python3 scripts/demo_inference.py --outdir /kagle/working/test-output --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint pretrained_models/fast_res50_256x192.pth --indir /kaggle/working/test-input --save_img
+! cd /kaggle/working/AlphaPose && python3 scripts/demo_inference.py --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint pretrained_models/fast_res50_256x192.pth --indir /kaggle/working/test-input --save_img
 # result json and rendered images are saved here:
 ! ls examples/res/
 ! ls examples/res/vis
