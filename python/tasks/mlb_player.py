@@ -1102,9 +1102,10 @@ def kernel_15(
 
             f = matplotlib.pyplot.figure(figsize=(8, 12))
             f.suptitle(
-                'name %s, frame_id %d' % (
+                'name %s, frame_id %d\nvideo_path %s' % (
                     t8['name'],
                     t8.frame_id,
+                    t8.video_path,
                 )
             )
             matplotlib.pyplot.subplot(2, 1, 1)
