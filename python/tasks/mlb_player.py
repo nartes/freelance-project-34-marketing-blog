@@ -1086,7 +1086,7 @@ def kernel_15(
         pandas.concat([
             o[0]
             for o in t27
-        ], axis=0)
+        ], axis=1).T
     )
 
     t23 = 'output.gif'
