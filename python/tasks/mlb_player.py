@@ -831,6 +831,10 @@ def kernel_7(
             plt.imshow(img_canvas[...,::-1])
 
             f.savefig(name)
+        return dict(
+            img_points=img_points,
+            img_canvas=img_canvas,
+        )
 
 
     # In[5]:
@@ -1002,6 +1006,7 @@ def kernel_14(
 
     return dict(
         o_13=o_13,
+        o_7=o_7,
     )
 
 def kernel_15(
@@ -1077,7 +1082,10 @@ def kernel_15(
                 (0, 255, 0),
                 1,
             )
-            f = matplotlib.pyplot.figure()
+
+            t32 = o_14['o_7']['estimate_pose'](t13)
+
+            f = matplotlib.pyplot.figure(figsize=(15, 9))
             matplotlib.pyplot.title(
                 'name %s, score %s, frame_id %d' % (
                     t8['name'],
@@ -1085,7 +1093,10 @@ def kernel_15(
                     t8.frame_id,
                 )
             )
+            plt.subplot(1, 2, 1)
             matplotlib.pyplot.imshow(t14)
+            plt.subplot(1, 2, 2)
+            matplotlib.pyplot.imshow(t32['img_canvas'])
             t25 = os.path.join(
                 t30,
                 'kernel_15-%s-%05d.jpg' % (
