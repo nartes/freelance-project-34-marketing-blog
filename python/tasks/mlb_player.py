@@ -1072,7 +1072,7 @@ def kernel_15(
             f = matplotlib.pyplot.figure()
             matplotlib.pyplot.title(
                 'name %s, score %s, frame_id %d' % (
-                    t8.name,
+                    t8['name'],
                     t8.confidence,
                     t8.frame_id,
                 )
