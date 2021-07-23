@@ -1028,6 +1028,7 @@ def kernel_15(
     pprint.pprint(t22)
     import tqdm
     t24 = []
+    t25 = []
     for t5 in tqdm.tqdm(t22):
         t6 = t3.video_path.data[t5]
         t7 = t3.frame_id.data[t5]
@@ -1076,7 +1077,13 @@ def kernel_15(
         t24.append(t25)
         matplotlib.pyplot.close(f)
 
-        pprint.pprint([t8, t21])
+        t25.append([t8, t21])
+    pprint.pprint(
+        pandas.concat([
+            o[0]
+            for o in t25
+        ], axis=0)
+    )
 
     t23 = 'output.gif'
     if os.path.exists(t23):
