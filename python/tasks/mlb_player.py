@@ -1095,7 +1095,7 @@ def kernel_15(
             )
 
             t32 = o_14['o_7']['estimate_pose'](
-                t13,
+                t12,
                 scale_param=[1.0],
                 display=False,
             )
