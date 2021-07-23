@@ -1033,8 +1033,8 @@ def kernel_15(
         t6 = t3.video_path.data[t5]
         t7 = t3.frame_id.data[t5]
         t8 = t3.to_dataframe().iloc[t5]
-        pprint.pprint([t6, t7])
-        pprint.pprint(t8)
+        #pprint.pprint([t6, t7])
+        #pprint.pprint(t8)
 
         import cv2
         import matplotlib.pyplot
