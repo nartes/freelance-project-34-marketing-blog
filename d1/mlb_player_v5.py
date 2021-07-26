@@ -1,4 +1,6 @@
-assert os.system(r'''
+import os
+
+t1 = r'''
 rm -fr /kaggle/working/AlphaPose
 pip install pyyaml==5.2
 pip install scipy==1.1.0
@@ -10,7 +12,10 @@ apt-get install libyaml-dev
 cd /kaggle/working/AlphaPose && python setup.py build develop
 mkdir -p /kaggle/working/test-input && mkdir -p /kaggle/working/test-output && cp examples/demo/*.jpg /kaggle/working/test-input
 cd /kaggle/working/AlphaPose && python3 scripts/demo_inference.py --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint pretrained_models/fast_res50_256x192.pth --indir /kaggle/working/test-input --save_img
-''') == 0
+'''
+
+for o in t1.splitlines():
+	assert os.system(o) == 0
 
 import os
 #!git clone https://github.com/MVIG-SJTU/AlphaPose.git
