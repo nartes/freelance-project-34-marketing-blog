@@ -4,8 +4,6 @@ t1 = r'''
 rm -fr /kaggle/working/AlphaPose
 pip install pyyaml==5.2
 pip install scipy==1.1.0
-pip install torch==1.2.0 torchvision==0.4.0
-pip install pillow==6.2.2
 git clone https://github.com/WildflowerSchools/AlphaPose
 python -m pip install cython gdown
 apt-get install libyaml-dev
@@ -15,6 +13,7 @@ cd /kaggle/working/AlphaPose && python3 scripts/demo_inference.py --cfg configs/
 '''
 
 for o in t1.splitlines():
+	print(o)
 	assert os.system(o) == 0
 
 import os
