@@ -9,18 +9,13 @@ print(yaml.__version__)
 print(scipy.__version__)
 
 import os
-!rm -rf /kaggle/working/AlphaPose
-os.chdir('/kaggle/working/')
 #!git clone https://github.com/MVIG-SJTU/AlphaPose.git
 !git clone https://github.com/WildflowerSchools/AlphaPose
     
-!python -m pip install cython
+!python -m pip install cython gdown
 !apt-get install libyaml-dev
 
-import os
-os.chdir('/kaggle/working/AlphaPose')
-print(os.getcwd())
-! python setup.py build develop
+! cd /kaggle/working/AlphaPose && python setup.py build develop
 
 import gdown
 import os
