@@ -1156,6 +1156,10 @@ def kernel_15(
         )
 
 def kernel_16(images):
+    import cv2
+    import subprocess
+    import os
+
     t2 = '/kaggle/working/test-input'
     subprocess.check_call([
         'rm',
