@@ -1156,6 +1156,8 @@ def kernel_15(
         )
 
 def kernel_16(images):
+    assert isinstance(images, list)
+
     import cv2
     import subprocess
     import os
@@ -1176,7 +1178,10 @@ def kernel_16(images):
     t1 = []
     for i, o in enumerate(images):
         t2 = cv2.cvtColor(o, cv2.COLOR_RGB2BGR)
-        t3 = 'image-%d.jpg' % i
+        t3 = os.path.join(
+            t2,
+            'image-%d.jpg' % i
+        )
         cv2.imwrite(t3, t2)
         t1.append(
             dict(
