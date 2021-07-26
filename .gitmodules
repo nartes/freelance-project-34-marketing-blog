@@ -1,0 +1,3 @@
+[submodule "deps/alpha-pose"]
+	path = deps/alpha-pose
+	url = https://github.com/WildflowerSchools/AlphaPose

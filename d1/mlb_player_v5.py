@@ -50,5 +50,5 @@ for o1, o2 in [
 
 assert os.system(r'''
 mkdir -p /kaggle/working/test-input && mkdir -p /kaggle/working/test-output && cp /kaggle/working/AlphaPose/examples/demo/*.jpg /kaggle/working/test-input
-cd /kaggle/working/AlphaPose && python3 scripts/demo_inference.py --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint pretrained_models/fast_res50_256x192.pth --indir /kaggle/working/test-input --save_img
+cd /kaggle/working/AlphaPose && python3 scripts/demo_inference.py --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint pretrained_models/fast_res50_256x192.pth --indir /kaggle/working/test-input --outdir /kaggle/working/test-output --save_img
 ''') == 0
