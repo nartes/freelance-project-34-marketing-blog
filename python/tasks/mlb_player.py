@@ -1178,14 +1178,16 @@ def kernel_16(images):
     t1 = []
     for i, o in enumerate(images):
         t5 = cv2.cvtColor(o, cv2.COLOR_RGB2BGR)
+        t8 = 'image-%d.jpg' % i
         t3 = os.path.join(
             t2,
-            'image-%d.jpg' % i
+            t8,
         )
         cv2.imwrite(t3, t5)
         t1.append(
             dict(
-                image_name=t3,
+                image_name=t8,
+                image_path=t3,
                 image_canvas=o,
                 image_index=i,
             )
@@ -1214,3 +1216,28 @@ def kernel_16(images):
             --outdir %s \
             --save_img
     ''' % (t2, t4)) == 0
+
+    t6 = []
+    with io.open(
+        os.path.join(
+            t4,
+            'alphapose-results.json'
+        ),
+        'r'
+    ) as f:
+        t7 = json.load(f)
+    for o in t1:
+        t9 = os.path.join(
+            t4,
+            'vis',
+            o['image_name']
+        )
+        assert os.path.exists(t9)
+        t10 = cv2.imread(t9, cv2.IMREAD_COLOR)
+        t6.append(t10)
+    return dict(
+        images=images,
+        t1=t1,
+        t6=t6,
+        t7=t7,
+    )
