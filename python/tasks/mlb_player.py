@@ -1094,11 +1094,14 @@ def kernel_15(
                 1,
             )
 
-            t32 = o_14['o_7']['estimate_pose'](
-                t12,
-                scale_param=[1.0],
-                display=False,
-            )
+            if False:
+                t32 = o_14['o_7']['estimate_pose'](
+                    t12,
+                    scale_param=[1.0],
+                    display=False,
+                )['img_canvas']
+            else:
+                t32 = kernel_16([t12])['t6'][0]
 
             f = matplotlib.pyplot.figure(figsize=(8, 12))
             f.suptitle(
@@ -1116,7 +1119,7 @@ def kernel_15(
             )
             matplotlib.pyplot.imshow(t14)
             matplotlib.pyplot.subplot(2, 1, 2)
-            matplotlib.pyplot.imshow(t32['img_canvas'])
+            matplotlib.pyplot.imshow(t32)
             t25 = os.path.join(
                 t30,
                 'kernel_15-%s-%05d.jpg' % (
