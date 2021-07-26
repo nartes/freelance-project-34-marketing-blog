@@ -1156,29 +1156,6 @@ def kernel_15(
         )
 
 def kernel_16(images):
-    import argparse
-    import os
-    import platform
-    import sys
-    import time
-
-    import numpy as np
-    import torch
-    from tqdm import tqdm
-    import natsort
-
-    from detector.apis import get_detector
-    from trackers.tracker_api import Tracker
-    from trackers.tracker_cfg import cfg as tcfg
-    from trackers import track
-    from alphapose.models import builder
-    from alphapose.utils.config import update_config
-    from alphapose.utils.detector import DetectionLoader
-    from alphapose.utils.transforms import flip, flip_heatmap
-    from alphapose.utils.vis import getTime
-    from alphapose.utils.webcam_detector import WebCamDetectionLoader
-    from alphapose.utils.writer import DataWriter
-
     t2 = '/kaggle/working/test-input'
     subprocess.check_call([
         'rm',
