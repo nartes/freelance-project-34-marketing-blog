@@ -1155,26 +1155,76 @@ def kernel_15(
             ]
         )
 
-def kernel_16():
-	import argparse
-	import os
-	import platform
-	import sys
-	import time
+def kernel_16(images):
+    import argparse
+    import os
+    import platform
+    import sys
+    import time
 
-	import numpy as np
-	import torch
-	from tqdm import tqdm
-	import natsort
+    import numpy as np
+    import torch
+    from tqdm import tqdm
+    import natsort
 
-	from detector.apis import get_detector
-	from trackers.tracker_api import Tracker
-	from trackers.tracker_cfg import cfg as tcfg
-	from trackers import track
-	from alphapose.models import builder
-	from alphapose.utils.config import update_config
-	from alphapose.utils.detector import DetectionLoader
-	from alphapose.utils.transforms import flip, flip_heatmap
-	from alphapose.utils.vis import getTime
-	from alphapose.utils.webcam_detector import WebCamDetectionLoader
-	from alphapose.utils.writer import DataWriter
+    from detector.apis import get_detector
+    from trackers.tracker_api import Tracker
+    from trackers.tracker_cfg import cfg as tcfg
+    from trackers import track
+    from alphapose.models import builder
+    from alphapose.utils.config import update_config
+    from alphapose.utils.detector import DetectionLoader
+    from alphapose.utils.transforms import flip, flip_heatmap
+    from alphapose.utils.vis import getTime
+    from alphapose.utils.webcam_detector import WebCamDetectionLoader
+    from alphapose.utils.writer import DataWriter
+
+    t2 = '/kaggle/working/test-input'
+    subprocess.check_call([
+        'rm',
+        '-fr',
+        t2,
+    ])
+
+    subprocess.check_call([
+        'mkdir',
+        '-p',
+        t2,
+    ])
+
+    t1 = []
+    for i, o in enumerate(images):
+        t2 = cv2.cvtColor(o, cv2.COLOR_RGB2BGR)
+        t3 = 'image-%d.jpg' % i
+        cv2.imwrite(t3, t2)
+        t1.append(
+            dict(
+                image_name=t3,
+                image_canvas=o,
+                image_index=i,
+            )
+        )
+
+    t4 = '/kaggle/working/test-output'
+    subprocess.check_call([
+        'rm',
+        '-fr',
+        t4,
+    ])
+
+    subprocess.check_call([
+        'mkdir',
+        '-p',
+        t4,
+    ])
+
+    assert os.system(r'''
+        cd /kaggle/working/AlphaPose &&
+        python3 \
+            scripts/demo_inference.py \
+            --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml \
+            --checkpoint pretrained_models/fast_res50_256x192.pth \
+            --indir %s \
+            --outdir %s \
+            --save_img
+    ''' % (t2, t4)) == 0
