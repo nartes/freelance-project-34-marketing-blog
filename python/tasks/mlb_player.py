@@ -1177,12 +1177,12 @@ def kernel_16(images):
 
     t1 = []
     for i, o in enumerate(images):
-        t2 = cv2.cvtColor(o, cv2.COLOR_RGB2BGR)
+        t5 = cv2.cvtColor(o, cv2.COLOR_RGB2BGR)
         t3 = os.path.join(
             t2,
             'image-%d.jpg' % i
         )
-        cv2.imwrite(t3, t2)
+        cv2.imwrite(t3, t5)
         t1.append(
             dict(
                 image_name=t3,
