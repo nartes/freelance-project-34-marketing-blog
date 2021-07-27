@@ -1309,7 +1309,7 @@ def kernel_18(o_17):
 
 def kernel_19(o_18):
     kernel_25(
-        o_18['t2']['t6'][
+        o_18['t2']['t6']
     )
 
 def kernel_20(
