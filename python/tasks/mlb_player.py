@@ -1434,6 +1434,7 @@ def kernel_22(o_18):
         return angle
 
     def angle_gor(a,b,c,d):
+        import numpy as np
         from math import sqrt, acos, degrees, atan, degrees
         ab=[a[0]-b[0],a[1]-b[1]]
         ab1=[c[0]-d[0],c[1]-d[1]]
