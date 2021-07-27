@@ -1298,3 +1298,40 @@ def kernel_17(o_14):
     return dict(
         t50=t50,
     )
+
+def kernel_18(o_17):
+    t1 = [o['t12'] for o in o_17['t50']]
+    t2 = kernel_16(t1)
+
+    return dict(
+        t2=t2,
+    )
+
+def kernel_19(o_18):
+    import tqdm
+    import os
+    import cv2
+    import subprocess
+
+    t3 = 'kernel_19-output.dir'
+    os.makedirs(t3, exist_ok=True)
+    t6 = []
+    for i, o in tqdm.tqdm(enumerate(o_18['t2'])):
+        t4 = 'image-%03d.jpg' % i
+        t5 = os.path.join(t3, t4)
+        cv2.imwrite(t5, o)
+        t6.append(t4)
+
+    t7 = os.path.join(t3, 'output.gif')
+
+    subprocess.check_call(
+        [
+            'convert',
+            '-delay',
+            '100',
+            '-loop',
+            '0',
+            *t6,
+            t7,
+        ]
+    )
