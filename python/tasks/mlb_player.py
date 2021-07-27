@@ -1483,10 +1483,10 @@ def kernel_22(o_18):
     ]
     t3 = []
     for i, o in enumerate(t2):
-        t4 = numpy.min(o[0])
-        t5 = numpy.max(o[0])
-        t6 = numpy.min(o[1])
-        t7 = numpy.max(o[1])
+        t4 = numpy.min(o[:, 0])
+        t5 = numpy.max(o[:, 0])
+        t6 = numpy.min(o[:, 1])
+        t7 = numpy.max(o[:, 1])
 
         t8 = (t5 - t4) * (t7 - t6)
 
