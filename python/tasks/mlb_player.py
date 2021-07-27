@@ -1009,7 +1009,7 @@ def kernel_14(
     o_13 = kernel_13(
         o_6=o_6,
     )
-    
+
     if run_benchmark:
         o_11 = kernel_11_benchmark(o_7=o_7, o_10=o_10)
         o_9 = kernel_9_benchmark(o_7=o_7)
@@ -1347,13 +1347,45 @@ def kernel_20(o_18):
         (17, 11), (17, 12),  # Body
         (11, 13), (12, 14), (13, 15), (14, 16)
     ]
-    p_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),  # Nose, LEye, REye, LEar, REar
-               (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),  # LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
-               (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127), (0, 255, 255)]  # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
+    p_color = [
+        # Nose, LEye, REye, LEar, REar
+        (0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),
+        # LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
+        (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),
+        # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle
+        (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127),
+        # Not Present
+        ## Neck
+        #(0, 255, 255),
+    ]
+
     line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
                   (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
                   (77, 222, 255), (255, 156, 127),
                   (0, 127, 255), (255, 127, 77), (0, 77, 255), (255, 77, 36)]
+    #https://debuggercafe.com/wp-content/uploads/2020/10/keypoint_exmp.jpg
+    # Seems like No Neck actually
+    title = [
+        'Nose',
+        'LEye',
+        'REye',
+        'LEar',
+        'REar',
+        'LShoulder',
+        'RShoulder',
+        'LElbow',
+        'RElbow',
+        'LWrist',
+        'RWrist',
+        'LHip'.
+        'RHip',
+        'LKnee',
+        'RKnee',
+        'LAnkle',
+        'RAnkle',
+        #'Neck',
+    ]
+
     t1 = numpy.array(o_18['t2']['t7'][0]['keypoints']).reshape(17, -1)
     t2 = o_18['t2']['t6'][0]
     t3 = o_18['t2']['t1'][0]['image_canvas'].copy()
