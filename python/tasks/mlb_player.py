@@ -1629,7 +1629,7 @@ def kernel_23(o_18, o_22, ids=None):
         t4 = [
             o['image_canvas']
             for o in o_18['t2']['t1']
-            if o['image_name'] == t1[i]['image_id']
+            if o['image_name'] == t3['image_id']
         ]
         assert len(t4) == 1
         t5 = t4[0]
