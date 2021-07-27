@@ -1336,11 +1336,33 @@ def kernel_19(o_18):
         ]
     )
 
-def kernel_20(o_18):
+def kernel_20(
+    o_18,
+    o_21=None,
+):
+    if o_21 is None:
+        o_21 = kernel_21()
+
     import cv2
     import numpy
     import os
 
+
+    t1 = numpy.array(o_18['t2']['t7'][0]['keypoints']).reshape(17, -1)
+    t2 = o_18['t2']['t6'][0]
+    t3 = o_18['t2']['t1'][0]['image_canvas'].copy()
+    assert o_18['t2']['t7'][0]['image_id'] == os.path.split(o_18['t2']['t1'][0]['image_name'])[1]
+
+    for i, o2 in enumerate(o_21['p_color']):
+        if i >= 17:
+            print('fuck %d' % i)
+            continue
+        o1 = t1[i, :]
+        cv2.circle(t3, tuple(o1[:2].astype(numpy.int32)), 3, o2, -1)
+    cv2.imwrite('output.jpg', cv2.cvtColor(t3, cv2.COLOR_RGB2BGR))
+    cv2.imwrite('output-v2.jpg', cv2.cvtColor(t2, cv2.COLOR_RGB2BGR))
+
+def kernel_21():
     l_pair = [
         (0, 1), (0, 2), (1, 3), (2, 4),  # Head
         (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
@@ -1386,16 +1408,36 @@ def kernel_20(o_18):
         #'Neck',
     ]
 
-    t1 = numpy.array(o_18['t2']['t7'][0]['keypoints']).reshape(17, -1)
-    t2 = o_18['t2']['t6'][0]
-    t3 = o_18['t2']['t1'][0]['image_canvas'].copy()
-    assert o_18['t2']['t7'][0]['image_id'] == os.path.split(o_18['t2']['t1'][0]['image_name'])[1]
+    return dict(
+        l_pair=l_pair,
+        p_color=p_color,
+        line_color=line_color,
+    )
 
-    for i, o2 in enumerate(p_color):
-        if i >= 17:
-            print('fuck %d' % i)
-            continue
-        o1 = t1[i, :]
-        cv2.circle(t3, tuple(o1[:2].astype(numpy.int32)), 3, o2, -1)
-    cv2.imwrite('output.jpg', cv2.cvtColor(t3, cv2.COLOR_RGB2BGR))
-    cv2.imwrite('output-v2.jpg', cv2.cvtColor(t2, cv2.COLOR_RGB2BGR))
+def kernel_22(o_18):
+    t1 = o_18['t2']['t7']
+    t2 = [
+        numpy.array(o['keypoints']).reshape(17, 3)
+        for o in t1
+    ]
+    t3 = []
+    for o in t2:
+        t4 = numpy.min(o[0])
+        t5 = numpy.max(o[0])
+        t6 = numpy.min(o[1])
+        t7 = numpy.max(o[1])
+
+        t8 = (t5 - t4) * (t7 - t6)
+        t3.append(t8)
+    t4 = [
+        dict(
+            square=t3[i],
+            keypoints=t2[i],
+            image_name=o['image_id'],
+        )
+        for i, o in enumerate(t1)
+    ]
+
+    return dict(
+        t4=t4,
+    )
