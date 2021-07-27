@@ -1320,7 +1320,7 @@ def kernel_19(o_18):
         t4 = 'image-%03d.jpg' % i
         t5 = os.path.join(t3, t4)
         cv2.imwrite(t5, o)
-        t6.append(t4)
+        t6.append(t5)
 
     t7 = os.path.join(t3, 'output.gif')
 
