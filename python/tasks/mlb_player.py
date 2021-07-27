@@ -1377,7 +1377,7 @@ def kernel_20(o_18):
         'RElbow',
         'LWrist',
         'RWrist',
-        'LHip'.
+        'LHip',
         'RHip',
         'LKnee',
         'RKnee',
