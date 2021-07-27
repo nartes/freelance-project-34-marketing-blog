@@ -1337,6 +1337,10 @@ def kernel_19(o_18):
     )
 
 def kernel_20(o_18):
+    import cv2
+    import numpy
+    import os
+
     l_pair = [
         (0, 1), (0, 2), (1, 3), (2, 4),  # Head
         (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
