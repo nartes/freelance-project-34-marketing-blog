@@ -1350,7 +1350,13 @@ def kernel_20(o_18):
                   (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
                   (77, 222, 255), (255, 156, 127),
                   (0, 127, 255), (255, 127, 77), (0, 77, 255), (255, 77, 36)]
-    t1 = o_18['t2']['t7'][0]['keypoints']
+    t1 = numpy.array(o_18['t2']['t7'][0]['keypoints']).reshape(17, -1)
     t2 = o_18['t2']['t6'][0]
-    t3 = o_18['t2']['t1'][0]['image_canvas']
+    t3 = o_18['t2']['t1'][0]['image_canvas'].copy()
     assert o_18['t2']['t7'][0]['image_id'] == os.path.split(o_18['t2']['t1'][0]['image_name'])[1]
+
+    for i, o2 in enumerate(p_color):
+        o1 = t1[i, :]
+        cv2.circle(t3, tuple(o1[:2]), 3, o2, -1)
+    cv2.imwrite('output.jpg', cv2.cvtColor(t3, cv2.COLOR_RGB2BGR))
+    cv2.imwrite('output-v2.jpg', cv2.cvtColor(t2, cv2.COLOR_RGB2BGR))
