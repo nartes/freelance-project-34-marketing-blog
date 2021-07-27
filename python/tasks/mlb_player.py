@@ -1244,3 +1244,57 @@ def kernel_16(images):
         t6=t6,
         t7=t7,
     )
+
+def kernel_17(o_14):
+    t50 = []
+    for t2 in [
+        'baseball glove',
+        'baseball bat',
+        'sports ball',
+        'person',
+    ]:
+        t28 = t2.replace(' ', '-')
+        t3 = o_14['o_13']['t1']
+        t4 = numpy.where(t3.name.data == t2)[0]
+
+        t30 = 'output-png/%s' % t28
+        if not os.path.exists(t30):
+            os.makedirs(t30, exist_ok=True)
+
+        numpy.random.seed(0)
+        t22 = numpy.random.choice(t4, 10)
+        pprint.pprint(t22)
+        import tqdm
+        t24 = []
+        t27 = []
+        for t5 in tqdm.tqdm(t22):
+            t6 = t3.video_path.data[t5]
+            t7 = t3.frame_id.data[t5]
+            t8 = t3.to_dataframe().iloc[t5]
+            #pprint.pprint([t6, t7])
+            #pprint.pprint(t8)
+
+            import cv2
+            import matplotlib.pyplot
+
+            t9 = cv2.VideoCapture(t6)
+            t9.set(cv2.CAP_PROP_POS_FRAMES, t7)
+            t10 = t9.read()
+            t9.release()
+            t11 = t10[1]
+            t12 = cv2.cvtColor(t11, cv2.COLOR_BGR2RGB)
+            t13 = t12.copy()
+
+            t50.append(
+                dict(
+                    t2=t2,
+                    t28=t28,
+                    t5=t5,
+                    t7=t7,
+                    t12=t12,
+                )
+            )
+
+    return dict(
+        t50=t50,
+    )
