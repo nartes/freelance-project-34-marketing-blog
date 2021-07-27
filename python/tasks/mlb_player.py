@@ -1586,3 +1586,33 @@ def kernel_22(o_18):
     return dict(
         t4=t12,
     )
+
+def kernel_23(o_18, o_22, ids=None):
+    import numpy
+
+    if ids is None:
+        ids = numpy.s_[:]
+
+    t1 = numpy.arange(len(o_22['t4']))
+    t2 = t1[ids]
+
+def kernel_24(img, keypoints):
+    t3 = img.copy()
+
+    if o_21 is None:
+        o_21 = kernel_21()
+
+    import cv2
+    import numpy
+    import os
+
+    for i, o2 in enumerate(o_21['p_color']):
+        if i >= 17:
+            print('fuck %d' % i)
+            continue
+        o1 = keypoints[i, :]
+        cv2.circle(t3, tuple(keypoints[:2].astype(numpy.int32)), 3, o2, -1)
+
+    return dict(
+        t3=t3,
+    )
