@@ -1622,6 +1622,7 @@ def kernel_23(o_18, o_22, ids=None):
     t1 = numpy.arange(len(o_22['t4']))
     t2 = t1[ids]
 
+    pprint.pprint(ids)
     t7 = []
     for o in t2:
         t3 = o_18['t4'][o]
