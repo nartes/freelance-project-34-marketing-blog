@@ -1316,7 +1316,7 @@ def kernel_19(o_18):
     t3 = 'kernel_19-output.dir'
     os.makedirs(t3, exist_ok=True)
     t6 = []
-    for i, o in tqdm.tqdm(enumerate(o_18['t2'])):
+    for i, o in tqdm.tqdm(enumerate(o_18['t2']['t6'])):
         t4 = 'image-%03d.jpg' % i
         t5 = os.path.join(t3, t4)
         cv2.imwrite(t5, o)
