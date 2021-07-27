@@ -1563,7 +1563,11 @@ def kernel_22(o_18):
         t4=t12,
     )
 
-def kernel_24(img, keypoints):
+def kernel_24(
+    img,
+    keypoints,
+    o_21=None,
+):
     t3 = img.copy()
 
     if o_21 is None:
