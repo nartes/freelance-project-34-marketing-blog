@@ -1415,6 +1415,56 @@ def kernel_21():
     )
 
 def kernel_22(o_18):
+    def get_angle(a,b):
+        from math import sqrt, acos, degrees, atan, degrees
+        #print(a)
+        #print(b)
+        del_y = a[1]-b[1]
+        del_x = b[0]-a[0]
+        if del_x == 0:
+            del_x = 0.1
+        #print("Del_X : "+str(del_x)+"-----Del_Y: "+str(del_y))
+        angle = 0
+
+        if del_x > 0 and del_y > 0:
+            angle = degrees(atan(del_y / del_x))
+        elif del_x < 0 and del_y > 0:
+            angle = degrees(atan(del_y / del_x)) + 180
+
+        return angle
+
+    def angle_gor(a,b,c,d):
+        from math import sqrt, acos, degrees, atan, degrees
+        ab=[a[0]-b[0],a[1]-b[1]]
+        ab1=[c[0]-d[0],c[1]-d[1]]
+        cos=abs(ab[0]*ab1[0]+ab[1]*ab1[1])/(sqrt(ab[0]**2+ab[1]**2)*sqrt(ab1[0]**2+ab1[1]**2))
+        ang = acos(cos)
+        return ang*180/np.pi
+
+
+    def sit_ang(a,b,c,d):
+        ang=angle_gor(a,b,c,d)
+        s1=0
+        if ang != None:
+            #print("Angle",ang)
+            if ang < 120 and ang>40:
+                s1=1
+        return s1
+
+    def sit_rec(a,b,c,d):
+        from math import sqrt, acos, degrees, atan, degrees
+
+        ab = [a[0] - b[0], a[1] - b[1]]
+        ab1 = [c[0] - d[0], c[1] - d[1]]
+        l1=sqrt(ab[0]**2+ab[1]**2)
+        l2=sqrt(ab1[0]**2+ab1[1]**2)
+        s=0
+        if l1!=0 and l2!=0:
+            #print(l1,l2, "---------->>>")
+            if l2/l1>=1.5:
+                s=1
+        return s
+
     t1 = o_18['t2']['t7']
     t2 = [
         numpy.array(o['keypoints']).reshape(17, 3)
@@ -1453,6 +1503,74 @@ def kernel_22(o_18):
         )
         for i, o in enumerate(t1)
     ]
+
+    for i, o in enumerate(t4):
+        t1 = o['keypoints']
+        t2 = get_angle(
+            t1[3, :2],
+            t1[4, :2],
+        )
+        t3 = get_angle(
+            t1[6, :2],
+            t1[7, :2],
+        )
+        t4 = 0
+        if 30 < t2 and t2 < 150:
+            t4 = 1
+        t5 = 0
+        if 30 < t3 and t3 < 150:
+            t5 = 1
+        t6 = t4 + t6
+        t7 = 0
+        if t6 == 1:
+            t7 = 1
+        t8 = 0
+        t8 += sit_rec(
+            t1[9, :2],
+            t1[10, :2],
+            t1[10, :2],
+            t1[11, :2],
+        )
+        t8 += sit_rec(
+            t1[12, :2],
+            t1[13, :2],
+            t1[13, :2],
+            t1[14, :2],
+        )
+        t9 = 0
+        t9 += sit_ang(
+            t1[9, :2],
+            t1[10, :2],
+            t1[10, :2],
+            t1[11, :2],
+        )
+        t9 += sit_ang(
+            t1[12, :2],
+            t1[13, :2],
+            t1[13, :2],
+            t1[14, :2],
+        )
+        t10 = 0
+        if t8 > 0 or t9 > 0:
+            t10 = 1
+        t11 = 0
+        if t8 == 0 and t9 == 0:
+            t11 = 1
+        o.update(
+            dict(
+                t2=t2,
+                t3=t3,
+                t4=t4,
+                t6=t6,
+                t6=t6,
+                t7=t7,
+                t8=t8,
+                t9=t9,
+                t10=t10,
+                t11=t11,
+            )
+        )
+
 
     return dict(
         t4=t4,
