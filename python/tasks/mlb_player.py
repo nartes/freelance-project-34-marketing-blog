@@ -1361,6 +1361,6 @@ def kernel_20(o_18):
 
     for i, o2 in enumerate(p_color):
         o1 = t1[i, :]
-        cv2.circle(t3, tuple(o1[:2]), 3, o2, -1)
+        cv2.circle(t3, tuple(o1[:2].astype(numpy.int32)), 3, o2, -1)
     cv2.imwrite('output.jpg', cv2.cvtColor(t3, cv2.COLOR_RGB2BGR))
     cv2.imwrite('output-v2.jpg', cv2.cvtColor(t2, cv2.COLOR_RGB2BGR))
