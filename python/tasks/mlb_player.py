@@ -1504,7 +1504,7 @@ def kernel_22(o_18):
                 t10=t10,
             )
         )
-    t4 = [
+    t12 = [
         dict(
             square=t3[i]['t8'],
             total=t3[i]['t10'],
@@ -1515,7 +1515,7 @@ def kernel_22(o_18):
         for i, o in enumerate(t1)
     ]
 
-    for i, o in enumerate(t4):
+    for i, o in enumerate(t12):
         t1 = o['keypoints']
         t2 = get_angle(
             t1[3, :2],
@@ -1584,5 +1584,5 @@ def kernel_22(o_18):
 
 
     return dict(
-        t4=t4,
+        t4=t12,
     )
