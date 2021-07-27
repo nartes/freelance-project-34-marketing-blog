@@ -1360,6 +1360,9 @@ def kernel_20(o_18):
     assert o_18['t2']['t7'][0]['image_id'] == os.path.split(o_18['t2']['t1'][0]['image_name'])[1]
 
     for i, o2 in enumerate(p_color):
+        if i >= 17:
+            print('fuck %d' % i)
+            continue
         o1 = t1[i, :]
         cv2.circle(t3, tuple(o1[:2].astype(numpy.int32)), 3, o2, -1)
     cv2.imwrite('output.jpg', cv2.cvtColor(t3, cv2.COLOR_RGB2BGR))
