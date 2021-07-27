@@ -1625,7 +1625,7 @@ def kernel_23(o_18, o_22, ids=None):
     pprint.pprint(ids)
     t7 = []
     for o in t2:
-        t3 = o_18['t4'][o]
+        t3 = o_22['t4'][o]
         t4 = [
             o['image_canvas']
             for o in o_18['t2']['t1']
