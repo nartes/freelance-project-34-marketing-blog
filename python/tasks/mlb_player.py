@@ -1438,7 +1438,17 @@ def kernel_22(o_18):
         from math import sqrt, acos, degrees, atan, degrees
         ab=[a[0]-b[0],a[1]-b[1]]
         ab1=[c[0]-d[0],c[1]-d[1]]
-        cos=abs(ab[0]*ab1[0]+ab[1]*ab1[1])/(sqrt(ab[0]**2+ab[1]**2)*sqrt(ab1[0]**2+ab1[1]**2))
+        cos = \
+            abs(
+                ab[0] * ab1[0] + ab[1] * ab1[1]
+            ) / (
+                sqrt(
+                    ab[0] ** 2 + ab[1] ** 2
+                ) * \
+                sqrt(
+                    ab1[0] ** 2 + ab1[1] ** 2
+                ) + 1e-8
+            )
         ang = acos(cos)
         return ang*180/np.pi
 
