@@ -1353,4 +1353,4 @@ def kernel_20(o_18):
     t1 = o_18['t2']['t7'][0]['keypoints']
     t2 = o_18['t2']['t6'][0]
     t3 = o_18['t2']['t1'][0]['image_canvas']
-    assert o_18['t2']['t7'][0]['image_id'] == os.path.split(o_18['t2']['t1'][0])[1]
+    assert o_18['t2']['t7'][0]['image_id'] == os.path.split(o_18['t2']['t1'][0]['image_name'])[1]
