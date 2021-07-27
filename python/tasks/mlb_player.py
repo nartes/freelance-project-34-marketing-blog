@@ -1421,17 +1421,33 @@ def kernel_22(o_18):
         for o in t1
     ]
     t3 = []
-    for o in t2:
+    for i, o in enumerate(t2):
         t4 = numpy.min(o[0])
         t5 = numpy.max(o[0])
         t6 = numpy.min(o[1])
         t7 = numpy.max(o[1])
 
         t8 = (t5 - t4) * (t7 - t6)
-        t3.append(t8)
+
+        t9 = [
+            o['image_canvas'].shape
+            for o in o_18['t2']['t1']
+            if o['image_name'] == t1[i]['image_id']
+        ]
+        t10 = t9[0][0] * t9[0][1]
+        assert len(t9) == 1
+        t3.append(
+            dict(
+                t8=t8,
+                t9=t9,
+                t10=t10,
+            )
+        )
     t4 = [
         dict(
-            square=t3[i],
+            square=t3[i]['t8'],
+            total=t3[i]['t10'],
+            portion=t3[i]['t8'] / (t3[i]['t10'] + 1e-8),
             keypoints=t2[i],
             image_name=o['image_id'],
         )
