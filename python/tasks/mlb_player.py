@@ -1582,7 +1582,7 @@ def kernel_24(
             print('fuck %d' % i)
             continue
         o1 = keypoints[i, :]
-        cv2.circle(t3, tuple(keypoints[:2].astype(numpy.int32)), 3, o2, -1)
+        cv2.circle(t3, tuple(o1[:2].astype(numpy.int32)), 3, o2, -1)
 
     return dict(
         t3=t3,
