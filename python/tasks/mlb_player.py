@@ -1308,32 +1308,8 @@ def kernel_18(o_17):
     )
 
 def kernel_19(o_18):
-    import tqdm
-    import os
-    import cv2
-    import subprocess
-
-    t3 = 'kernel_19-output.dir'
-    os.makedirs(t3, exist_ok=True)
-    t6 = []
-    for i, o in tqdm.tqdm(enumerate(o_18['t2']['t6'])):
-        t4 = 'image-%03d.jpg' % i
-        t5 = os.path.join(t3, t4)
-        cv2.imwrite(t5, o)
-        t6.append(t5)
-
-    t7 = os.path.join(t3, 'output.gif')
-
-    subprocess.check_call(
-        [
-            'convert',
-            '-delay',
-            '100',
-            '-loop',
-            '0',
-            *t6,
-            t7,
-        ]
+    kernel_25(
+        o_18['t2']['t6'][
     )
 
 def kernel_20(
@@ -1587,15 +1563,6 @@ def kernel_22(o_18):
         t4=t12,
     )
 
-def kernel_23(o_18, o_22, ids=None):
-    import numpy
-
-    if ids is None:
-        ids = numpy.s_[:]
-
-    t1 = numpy.arange(len(o_22['t4']))
-    t2 = t1[ids]
-
 def kernel_24(img, keypoints):
     t3 = img.copy()
 
@@ -1616,3 +1583,56 @@ def kernel_24(img, keypoints):
     return dict(
         t3=t3,
     )
+
+def kernel_25(images):
+    import tqdm
+    import os
+    import cv2
+    import subprocess
+
+    t3 = 'kernel_25-output.dir'
+    os.makedirs(t3, exist_ok=True)
+    t6 = []
+    for i, o in tqdm.tqdm(enumerate(images)):
+        t4 = 'image-%03d.jpg' % i
+        t5 = os.path.join(t3, t4)
+        cv2.imwrite(t5, o)
+        t6.append(t5)
+
+    t7 = os.path.join(t3, 'output.gif')
+
+    subprocess.check_call(
+        [
+            'convert',
+            '-delay',
+            '100',
+            '-loop',
+            '0',
+            *t6,
+            t7,
+        ]
+    )
+
+def kernel_23(o_18, o_22, ids=None):
+    import numpy
+
+    if ids is None:
+        ids = numpy.s_[:]
+
+    t1 = numpy.arange(len(o_22['t4']))
+    t2 = t1[ids]
+
+    t7 = []
+    for o in t2:
+        t3 = o_18['t4'][o]
+        t4 = [
+            o['image_canvas']
+            for o in o_18['t2']['t1']
+            if o['image_name'] == t1[i]['image_id']
+        ]
+        assert len(t4) == 1
+        t5 = t4[0]
+        t6 = kernel_24(t5, t3['keypoints'])
+        t7.append(t6['t3'])
+
+    kernel_25(t7)
