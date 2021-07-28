@@ -1683,6 +1683,8 @@ def kernel_27():
         t2 = os.path.join(t3, 'slice-%d' % i)
         os.makedirs(t2, exist_ok=True)
         t4 = os.path.join(t2, 'output.mp4')
+        if os.path.exists(t4):
+            os.unlink(t4)
         with subprocess.Popen([
             'ffmpeg',
             '-i',
