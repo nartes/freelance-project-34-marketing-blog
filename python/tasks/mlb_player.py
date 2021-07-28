@@ -1707,7 +1707,7 @@ def kernel_27():
                 --checkpoint pretrained_models/fast_res50_256x192.pth \
                 --video %s \
                 --outdir %s
-        ''' % (t4, t2), stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
+        ''' % (t4, t2), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
             pprint.pprint(p.communicate())
             p.wait()
             assert p.returncode == 0
