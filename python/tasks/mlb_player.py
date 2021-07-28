@@ -1604,7 +1604,8 @@ def kernel_25(images):
     for i, o in tqdm.tqdm(enumerate(images)):
         t4 = 'image-%03d.jpg' % i
         t5 = os.path.join(t3, t4)
-        cv2.imwrite(t5, o)
+        t8 = cv2.cvtColor(o, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(t5, t8)
         t6.append(t5)
 
     t7 = os.path.join(t3, 'output.gif')
