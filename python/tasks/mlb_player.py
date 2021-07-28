@@ -1695,7 +1695,8 @@ def kernel_27():
             '%d' % (t1[1] - t1[0]),
             '%s' % t4,
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
-            pprint.pprint(p.communicate())
+            if False:
+                pprint.pprint(p.communicate())
             p.wait()
             assert p.returncode == 0
 
@@ -1710,6 +1711,7 @@ def kernel_27():
         ''' % (t4, t2)
         pprint.pprint([t4, t2, t6])
         with subprocess.Popen(t6, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
-            pprint.pprint(p.communicate())
+            if False:
+                pprint.pprint(p.communicate())
             p.wait()
             assert p.returncode == 0
