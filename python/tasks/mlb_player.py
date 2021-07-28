@@ -1689,6 +1689,8 @@ def kernel_27():
             'ffmpeg',
             '-i',
             '%s' % t5,
+            '-filter:v',
+            'fps=fps=7',
             '-ss',
             '%d' % t1[0],
             '-t',
