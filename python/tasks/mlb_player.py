@@ -1209,7 +1209,7 @@ def kernel_16(images):
         t4,
     ])
 
-    assert os.system(r'''
+    with subprocess.Popen('''
         cd /kaggle/working/AlphaPose &&
         python3 \
             scripts/demo_inference.py \
@@ -1218,7 +1218,10 @@ def kernel_16(images):
             --indir %s \
             --outdir %s \
             --save_img
-    ''' % (t2, t4)) == 0, 'fuck'
+    ''' % (t2, t4), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+
+        pprint.pprint(p.communicate())
+        p.wait()
 
     t6 = []
     with io.open(
