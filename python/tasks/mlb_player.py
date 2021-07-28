@@ -1645,7 +1645,7 @@ def kernel_23(o_18, o_22, ids=None):
     t7 = []
     for o in tqdm.tqdm(t2):
         t3 = o_22['t4'][o]
-        t9 = kernel_26(o_18=o_18, t3['image_name'])
+        t9 = kernel_26(o_18=o_18, image_name=t3['image_name'])
         t4 = o_18['t2']['t1'][t9]['image_canvas']
         t10 = o_18['t2']['t6'][t9]
         t4 = [
