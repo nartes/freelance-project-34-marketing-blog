@@ -1699,7 +1699,7 @@ def kernel_27():
             p.wait()
             assert p.returncode == 0
 
-        with subprocess.Popen('''
+        t6 = '''
             cd /kaggle/working/AlphaPose && \
             python3 \
                 scripts/demo_inference.py \
@@ -1707,7 +1707,9 @@ def kernel_27():
                 --checkpoint pretrained_models/fast_res50_256x192.pth \
                 --video %s \
                 --outdir %s
-        ''' % (t4, t2), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
+        ''' % (t4, t2)
+        pprint.pprint([t4, t2, t6])
+        with subprocess.Popen(, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
             pprint.pprint(p.communicate())
             p.wait()
             assert p.returncode == 0
