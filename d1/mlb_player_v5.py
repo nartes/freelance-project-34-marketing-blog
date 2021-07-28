@@ -2,6 +2,7 @@ import os
 
 if os.system(r''' pip show alphapose''') != 0:
     t1 = r'''
+    pip install pycocotools
     rm -fr /kaggle/working/AlphaPose
     pip install pyyaml==5.2
     pip install scipy==1.1.0
