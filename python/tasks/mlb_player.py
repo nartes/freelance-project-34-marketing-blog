@@ -1672,6 +1672,8 @@ def kernel_23(o_18, o_22, ids=None):
 def kernel_27():
     import tqdm
     import os
+    import subprocess
+    import pprint
 
     t5 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
     t3 = 'kernel_27-output.dir'
@@ -1681,13 +1683,17 @@ def kernel_27():
         t2 = os.path.join(t3, 'slice-%d' % i)
         os.makedirs(t2, exist_ok=True)
         t4 = os.path.join(t2, 'output.mp4')
-        assert os.system(r'''
+        with subprocess.Popen('''
             ffmpeg \
                 -i %s \
                 -ss %d \
                 -t %d \
                 %s
-        ''' % (t5, t1[0], t1[1] - t1[0], t4)) == 0
+        ''' % (t5, t1[0], t1[1] - t1[0], t4), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
+            pprint.pprint(p.communicate())
+            p.wait()
+            assert p.returncode == 0
+
         assert os.system(r'''
             cd /kaggle/working/AlphaPose && \
             python3 \
