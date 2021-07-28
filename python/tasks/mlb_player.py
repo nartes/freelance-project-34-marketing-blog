@@ -1676,7 +1676,7 @@ def kernel_27():
     import pprint
 
     t5 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
-    t3 = 'kernel_27-output.dir'
+    t3 = '/kaggle/working/kernel_27-output.dir'
     os.makedirs(t3, exist_ok=True)
     for i in tqdm.tqdm(range(100)):
         t1 = [5 * i, 5 * i + 5]
