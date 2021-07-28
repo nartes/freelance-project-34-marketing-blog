@@ -1709,7 +1709,8 @@ def kernel_27():
                 --video %s \
                 --outdir %s
         ''' % (t4, t2)
-        pprint.pprint([t4, t2, t6])
+        if False:
+            pprint.pprint([t4, t2, t6])
         with subprocess.Popen(t6, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
             if False:
                 pprint.pprint(p.communicate())
