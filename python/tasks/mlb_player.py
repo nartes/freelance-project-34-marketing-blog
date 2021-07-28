@@ -1250,7 +1250,13 @@ def kernel_16(images):
         t7=t7,
     )
 
-def kernel_17(o_14):
+def kernel_17(
+    o_14,
+    max_images=None,
+):
+    if max_images is None:
+        max_images = 10
+
     t50 = []
     for t2 in [
         'baseball glove',
@@ -1267,7 +1273,7 @@ def kernel_17(o_14):
             os.makedirs(t30, exist_ok=True)
 
         numpy.random.seed(0)
-        t22 = numpy.random.choice(t4, 10)
+        t22 = numpy.random.choice(t4, max_images)
         pprint.pprint(t22)
         import tqdm
         t24 = []
@@ -1294,6 +1300,7 @@ def kernel_17(o_14):
                 dict(
                     t2=t2,
                     t28=t28,
+                    t6=t6,
                     t5=t5,
                     t7=t7,
                     t12=t12,
