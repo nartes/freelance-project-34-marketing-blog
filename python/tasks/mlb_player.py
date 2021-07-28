@@ -1218,7 +1218,7 @@ def kernel_16(images):
             --indir %s \
             --outdir %s \
             --save_img
-    ''' % (t2, t4)) == 0
+    ''' % (t2, t4)) == 0, 'fuck'
 
     t6 = []
     with io.open(
