@@ -41,11 +41,12 @@ for o1, o2 in [
     ),
 ]:
     os.makedirs(os.path.split(o2)[0], exist_ok=True)
-    gdown.download(
-        'https://drive.google.com/u/0/uc?export=download&confirm=f_Ix&id=%s' % o1,
-        o2,
-        quiet=False
-    )
+	if not os.path.exists(o2):
+		gdown.download(
+			'https://drive.google.com/u/0/uc?export=download&confirm=f_Ix&id=%s' % o1,
+			o2,
+			quiet=False
+		)
 
 
 assert os.system(r'''
