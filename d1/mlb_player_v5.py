@@ -1,19 +1,19 @@
 import os
 
 if os.system(r''' pip show alphapose''') != 0:
-	t1 = r'''
-	rm -fr /kaggle/working/AlphaPose
-	pip install pyyaml==5.2
-	pip install scipy==1.1.0
-	git clone https://github.com/WildflowerSchools/AlphaPose
-	python -m pip install cython gdown
-	apt-get install libyaml-dev
-	cd /kaggle/working/AlphaPose && python setup.py build develop
-	'''
+    t1 = r'''
+    rm -fr /kaggle/working/AlphaPose
+    pip install pyyaml==5.2
+    pip install scipy==1.1.0
+    git clone https://github.com/WildflowerSchools/AlphaPose
+    python -m pip install cython gdown
+    apt-get install libyaml-dev
+    cd /kaggle/working/AlphaPose && python setup.py build develop
+    '''
 
-	for o in t1.splitlines():
-		print(o)
-		assert os.system(o) == 0
+    for o in t1.splitlines():
+        print(o)
+        assert os.system(o) == 0
 
 import os
 #!git clone https://github.com/MVIG-SJTU/AlphaPose.git
@@ -41,12 +41,12 @@ for o1, o2 in [
     ),
 ]:
     os.makedirs(os.path.split(o2)[0], exist_ok=True)
-	if not os.path.exists(o2):
-		gdown.download(
-			'https://drive.google.com/u/0/uc?export=download&confirm=f_Ix&id=%s' % o1,
-			o2,
-			quiet=False
-		)
+    if not os.path.exists(o2):
+        gdown.download(
+            'https://drive.google.com/u/0/uc?export=download&confirm=f_Ix&id=%s' % o1,
+            o2,
+            quiet=False
+        )
 
 
 assert os.system(r'''
