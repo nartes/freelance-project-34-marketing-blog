@@ -1622,6 +1622,15 @@ def kernel_25(images):
         ]
     )
 
+def kernel_26(o_18, image_name):
+    t1 = [
+        i
+        for i, o in enumerate(o_18['t2']['t1'])
+        if o['image_name'] == image_name
+    ]
+    assert len(t1) == 1
+    return t1[0]
+
 def kernel_23(o_18, o_22, ids=None):
     import numpy
     import tqdm
@@ -1636,6 +1645,9 @@ def kernel_23(o_18, o_22, ids=None):
     t7 = []
     for o in tqdm.tqdm(t2):
         t3 = o_22['t4'][o]
+        t9 = kernel_26(o_18=o_18, t3['image_name'])
+        t4 = o_18['t2']['t1'][t9]['image_canvas']
+        t10 = o_18['t2']['t6'][t9]
         t4 = [
             o['image_canvas']
             for o in o_18['t2']['t1']
@@ -1645,5 +1657,6 @@ def kernel_23(o_18, o_22, ids=None):
         t5 = t4[0]
         t6 = kernel_24(t5, t3['keypoints'])
         t7.append(t6['t3'])
+        t7.append(t10)
 
     kernel_25(t7)
