@@ -1678,8 +1678,9 @@ def kernel_27():
     t5 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
     t3 = '/kaggle/working/kernel_27-output.dir'
     os.makedirs(t3, exist_ok=True)
-    FRAMERATE = 7
-    SLICE_LENGTH = 5 * 4
+    #R = int(round(30 / 5))
+    FRAMERATE = 4
+    SLICE_LENGTH = 5 * 6
     for i in tqdm.tqdm(range(100)):
         t1 = [SLICE_LENGTH * i, SLICE_LENGTH * (i + 1)]
         t2 = os.path.join(t3, 'slice-%d' % i)
