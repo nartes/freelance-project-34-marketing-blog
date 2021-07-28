@@ -1690,7 +1690,7 @@ def kernel_27():
             '-ss',
             '%d' % t1[0],
             '-t',
-            '%d' % t1[1] - t1[0],
+            '%d' % (t1[1] - t1[0]),
             '%s' % t4,
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
             pprint.pprint(p.communicate())
