@@ -1683,13 +1683,16 @@ def kernel_27():
         t2 = os.path.join(t3, 'slice-%d' % i)
         os.makedirs(t2, exist_ok=True)
         t4 = os.path.join(t2, 'output.mp4')
-        with subprocess.Popen('''
-            ffmpeg \
-                -i %s \
-                -ss %d \
-                -t %d \
-                %s
-        ''' % (t5, t1[0], t1[1] - t1[0], t4), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
+        with subprocess.Popen([
+            'ffmpeg',
+            '-i',
+            '%s' % t5,
+            '-ss',
+            '%d' % t1[0],
+            '-t',
+            '%d' % t1[1] - t1[0],
+            '%s' % t4,
+        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
             pprint.pprint(p.communicate())
             p.wait()
             assert p.returncode == 0
