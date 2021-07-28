@@ -1668,3 +1668,32 @@ def kernel_23(o_18, o_22, ids=None):
         t7.append(t10)
 
     kernel_25(t7)
+
+def kernel_27():
+    import tqdm
+    import os
+
+    t5 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
+    t3 = 'kernel_27-output.dir'
+    os.makedirs(t3, exist_ok=True)
+    for i in tqdm.tqdm(range(100)):
+        t1 = [5 * i, 5 * i + 5]
+        t2 = os.path.join(t3, 'slice-%d' % i)
+        os.makedirs(t2, exist_ok=True)
+        t4 = os.path.join(t2, 'output.mp4')
+        assert os.system(r'''
+            ffmpeg \
+                -i %s \
+                -ss %d \
+                -t %d \
+                %s
+        ''' % (t5, t1[0], t1[1] - t1[0], t4)) == 0
+        assert os.system(r'''
+            cd /kaggle/working/AlphaPose && \
+            python3 \
+                scripts/demo_inference.py \
+                --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml \
+                --checkpoint pretrained_models/fast_res50_256x192.pth \
+                --video %s \
+                --outdir %s
+        ''' % (t4, t2)) == 0
