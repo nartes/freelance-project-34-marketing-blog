@@ -1709,7 +1709,7 @@ def kernel_27():
                 --outdir %s
         ''' % (t4, t2)
         pprint.pprint([t4, t2, t6])
-        with subprocess.Popen(, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
+        with subprocess.Popen(t6, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
             pprint.pprint(p.communicate())
             p.wait()
             assert p.returncode == 0
