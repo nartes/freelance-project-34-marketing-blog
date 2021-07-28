@@ -1222,6 +1222,7 @@ def kernel_16(images):
 
         pprint.pprint(p.communicate())
         p.wait()
+        assert p.returncode == 0
 
     t6 = []
     with io.open(
