@@ -1241,7 +1241,8 @@ def kernel_16(images):
         )
         assert os.path.exists(t9)
         t10 = cv2.imread(t9, cv2.IMREAD_COLOR)
-        t6.append(t10)
+        t11 = cv2.cvtColor(t10, cv2.COLOR_BGR2RGB)
+        t6.append(t11)
     return dict(
         images=images,
         t1=t1,
