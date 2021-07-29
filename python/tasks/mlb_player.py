@@ -1751,14 +1751,16 @@ def kernel_28():
 
             t8 = numpy.array([t1[0] * fps, t1[1] * fps]).astype(numpy.int32)
             cap.set(cv2.CAP_PROP_POS_FRAMES, t8[0])
+            t12 = numpy.arange(t8[0], t8[1], SLICE_LENGTH * FRAMERATE)
             for k in range(t8[1] - t8[0]):
                 ret, frame = cap.read()
                 t11 = cap.get(cv2.CAP_PROP_POS_FRAMES)
-                t10 = os.path.join(
-                    t2,
-                    'frame-%d.jpg' % t11,
-                )
-                cv2.imwrite(t10, frame)
+                if numpy.isin(t11, t12):
+                    t10 = os.path.join(
+                        t2,
+                        'frame-%d.jpg' % t11,
+                    )
+                    cv2.imwrite(t10, frame)
 
             t6 = '''
                 cd /kaggle/working/AlphaPose && \
