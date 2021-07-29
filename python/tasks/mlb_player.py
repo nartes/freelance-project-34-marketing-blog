@@ -1849,7 +1849,13 @@ def kernel_30(o_29, ids=None, delay=None,):
             [
                 o_29['t5'].portion > 0.02,
                 o_29['t5'].min_conf > 0.4,
-                o_29['t5']['t7'].data > 0,
+                numpy.stack(
+                    [
+                        o_29['t5']['t4'].data > 0,
+                        o_29['t5']['t5'].data > 0,
+                    ],
+                    axis=0
+                ).sum(axis=0) > 0,
             ],
             axis=0
         ).prod(axis=0)
