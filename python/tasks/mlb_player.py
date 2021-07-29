@@ -1001,7 +1001,7 @@ def kernel_14(
     o_4 = kernel_4(o_3=o_3)
     o_5 = kernel_5(o_4=o_4)
 
-    if skip_o_7_10_12_13:
+    if not skip_o_7_10_12_13:
         o_7 = kernel_7()
 
         o_10 = kernel_10()
@@ -1021,7 +1021,7 @@ def kernel_14(
     else:
         o_6 = None
 
-    if skip_o_7_10_12_13:
+    if not skip_o_7_10_12_13:
         o_13 = kernel_13(
             o_6=o_6,
         )
