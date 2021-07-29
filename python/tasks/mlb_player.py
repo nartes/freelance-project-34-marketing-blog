@@ -1789,32 +1789,37 @@ def kernel_28():
             cap.release()
 
 def kernel_29():
-    t4 = '/kaggle/working/kernel_29-poses.nc'
+    t4 = '/kaggle/working/kernel_29-poses.json'
 
     if not os.path.exists(t4):
         import json
         import io
         import glob
 
-        t1 = sum(
-            [
-                json.load(
+        t1 = [
+            dict(
+                data=json.load(
                     io.open(
                         o,
                         'r'
                     )
-                ) for o in glob.glob(
-                    '/kaggle/working/kernel_28-output.dir/slice-*/*.json'
-                )
-            ],
-            []
-        )
-        t2 = pandas.DataFrame(t1)
+                ),
+                input_path=o
+            )
+            for o in glob.glob(
+                '/kaggle/working/kernel_28-output.dir/slice-*/*.json'
+            )
+        ]
+        with io.open(t4, 'w') as f:
+            f.write(json.dumps(t1)
 
-        t3 = t2.to_xarray()
-        t3.to_netcdf(t4)
+    with io.open(t4, 'r') as f:
+        t1 = json.load(f)
 
-    t5 = xarray.load_dataset(t4)
+    t2 = pandas.DataFrame(t1)
+
+    t5 = t2.to_xarray()
+
     return dict(
         t5=t5,
     )
