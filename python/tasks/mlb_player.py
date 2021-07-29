@@ -1844,6 +1844,26 @@ def kernel_30(o_29, ids=None, delay=None,):
             ids,
             o_29['t5'].sel(index=o_29['t5'].index.data[ids[:5]]).to_dict(),
         ])
+    elif ids == 'v7':
+        t8 = numpy.stack(
+            [
+                o_29['t5'].portion > 0.02,
+                o_29['t5'].min_conf > 0.4,
+                o_29['t5']['t7'].data > 0,
+            ],
+            axis=0
+        ).prod(axis=0)
+        ids = numpy.random.choice(
+            numpy.where(t8)[0],
+            min(70, t8.sum()),
+            replace=False,
+        )
+        pprint.pprint([
+            t8.sum(),
+            t8.mean(),
+            ids,
+            o_29['t5'].sel(index=o_29['t5'].index.data[ids[:5]]).to_dict(),
+        ])
     else:
         assert isinstance(ids, numpy.ndarray)
 
