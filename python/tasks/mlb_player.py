@@ -1731,6 +1731,7 @@ def kernel_28():
 
     t5 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
     t3 = '/kaggle/working/kernel_28-output.dir'
+    t13 = '/root/kernel_28-output.dir/tmp-slice'
     os.makedirs(t3, exist_ok=True)
 
     cap = None
@@ -1746,8 +1747,10 @@ def kernel_28():
         SLICE_LENGTH = 5 * 6
         for i in tqdm.tqdm(range(100)):
             t1 = [SLICE_LENGTH * i, SLICE_LENGTH * (i + 1)]
-            t2 = os.path.join(t3, 'slice-%d' % i)
-            os.makedirs(t2, exist_ok=True)
+
+            if os.path.exists(t13):
+                subprocess.check_call(['rm', '-fr', t13])
+            os.makedirs(t13, exist_ok=True)
 
             t8 = numpy.array([t1[0] * fps, t1[1] * fps]).astype(numpy.int32)
             cap.set(cv2.CAP_PROP_POS_FRAMES, t8[0])
@@ -1757,10 +1760,13 @@ def kernel_28():
                 t11 = cap.get(cv2.CAP_PROP_POS_FRAMES)
                 if numpy.isin(t11, t12):
                     t10 = os.path.join(
-                        t2,
+                        t13,
                         'frame-%d.jpg' % t11,
                     )
                     cv2.imwrite(t10, frame)
+
+            t2 = os.path.join(t3, 'slice-%d' % i)
+            os.makedirs(t2, exist_ok=True)
 
             t6 = '''
                 cd /kaggle/working/AlphaPose && \
@@ -1770,7 +1776,7 @@ def kernel_28():
                     --checkpoint pretrained_models/fast_res50_256x192.pth \
                     --indir %s \
                     --outdir %s
-            ''' % (t2, t2)
+            ''' % (t13, t2)
             if False:
                 pprint.pprint([t4, t2, t6])
             with subprocess.Popen(t6, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
