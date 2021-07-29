@@ -1837,9 +1837,13 @@ def kernel_29():
         for o in t1
     ], [])
     t10 = re.compile('frame-(\d+)\.jpg')
+
+    for i, o in enumerate(t8):
+        o['frame_id'] = int(t10.match(o['image_id'])[1])
+
     t9 = sorted(
         t8,
-        key=lambda o: int(t10.match(o['image_id'])[1])
+        key=lambda o: o['frame_id']
     )
 
     t2 = pandas.DataFrame(t9)
@@ -1858,3 +1862,28 @@ def kernel_29():
         t2=t2,
         t9=t9,
     )
+
+def kernel_30(o_29, ids=None):
+    t5 = o_29['t5']
+    if ids is None:
+        numpy.random.seed(0)
+        t1 = numpy.random.choice(
+            t5.index.shape[0],
+            10
+        )
+
+    t7 = []
+
+    for o in t1:
+        t2 = t5.keypoints.data[o]
+        t3 = t5.frame_id.data[o]
+
+        cap = None
+        try:
+            cap = cv2.VideoCapture('/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4')
+            cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
+            ret, frame = cap.read()
+            t4 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            t6 = kernel_24(t4, t2)['t3']
+            t7.append(t6)
+    kernel_25(t7)
