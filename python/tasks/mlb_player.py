@@ -1839,7 +1839,7 @@ def kernel_29():
     t10 = re.compile('frame-(\d+)\.jpg')
     t9 = sorted(
         t8,
-        key=lambda o: int(t10.match(o['image_id'])[0])
+        key=lambda o: int(t10.match(o['image_id'])[1])
     )
 
     t2 = pandas.DataFrame(t9)
