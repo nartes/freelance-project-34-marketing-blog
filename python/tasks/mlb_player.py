@@ -1841,7 +1841,8 @@ def kernel_30(o_29, ids=None, delay=None,):
         pprint.pprint([
             t8.sum(),
             t8.mean(),
-            o_29['t5'].sel(index=o_29['t5'].index.data[ids]).to_dict(),
+            ids,
+            o_29['t5'].sel(index=o_29['t5'].index.data[ids[:5]]).to_dict(),
         ])
     else:
         assert isinstance(ids, numpy.ndarray)
