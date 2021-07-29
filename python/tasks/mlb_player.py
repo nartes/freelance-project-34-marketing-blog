@@ -1,4 +1,7 @@
 import pprint
+import json
+import io
+import glob
 import xarray
 import numpy
 import json
@@ -1802,9 +1805,6 @@ def kernel_29():
     ]
 
     if len(t7) == 0:
-        import json
-        import io
-        import glob
 
         t1 = [
             dict(
