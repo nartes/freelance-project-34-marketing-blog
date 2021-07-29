@@ -1857,7 +1857,7 @@ def kernel_31(image_id, image_size, keypoints):
             keypoints=keypoints[i],
             image_name=image_id[i],
         )
-        for i, o in enumerate(t1)
+        for i in range(len(t3))
     ]
 
     for i, o in enumerate(t12):
