@@ -1474,7 +1474,10 @@ def kernel_24(
         t3=t3,
     )
 
-def kernel_25(images):
+def kernel_25(images, delay=None):
+    if delay is None:
+        delay = 100
+
     import tqdm
     import os
     import cv2
@@ -1496,7 +1499,7 @@ def kernel_25(images):
         [
             'convert',
             '-delay',
-            '100',
+            '%d' % delay,
             '-loop',
             '0',
             *t6,
@@ -1743,7 +1746,7 @@ def kernel_29():
         t9=t9,
     )
 
-def kernel_30(o_29, ids=None):
+def kernel_30(o_29, ids=None, delay=None,):
     t5 = o_29['t5']
     if ids is None:
         numpy.random.seed(0)
@@ -1769,7 +1772,7 @@ def kernel_30(o_29, ids=None):
         finally:
             if not cap is None:
                 cap.release()
-    kernel_25(t7)
+    kernel_25(t7, delay=delay)
 
 def kernel_31(image_id, image_size, keypoints):
     def get_angle(a,b):
