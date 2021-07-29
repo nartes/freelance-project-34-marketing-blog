@@ -1886,4 +1886,7 @@ def kernel_30(o_29, ids=None):
             t4 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             t6 = kernel_24(t4, t2)['t3']
             t7.append(t6)
+        finally:
+            if not cap is None:
+                cap.release()
     kernel_25(t7)
