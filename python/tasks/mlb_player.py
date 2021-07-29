@@ -1748,12 +1748,28 @@ def kernel_29():
 
 def kernel_30(o_29, ids=None, delay=None,):
     t5 = o_29['t5']
+
+    if delay is None:
+        delay = 200
+
     if ids is None:
         numpy.random.seed(0)
         ids = numpy.random.choice(
             t5.index.shape[0],
             10
         )
+    elif ids == 'v1':
+        ids = =numpy.random.choice(
+            numpy.where(
+                numpy.logical_and(
+                    o_29['t5'].portion > 0.1,
+                    o_29['t5'].mean_conf > 0.6
+                )
+            )[0],
+            70
+        )
+    else:
+        assert isinstance(ids, numpy.ndarray)
 
     t7 = []
 
