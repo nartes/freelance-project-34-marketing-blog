@@ -985,10 +985,14 @@ def kernel_13(
 
 def kernel_14(
     skip_o_6=None,
+    skip_o_7_10_12_13=None,
     run_benchmark=None,
 ):
     if skip_o_6 is None:
         skip_o_6 = True
+
+    if skip_o_7_10_12_13 is None:
+        skip_o_7_10_12_13 = True
 
     if run_benchmark is None:
         run_benchmark = False
@@ -996,10 +1000,16 @@ def kernel_14(
     o_3 = kernel_3(should_exist=True)
     o_4 = kernel_4(o_3=o_3)
     o_5 = kernel_5(o_4=o_4)
-    o_7 = kernel_7()
 
-    o_10 = kernel_10()
-    o_12 = kernel_12()
+    if skip_o_7_10_12_13:
+        o_7 = kernel_7()
+
+        o_10 = kernel_10()
+        o_12 = kernel_12()
+    else:
+        o_7 = None
+        o_10 = None
+        o_12 = None
 
     if not skip_o_6:
         o_6 = kernel_6(
@@ -1011,9 +1021,12 @@ def kernel_14(
     else:
         o_6 = None
 
-    o_13 = kernel_13(
-        o_6=o_6,
-    )
+    if skip_o_7_10_12_13:
+        o_13 = kernel_13(
+            o_6=o_6,
+        )
+    else:
+        o_13 = None
 
     if run_benchmark:
         o_11 = kernel_11_benchmark(o_7=o_7, o_10=o_10)
