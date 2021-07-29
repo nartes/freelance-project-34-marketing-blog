@@ -1749,7 +1749,7 @@ def kernel_28():
             t2 = os.path.join(t3, 'slice-%d' % i)
             os.makedirs(t2, exist_ok=True)
 
-            t8 = [t1[0] * fps, t1[1] * fps]
+            t8 = numpy.array([t1[0] * fps, t1[1] * fps]).astype(numpy.int32)
             cap.set(cv2.CAP_PROP_POS_FRAMES, t8[0])
             for k in range(t8[1] - t8[0]):
                 ret, frame = cap.read()
