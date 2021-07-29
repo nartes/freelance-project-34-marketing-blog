@@ -1792,7 +1792,7 @@ def kernel_29():
     t4 = '/kaggle/working/kernel_29-poses.json'
     t6 = [
         t4,
-        '/kaggle/garbage/kernel_29-poses.json',
+        '/kaggle/input/garbage/kernel_29-poses.json',
     ]
 
     t7 = [
