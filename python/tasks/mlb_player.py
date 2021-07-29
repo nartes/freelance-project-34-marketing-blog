@@ -1421,66 +1421,6 @@ def kernel_21():
     )
 
 def kernel_22(o_18):
-    def get_angle(a,b):
-        from math import sqrt, acos, degrees, atan, degrees
-        #print(a)
-        #print(b)
-        del_y = a[1]-b[1]
-        del_x = b[0]-a[0]
-        if del_x == 0:
-            del_x = 0.1
-        #print("Del_X : "+str(del_x)+"-----Del_Y: "+str(del_y))
-        angle = 0
-
-        if del_x > 0 and del_y > 0:
-            angle = degrees(atan(del_y / del_x))
-        elif del_x < 0 and del_y > 0:
-            angle = degrees(atan(del_y / del_x)) + 180
-
-        return angle
-
-    def angle_gor(a,b,c,d):
-        import numpy as np
-        from math import sqrt, acos, degrees, atan, degrees
-        ab=[a[0]-b[0],a[1]-b[1]]
-        ab1=[c[0]-d[0],c[1]-d[1]]
-        cos = \
-            abs(
-                ab[0] * ab1[0] + ab[1] * ab1[1]
-            ) / (
-                sqrt(
-                    ab[0] ** 2 + ab[1] ** 2
-                ) * \
-                sqrt(
-                    ab1[0] ** 2 + ab1[1] ** 2
-                ) + 1e-8
-            )
-        ang = acos(cos)
-        return ang*180/np.pi
-
-
-    def sit_ang(a,b,c,d):
-        ang=angle_gor(a,b,c,d)
-        s1=0
-        if ang != None:
-            #print("Angle",ang)
-            if ang < 120 and ang>40:
-                s1=1
-        return s1
-
-    def sit_rec(a,b,c,d):
-        from math import sqrt, acos, degrees, atan, degrees
-
-        ab = [a[0] - b[0], a[1] - b[1]]
-        ab1 = [c[0] - d[0], c[1] - d[1]]
-        l1=sqrt(ab[0]**2+ab[1]**2)
-        l2=sqrt(ab1[0]**2+ab1[1]**2)
-        s=0
-        if l1!=0 and l2!=0:
-            #print(l1,l2, "---------->>>")
-            if l2/l1>=1.5:
-                s=1
-        return s
 
     t1 = o_18['t2']['t7']
     t2 = [
@@ -1831,6 +1771,67 @@ def kernel_30(o_29, ids=None):
     kernel_25(t7)
 
 def kernel_31(image_id, image_size, keypoints):
+    def get_angle(a,b):
+        from math import sqrt, acos, degrees, atan, degrees
+        #print(a)
+        #print(b)
+        del_y = a[1]-b[1]
+        del_x = b[0]-a[0]
+        if del_x == 0:
+            del_x = 0.1
+        #print("Del_X : "+str(del_x)+"-----Del_Y: "+str(del_y))
+        angle = 0
+
+        if del_x > 0 and del_y > 0:
+            angle = degrees(atan(del_y / del_x))
+        elif del_x < 0 and del_y > 0:
+            angle = degrees(atan(del_y / del_x)) + 180
+
+        return angle
+
+    def angle_gor(a,b,c,d):
+        import numpy as np
+        from math import sqrt, acos, degrees, atan, degrees
+        ab=[a[0]-b[0],a[1]-b[1]]
+        ab1=[c[0]-d[0],c[1]-d[1]]
+        cos = \
+            abs(
+                ab[0] * ab1[0] + ab[1] * ab1[1]
+            ) / (
+                sqrt(
+                    ab[0] ** 2 + ab[1] ** 2
+                ) * \
+                sqrt(
+                    ab1[0] ** 2 + ab1[1] ** 2
+                ) + 1e-8
+            )
+        ang = acos(cos)
+        return ang*180/np.pi
+
+
+    def sit_ang(a,b,c,d):
+        ang=angle_gor(a,b,c,d)
+        s1=0
+        if ang != None:
+            #print("Angle",ang)
+            if ang < 120 and ang>40:
+                s1=1
+        return s1
+
+    def sit_rec(a,b,c,d):
+        from math import sqrt, acos, degrees, atan, degrees
+
+        ab = [a[0] - b[0], a[1] - b[1]]
+        ab1 = [c[0] - d[0], c[1] - d[1]]
+        l1=sqrt(ab[0]**2+ab[1]**2)
+        l2=sqrt(ab1[0]**2+ab1[1]**2)
+        s=0
+        if l1!=0 and l2!=0:
+            #print(l1,l2, "---------->>>")
+            if l2/l1>=1.5:
+                s=1
+        return s
+
     t3 = []
     for i, o in enumerate(keypoints):
         t4 = numpy.min(o[:, 0])
