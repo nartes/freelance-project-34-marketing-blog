@@ -1034,6 +1034,7 @@ def kernel_14(
         o_8 = kernel_8(o_7=o_7)
 
     return dict(
+        o_3=o_3,
         o_13=o_13,
         o_7=o_7,
     )
