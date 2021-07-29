@@ -1768,6 +1768,22 @@ def kernel_30(o_29, ids=None, delay=None,):
             )[0],
             70
         )
+    elif ids == 'v2':
+        t8 = numpy.where(
+            numpy.stack(
+                [
+                    o_29['t5'].portion > 0.1,
+                    o_29['t5'].mean_conf > 0.6,
+                    o_29['t12'],
+                ],
+                axis=0
+            ).prod(axis=0)
+        )[0]
+        pprint.pprint([t8.sum(), t8.mean()])
+        ids = numpy.random.choice(
+            t8,
+            min(70, len(t8)),
+        )
     else:
         assert isinstance(ids, numpy.ndarray)
 
