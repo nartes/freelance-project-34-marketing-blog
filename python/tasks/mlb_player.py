@@ -1750,10 +1750,10 @@ def kernel_28():
             os.makedirs(t2, exist_ok=True)
 
             t8 = [t1[0] * fps, t1[1] * fps]
-            t9.set(cv2.CAP_PROP_POS_FRAMES, t8[0])
+            cap.set(cv2.CAP_PROP_POS_FRAMES, t8[0])
             for k in range(t8[1] - t8[0]):
                 ret, frame = cap.read()
-                t11 = t9.get(cv2.CAP_PROP_POS_FRAMES)
+                t11 = cap.get(cv2.CAP_PROP_POS_FRAMES)
                 t10 = os.path.join(
                     t2,
                     'frame-%d.jpg' % t11,
