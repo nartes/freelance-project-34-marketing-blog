@@ -1733,7 +1733,7 @@ def kernel_29():
         ] * t5.index.shape[0],
         keypoints=t5.keypoints.data,
     )
-    for k, v in o_31.items():
+    for k, v in o_31['t13'].items():
         pprint.pprint([k, v])
         t5[k] = v
 
