@@ -1786,6 +1786,15 @@ def kernel_29():
         ],
         dims=['index', 'joint', 'feature'],
     )
+    o_31 = kernel_31(
+        image_id=t5.image_id.data,
+        image_size=[
+            kernel_32('/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4')
+        ] * t5.index.shape[0],
+        keypoints=t5.keypoints.data,
+    )
+    for k, v in o_31.items():
+        t5[k] = v
 
     return dict(
         t5=t5,
@@ -1918,7 +1927,22 @@ def kernel_31(image_id, image_size, keypoints):
             )
         )
 
+    t13 = pandas.DataFrame(t12).drop(columns=['keypoints']).to_xarray()
 
     return dict(
         t12=t12,
+        t13=t13,
     )
+
+def kernel_32(video_path):
+    assert os.path.exists(video_path)
+
+    cap = None
+    try:
+        cap = cv2.VideoCapture(video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
+        ret, frame = cap.read()
+        return frame.shape
+    finally:
+        if not cap is None:
+            cap.release()
