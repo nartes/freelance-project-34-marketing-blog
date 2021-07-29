@@ -1721,3 +1721,60 @@ def kernel_27():
                 pprint.pprint(p.communicate())
             p.wait()
             assert p.returncode == 0
+
+def kernel_28():
+    import tqdm
+    import os
+    import subprocess
+    import pprint
+
+    t5 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
+    t3 = '/kaggle/working/kernel_28-output.dir'
+    os.makedirs(t3, exist_ok=True)
+
+    cap = None
+
+    try:
+        cap = cv2.VideoCapture(t5)
+        fps = cap.get(cv2.CAP_PROP_FPS)      # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        duration = frame_count/fps
+
+        #R = int(round(30 / 5))
+        FRAMERATE = 4
+        SLICE_LENGTH = 5 * 6
+        for i in tqdm.tqdm(range(100)):
+            t1 = [SLICE_LENGTH * i, SLICE_LENGTH * (i + 1)]
+            t2 = os.path.join(t3, 'slice-%d' % i)
+            os.makedirs(t2, exist_ok=True)
+
+            t8 = [t1[0] * fps, t1[1] * fps]
+            t9.set(cv2.CAP_PROP_POS_FRAMES, t8[0])
+            for k in range(t8[1] - t8[0]):
+                ret, frame = cap.read()
+                t11 = t9.get(cv2.CAP_PROP_POS_FRAMES)
+                t10 = os.path.join(
+                    t2,
+                    'frame-%d.jpg' % t11,
+                )
+                cv2.imwrite(t10, frame)
+
+            t6 = '''
+                cd /kaggle/working/AlphaPose && \
+                python3 \
+                    scripts/demo_inference.py \
+                    --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml \
+                    --checkpoint pretrained_models/fast_res50_256x192.pth \
+                    --indir %s \
+                    --outdir %s
+            ''' % (t2, t2)
+            if False:
+                pprint.pprint([t4, t2, t6])
+            with subprocess.Popen(t6, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  as p:
+                if False:
+                    pprint.pprint(p.communicate())
+                p.wait()
+                assert p.returncode == 0
+    finally:
+        if not cap is None:
+            cap.release()
