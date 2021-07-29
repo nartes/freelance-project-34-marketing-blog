@@ -1723,6 +1723,7 @@ def kernel_27():
             assert p.returncode == 0
 
 def kernel_28():
+    import cv2
     import tqdm
     import os
     import subprocess
