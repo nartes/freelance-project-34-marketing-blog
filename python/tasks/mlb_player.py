@@ -1790,8 +1790,18 @@ def kernel_28():
 
 def kernel_29():
     t4 = '/kaggle/working/kernel_29-poses.json'
+    t6 = [
+        t4,
+        '/kaggle/garbage/kernel_29-poses.json',
+    ]
 
-    if not os.path.exists(t4):
+    t7 = [
+        o
+        for o in t6
+        if os.path.exists(o)
+    ]
+
+    if len(t7) == 0:
         import json
         import io
         import glob
@@ -1814,7 +1824,7 @@ def kernel_29():
         with io.open(t4, 'w') as f:
             f.write(json.dumps(t1))
 
-    with io.open(t4, 'r') as f:
+    with io.open(t7[0], 'r') as f:
         t1 = json.load(f)
 
     t2 = pandas.DataFrame(t1)
