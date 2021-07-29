@@ -2097,3 +2097,10 @@ def kernel_33():
     o_29 = kernel_29()
     import numpy
     o_30 = kernel_30(o_29=o_29, ids='v1')
+
+def kernel_34(o_14):
+    pprint.pprint(
+        numpy.unique(
+            o_14['o_3']['t5']['events']['event']
+        )
+    )
