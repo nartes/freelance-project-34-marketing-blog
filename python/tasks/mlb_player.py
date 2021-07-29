@@ -1747,14 +1747,14 @@ def kernel_30(o_29, ids=None):
     t5 = o_29['t5']
     if ids is None:
         numpy.random.seed(0)
-        t1 = numpy.random.choice(
+        ids = numpy.random.choice(
             t5.index.shape[0],
             10
         )
 
     t7 = []
 
-    for o in t1:
+    for o in ids:
         t2 = t5.keypoints.data[o]
         t3 = t5.frame_id.data[o]
 
