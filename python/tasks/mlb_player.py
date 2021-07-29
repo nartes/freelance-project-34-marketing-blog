@@ -1845,6 +1845,13 @@ def kernel_29():
     t2 = pandas.DataFrame(t9)
 
     t5 = t2.to_xarray()
+    t5['keypoints'] = xarray.DataArray(
+        [
+            numpy.array(o).reshape(17, 3)
+            for o in t5['keypoints'].data
+        ],
+        dims=['index', 'joint', 'feature'],
+    )
 
     return dict(
         t5=t5,
