@@ -1821,8 +1821,12 @@ def kernel_29():
             )
         ]
 
+        assert len(t1) > 0
+
         with io.open(t4, 'w') as f:
             f.write(json.dumps(t1))
+
+        t7.append(t4)
 
     with io.open(t7[0], 'r') as f:
         t1 = json.load(f)
