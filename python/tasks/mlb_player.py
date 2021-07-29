@@ -1759,7 +1759,7 @@ def kernel_30(o_29, ids=None, delay=None,):
             10
         )
     elif ids == 'v1':
-        ids = =numpy.random.choice(
+        ids = numpy.random.choice(
             numpy.where(
                 numpy.logical_and(
                     o_29['t5'].portion > 0.1,
