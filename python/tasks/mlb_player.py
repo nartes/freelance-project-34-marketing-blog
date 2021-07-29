@@ -1487,107 +1487,23 @@ def kernel_22(o_18):
         numpy.array(o['keypoints']).reshape(17, 3)
         for o in t1
     ]
-    t3 = []
-    for i, o in enumerate(t2):
-        t4 = numpy.min(o[:, 0])
-        t5 = numpy.max(o[:, 0])
-        t6 = numpy.min(o[:, 1])
-        t7 = numpy.max(o[:, 1])
 
-        t8 = (t5 - t4) * (t7 - t6)
-
-        t9 = [
-            o['image_canvas'].shape
-            for o in o_18['t2']['t1']
-            if o['image_name'] == t1[i]['image_id']
-        ]
-        t10 = t9[0][0] * t9[0][1]
-        assert len(t9) == 1
-        t3.append(
-            dict(
-                t8=t8,
-                t9=t9,
-                t10=t10,
-            )
-        )
-    t12 = [
-        dict(
-            square=t3[i]['t8'],
-            total=t3[i]['t10'],
-            portion=t3[i]['t8'] / (t3[i]['t10'] + 1e-8),
-            keypoints=t2[i],
-            image_name=o['image_id'],
-        )
-        for i, o in enumerate(t1)
-    ]
-
-    for i, o in enumerate(t12):
-        t1 = o['keypoints']
-        t2 = get_angle(
-            t1[3, :2],
-            t1[4, :2],
-        )
-        t3 = get_angle(
-            t1[6, :2],
-            t1[7, :2],
-        )
-        t4 = 0
-        if 30 < t2 and t2 < 150:
-            t4 = 1
-        t5 = 0
-        if 30 < t3 and t3 < 150:
-            t5 = 1
-        t6 = t4 + t6
-        t7 = 0
-        if t6 == 1:
-            t7 = 1
-        t8 = 0
-        t8 += sit_rec(
-            t1[9, :2],
-            t1[10, :2],
-            t1[10, :2],
-            t1[11, :2],
-        )
-        t8 += sit_rec(
-            t1[12, :2],
-            t1[13, :2],
-            t1[13, :2],
-            t1[14, :2],
-        )
-        t9 = 0
-        t9 += sit_ang(
-            t1[9, :2],
-            t1[10, :2],
-            t1[10, :2],
-            t1[11, :2],
-        )
-        t9 += sit_ang(
-            t1[12, :2],
-            t1[13, :2],
-            t1[13, :2],
-            t1[14, :2],
-        )
-        t10 = 0
-        if t8 > 0 or t9 > 0:
-            t10 = 1
-        t11 = 0
-        if t8 == 0 and t9 == 0:
-            t11 = 1
-        o.update(
-            dict(
-                t2=t2,
-                t3=t3,
-                t4=t4,
-                t5=t5,
-                t6=t6,
-                t7=t7,
-                t8=t8,
-                t9=t9,
-                t10=t10,
-                t11=t11,
-            )
-        )
-
+    o_31 = kernel_31(
+        image_id=[
+            o['image_id']
+            for o in t1
+        ],
+        image_size=numpy.array([
+            [
+                list(o['image_canvas'].shape)
+                for o in o_18['t2']['t1']
+                if o['image_name'] == t1[i]['image_id']
+            ][0]
+            for i in range(len(t2))
+        ]),
+        keypoints=numpy.stack(t2, axis=0),
+    )
+    t12 = o_31['t12']
 
     return dict(
         t4=t12,
@@ -1904,3 +1820,105 @@ def kernel_30(o_29, ids=None):
             if not cap is None:
                 cap.release()
     kernel_25(t7)
+
+def kernel_31(image_id, image_size, keypoints):
+    t3 = []
+    for i, o in enumerate(keypoints):
+        t4 = numpy.min(o[:, 0])
+        t5 = numpy.max(o[:, 0])
+        t6 = numpy.min(o[:, 1])
+        t7 = numpy.max(o[:, 1])
+
+        t8 = (t5 - t4) * (t7 - t6)
+
+        t9 = image_size[i]
+        t10 = t9[0] * t9[1]
+        t3.append(
+            dict(
+                t8=t8,
+                t9=t9,
+                t10=t10,
+            )
+        )
+    t12 = [
+        dict(
+            square=t3[i]['t8'],
+            total=t3[i]['t10'],
+            portion=t3[i]['t8'] / (t3[i]['t10'] + 1e-8),
+            keypoints=keypoints[i],
+            image_name=image_id[i],
+        )
+        for i, o in enumerate(t1)
+    ]
+
+    for i, o in enumerate(t12):
+        t1 = o['keypoints']
+        t2 = get_angle(
+            t1[3, :2],
+            t1[4, :2],
+        )
+        t3 = get_angle(
+            t1[6, :2],
+            t1[7, :2],
+        )
+        t4 = 0
+        if 30 < t2 and t2 < 150:
+            t4 = 1
+        t5 = 0
+        if 30 < t3 and t3 < 150:
+            t5 = 1
+        t6 = t4 + t6
+        t7 = 0
+        if t6 == 1:
+            t7 = 1
+        t8 = 0
+        t8 += sit_rec(
+            t1[9, :2],
+            t1[10, :2],
+            t1[10, :2],
+            t1[11, :2],
+        )
+        t8 += sit_rec(
+            t1[12, :2],
+            t1[13, :2],
+            t1[13, :2],
+            t1[14, :2],
+        )
+        t9 = 0
+        t9 += sit_ang(
+            t1[9, :2],
+            t1[10, :2],
+            t1[10, :2],
+            t1[11, :2],
+        )
+        t9 += sit_ang(
+            t1[12, :2],
+            t1[13, :2],
+            t1[13, :2],
+            t1[14, :2],
+        )
+        t10 = 0
+        if t8 > 0 or t9 > 0:
+            t10 = 1
+        t11 = 0
+        if t8 == 0 and t9 == 0:
+            t11 = 1
+        o.update(
+            dict(
+                t2=t2,
+                t3=t3,
+                t4=t4,
+                t5=t5,
+                t6=t6,
+                t7=t7,
+                t8=t8,
+                t9=t9,
+                t10=t10,
+                t11=t11,
+            )
+        )
+
+
+    return dict(
+        t12=t12,
+    )
