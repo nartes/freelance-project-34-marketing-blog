@@ -1734,7 +1734,7 @@ def kernel_29():
         keypoints=t5.keypoints.data,
     )
     for k, v in o_31.items():
-        pprint([k, v])
+        pprint.pprint([k, v])
         t5[k] = v
 
     return dict(
