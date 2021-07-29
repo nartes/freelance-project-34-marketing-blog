@@ -1926,6 +1926,8 @@ def kernel_31(image_id, image_size, keypoints):
                 t9=t9,
                 t10=t10,
                 t11=t11,
+                mean_conf=t1[:, 2].mean(),
+                min_conf=t1[:, 2].min(),
             )
         )
 
