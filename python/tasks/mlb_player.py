@@ -1796,6 +1796,20 @@ def kernel_30(o_29, ids=None, delay=None,):
             numpy.where(t8)[0],
             min(70, len(t8)),
         )
+    elif ids == 'v4':
+        t8 = numpy.stack(
+            [
+                o_29['t5'].portion > 0.1,
+                o_29['t5'].min_conf > 0.6,
+                o_29['t5']['t9'].data > 0,
+            ],
+            axis=0
+        ).prod(axis=0)
+        pprint.pprint([t8.sum(), t8.mean()])
+        ids = numpy.random.choice(
+            numpy.where(t8)[0],
+            min(70, len(t8)),
+        )
     else:
         assert isinstance(ids, numpy.ndarray)
 
