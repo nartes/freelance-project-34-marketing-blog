@@ -1940,7 +1940,6 @@ def kernel_32(video_path):
     cap = None
     try:
         cap = cv2.VideoCapture(video_path)
-        cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
         ret, frame = cap.read()
         return frame.shape
     finally:
