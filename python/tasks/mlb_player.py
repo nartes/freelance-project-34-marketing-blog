@@ -1774,7 +1774,7 @@ def kernel_30(o_29, ids=None, delay=None,):
                 [
                     o_29['t5'].portion > 0.1,
                     o_29['t5'].mean_conf > 0.6,
-                    o_29['t5']['t12'].data,
+                    o_29['t5']['t11'].data,
                 ],
                 axis=0
             ).prod(axis=0)
