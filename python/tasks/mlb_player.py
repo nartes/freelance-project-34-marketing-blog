@@ -1780,7 +1780,7 @@ def kernel_30(o_29, ids=None, delay=None,):
         pprint.pprint([t8.sum(), t8.mean()])
         ids = numpy.random.choice(
             numpy.where(t8)[0],
-            min(70, len(t8)),
+            min(70, t8.sum()),
         )
     elif ids == 'v3':
         t8 = numpy.stack(
@@ -1794,7 +1794,7 @@ def kernel_30(o_29, ids=None, delay=None,):
         pprint.pprint([t8.sum(), t8.mean()])
         ids = numpy.random.choice(
             numpy.where(t8)[0],
-            min(70, len(t8)),
+            min(70, t8.sum()),
         )
     elif ids == 'v4':
         t8 = numpy.stack(
@@ -1808,7 +1808,7 @@ def kernel_30(o_29, ids=None, delay=None,):
         pprint.pprint([t8.sum(), t8.mean()])
         ids = numpy.random.choice(
             numpy.where(t8)[0],
-            min(70, len(t8)),
+            min(70, t8.sum()),
         )
     else:
         assert isinstance(ids, numpy.ndarray)
