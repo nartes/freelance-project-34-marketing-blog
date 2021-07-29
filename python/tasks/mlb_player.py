@@ -1968,3 +1968,29 @@ def kernel_32(video_path):
     finally:
         if not cap is None:
             cap.release()
+
+
+def kernel_33():
+    o_14 = kernel_14()
+    o_15 = kernel_15(o_14=o_14)
+
+    assert os.system(r''' python repo/d1/mlb_player_v5.py ''') == 0
+    o_17 = kernel_17(o_14=o_14, max_images=100)
+
+    o_18 = kernel_18(o_17=o_17)
+    o_19 = kernel_19(o_18=o_18)
+    o_20 = kernel_20(o_18=o_18)
+    o_22 = kernel_22(o_18=o_18)
+    import pandas
+    o_23 = kernel_23(
+        o_18=o_18,
+        o_22=o_22,
+        ids=pandas.DataFrame(
+            o_22['t4']
+        ).query('portion > 0.1').index.values
+    )
+    o_27 = kernel_27()
+    o_28 = kernel_28()
+    o_29 = kernel_29()
+    import numpy
+    o_30 = kernel_30(o_29=o_29, ids='v1')
