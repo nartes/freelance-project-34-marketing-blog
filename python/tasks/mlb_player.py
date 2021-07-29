@@ -2099,8 +2099,14 @@ def kernel_33():
     o_30 = kernel_30(o_29=o_29, ids='v1')
 
 def kernel_34(o_14):
+    t1 = numpy.unique(
+        o_14['o_3']['t5']['events']['event'],
+        return_counts=True,
+    )
+    t2 = [
+        [o, o2]
+        for o, o2 in zip(*t1)
+    ]
     pprint.pprint(
-        numpy.unique(
-            o_14['o_3']['t5']['events']['event']
-        )
+        t2
     )
