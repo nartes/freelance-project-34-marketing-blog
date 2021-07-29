@@ -1831,7 +1831,17 @@ def kernel_29():
     with io.open(t7[0], 'r') as f:
         t1 = json.load(f)
 
-    t2 = pandas.DataFrame(t1)
+    t8 = sum([
+        o['data']
+        for o in t1
+    ], [])
+    t10 = re.compile('frame-(\d+)\.jpg')
+    t9 = sorted(
+        t8,
+        key=lambda o: int(t10.match(o['image_id'])[0])
+    )
+
+    t2 = pandas.DataFrame(t9)
 
     t5 = t2.to_xarray()
 
