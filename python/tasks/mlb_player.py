@@ -1810,8 +1810,9 @@ def kernel_29():
                 '/kaggle/working/kernel_28-output.dir/slice-*/*.json'
             )
         ]
+
         with io.open(t4, 'w') as f:
-            f.write(json.dumps(t1)
+            f.write(json.dumps(t1))
 
     with io.open(t4, 'r') as f:
         t1 = json.load(f)
