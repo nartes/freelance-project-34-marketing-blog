@@ -1849,4 +1849,5 @@ def kernel_29():
     return dict(
         t5=t5,
         t2=t2,
+        t9=t9,
     )
