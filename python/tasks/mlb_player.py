@@ -1898,19 +1898,29 @@ def kernel_30(o_29, ids=None, delay=None, prev_frames=None, max_frames=None,):
 
     t7 = []
 
-    for o in ids:
+    t16 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
+    t15 = kernel_32(t16)
+
+    for o in tqdm.tqdm(ids):
         t2 = t5.keypoints.data[o]
         t3 = t5.frame_id.data[o]
 
         cap = None
         try:
-            cap = cv2.VideoCapture('/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4')
+            cap = cv2.VideoCapture(t16)
             if prev_frames > 0:
+                t14 = kernel_24(
+                    numpy.zeros(t15, dtype=numpy.uint8),
+                    t2,
+                )['t3']
+                t15 = t14 == 0
+
                 for k in range(prev_frames):
                     cap.set(cv2.CAP_PROP_POS_FRAMES, t3 - prev_frames + k)
                     ret, frame = cap.read()
                     t12 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    t13 = kernel_24(t12, t2)['t3']
+                    #t13 = kernel_24(t12, t2)['t3']
+                    t13 = numpy.where(t15, t12, t14)
                     t7.append(t13)
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
