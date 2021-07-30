@@ -2179,3 +2179,12 @@ def kernel_34(o_14):
     pprint.pprint(
         t2
     )
+
+def kernel_35():
+    return r'''
+1. https://posetrack.net/leaderboard.php
+2. https://posetrack.net/users/view_entry_details.php?entry=CF_chl2
+3. https://posetrack.net/users/view_entry_details.php?entry=DCPose_chl2
+4. https://github.com/Pose-Group/DCPose/blob/main/docs/Installation.md
+5. https://github.com/openpifpaf/openpifpaf_posetrack
+    '''
