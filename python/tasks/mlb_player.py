@@ -1497,17 +1497,18 @@ def kernel_25(images, delay=None):
 
     t7 = os.path.join(t3, 'output.gif')
 
-    subprocess.check_call(
-        [
-            'convert',
-            '-delay',
-            '%d' % delay,
-            '-loop',
-            '0',
-            *t6,
-            t7,
-        ]
-    )
+    if False:
+        subprocess.check_call(
+            [
+                'convert',
+                '-delay',
+                '%d' % delay,
+                '-loop',
+                '0',
+                *t6,
+                t7,
+            ]
+        )
 
     t8 = os.path.join(
         t3,
@@ -1516,11 +1517,33 @@ def kernel_25(images, delay=None):
     if os.path.exists(t8):
         os.unlink(t8)
 
+    if False:
+        subprocess.check_call(
+            [
+                'ffmpeg',
+                '-i',
+                t7,
+                t8,
+            ]
+        )
+    t9 = os.path.join(t3, 'input.txt')
+
+    with io.open(t9, 'w') as f:
+        f.write(
+            '\n'.join(
+                [
+                    'file %s' % o
+                    for o in t6
+                ]
+            )
+        )
     subprocess.check_call(
         [
             'ffmpeg',
+            '-f',
+            'concat',
             '-i',
-            t7,
+            '%s' % t9,
             t8,
         ]
     )
