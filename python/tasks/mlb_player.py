@@ -2187,4 +2187,6 @@ def kernel_35():
 3. https://posetrack.net/users/view_entry_details.php?entry=DCPose_chl2
 4. https://github.com/Pose-Group/DCPose/blob/main/docs/Installation.md
 5. https://github.com/openpifpaf/openpifpaf_posetrack
+6. https://github.com/Guanghan/lighttrack
+7. https://github.com/leoxiaobin/deep-high-resolution-net.pytorch
     '''
