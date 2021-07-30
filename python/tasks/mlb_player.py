@@ -1763,9 +1763,13 @@ def kernel_29():
         t9=t9,
     )
 
-def kernel_30(o_29, ids=None, delay=None, prev_frames=None):
+def kernel_30(o_29, ids=None, delay=None, prev_frames=None, max_frames=None,):
+    if max_frames is None:
+        max_frames = 9999
+
     if prev_frames is None:
         prev_frames = 0
+
     t5 = o_29['t5']
 
     if delay is None:
@@ -1917,7 +1921,7 @@ def kernel_30(o_29, ids=None, delay=None, prev_frames=None):
         finally:
             if not cap is None:
                 cap.release()
-    kernel_25(t7, delay=delay)
+    kernel_25(t7[:max_frames], delay=delay)
 
 def kernel_31(image_id, image_size, keypoints):
     def get_angle(a,b):
