@@ -1540,6 +1540,8 @@ def kernel_25(images, delay=None):
     subprocess.check_call(
         [
             'ffmpeg',
+            '-r',
+            '1/%d' % int(100 / delay),
             '-f',
             'concat',
             '-i',
