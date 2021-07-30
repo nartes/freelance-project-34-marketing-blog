@@ -1526,13 +1526,13 @@ def kernel_25(images, delay=None):
                 t8,
             ]
         )
-    t9 = os.path.join(os.path.split(t3)[1], 'input.txt')
+    t9 = os.path.join(t3, 'input.txt')
 
     with io.open(t9, 'w') as f:
         f.write(
             '\n'.join(
                 [
-                    'file %s' % o
+                    'file %s' % os.path.split(o)[1]
                     for o in t6
                 ]
             )
