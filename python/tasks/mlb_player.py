@@ -1747,7 +1747,9 @@ def kernel_29():
         t9=t9,
     )
 
-def kernel_30(o_29, ids=None, delay=None,):
+def kernel_30(o_29, ids=None, delay=None, prev_frames=None):
+    if prev_frames is None:
+        prev_frames = 0
     t5 = o_29['t5']
 
     if delay is None:
@@ -1883,6 +1885,13 @@ def kernel_30(o_29, ids=None, delay=None,):
         cap = None
         try:
             cap = cv2.VideoCapture('/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4')
+            if prev_frames > 0:
+                for k in range(prev_frames):
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, t3 - prev_frames + k)
+                    ret, frame = cap.read()
+                    t12 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    t7.apend(t12)
+
             cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
             ret, frame = cap.read()
             t4 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
