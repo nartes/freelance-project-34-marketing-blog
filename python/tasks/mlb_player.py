@@ -2189,4 +2189,6 @@ def kernel_35():
 5. https://github.com/openpifpaf/openpifpaf_posetrack
 6. https://github.com/Guanghan/lighttrack
 7. https://github.com/leoxiaobin/deep-high-resolution-net.pytorch
+8. https://github.com/CMU-Perceptual-Computing-Lab/openpose
+https://github.com/CMU-Perceptual-Computing-Lab/openpose/issues/1736#issuecomment-736846794
     '''
