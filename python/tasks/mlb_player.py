@@ -1914,14 +1914,14 @@ def kernel_30(o_29, ids=None, delay=None, prev_frames=None, max_frames=None,):
                     numpy.zeros(t15, dtype=numpy.uint8),
                     t2,
                 )['t3']
-                t15 = t14 == 0
+                t15 = (t14 == 0).astype(numpy.uint8)
 
                 for k in range(prev_frames):
                     cap.set(cv2.CAP_PROP_POS_FRAMES, t3 - prev_frames + k)
                     ret, frame = cap.read()
                     t12 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     #t13 = kernel_24(t12, t2)['t3']
-                    t13 = numpy.where(t15, t12, t14)
+                    t13 = t12 * t15 + t14
                     t7.append(t13)
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
