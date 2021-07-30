@@ -1512,7 +1512,7 @@ def kernel_25(images, delay=None):
         t3,
         'output.mp4',
     )
-    if os.path.exist(t8):
+    if os.path.exists(t8):
         os.unlink(t8)
 
     subprocess.check_call(
@@ -1907,7 +1907,7 @@ def kernel_30(o_29, ids=None, delay=None, prev_frames=None):
                     ret, frame = cap.read()
                     t12 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     t13 = kernel_24(t12, t2)['t3']
-                    t7.append(t12)
+                    t7.append(t13)
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
             ret, frame = cap.read()
