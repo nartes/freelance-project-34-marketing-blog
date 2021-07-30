@@ -1541,7 +1541,7 @@ def kernel_25(images, delay=None):
         [
             'ffmpeg',
             '-r',
-            '1/%d' % int(100 / delay),
+            '%d' % int(100 / delay),
             '-f',
             'concat',
             '-i',
