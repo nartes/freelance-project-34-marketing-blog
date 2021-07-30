@@ -1508,6 +1508,22 @@ def kernel_25(images, delay=None):
         ]
     )
 
+    t8 = os.path.join(
+        t3,
+        'output.mp4',
+    )
+    if os.path.exist(t8):
+        os.unlink(t8)
+
+    subprocess.check_call(
+        [
+            'ffmpeg',
+            '-i',
+            t7,
+            t8,
+        ]
+    )
+
 def kernel_26(o_18, image_name):
     t1 = [
         i
