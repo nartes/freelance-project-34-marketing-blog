@@ -1890,7 +1890,7 @@ def kernel_30(o_29, ids=None, delay=None, prev_frames=None):
                     cap.set(cv2.CAP_PROP_POS_FRAMES, t3 - prev_frames + k)
                     ret, frame = cap.read()
                     t12 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    t7.apend(t12)
+                    t7.append(t12)
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
             ret, frame = cap.read()
