@@ -1787,9 +1787,11 @@ def kernel_29():
         t9=t9,
     )
 
-def kernel_30(o_29, ids=None, delay=None, prev_frames=None, max_frames=None,):
+def kernel_30(o_29, ids=None, delay=None, prev_frames=None, max_frames=None, max_ids=None):
     if max_frames is None:
         max_frames = 9999
+    if max_ids is None:
+        max_ids = 70
 
     if prev_frames is None:
         prev_frames = 0
@@ -1919,6 +1921,7 @@ def kernel_30(o_29, ids=None, delay=None, prev_frames=None, max_frames=None,):
         ])
     else:
         assert isinstance(ids, numpy.ndarray)
+    ids = ids[:max_ids]
 
     t7 = []
 
