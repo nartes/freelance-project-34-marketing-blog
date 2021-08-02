@@ -1826,7 +1826,14 @@ def kernel_30(
     max_frames=None,
     max_ids=None,
     video_path=None,
+    low_portion=None,
+    low_mean_conf=None,
 ):
+    if low_portion is None:
+        low_portion = 0.1
+    if low_mean_conf is None:
+        low_mean_conf = 0.6
+
     if video_path is None:
         video_path = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
 
@@ -1852,8 +1859,8 @@ def kernel_30(
     elif ids == 'v1':
         t8 = numpy.where(
             numpy.logical_and(
-                o_29['t5'].portion > 0.1,
-                o_29['t5'].mean_conf > 0.6
+                o_29['t5'].portion > low_portion,
+                o_29['t5'].mean_conf > low_mean_conf,
             )
         )[0]
         ids = numpy.random.choice(
@@ -1965,6 +1972,7 @@ def kernel_30(
         ])
     else:
         assert isinstance(ids, numpy.ndarray)
+
     ids = ids[:max_ids]
     pprint.pprint(['ids', ids])
 
@@ -2349,6 +2357,8 @@ def kernel_38(
     ids=None,
     prev_frames=None,
     delay=None,
+    low_mean_conf=None,
+    low_portion=None,
 ):
     if ids is None:
         ids = 'v7'
@@ -2395,6 +2405,8 @@ def kernel_38(
         max_frames=9999,
         max_ids=999,
         video_path=t1,
+        low_mean_conf=low_mean_conf,
+        low_portion=low_portion,
     )
 
     return dict(
