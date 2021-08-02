@@ -1642,14 +1642,16 @@ def kernel_27():
             p.wait()
             assert p.returncode == 0
 
-def kernel_28():
+def kernel_28(video_path=None):
     import cv2
     import tqdm
     import os
     import subprocess
     import pprint
 
-    t5 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
+    if video_path is None:
+        video_path = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
+    t5 = video_path
     t3 = '/kaggle/working/kernel_28-output.dir'
     t13 = '/root/kernel_28-output.dir/tmp-slice'
     os.makedirs(t3, exist_ok=True)
@@ -1665,7 +1667,12 @@ def kernel_28():
         #R = int(round(30 / 5))
         FRAMERATE = 4
         SLICE_LENGTH = 5 * 6
-        for i in tqdm.tqdm(range(100)):
+        for i in tqdm.tqdm(range(int(duration / SLICE_LENGTH + 1e-8))):
+            t2 = os.path.join(t3, 'slice-%d' % i)
+            if os.path.exists(t2):
+                pprint.pprint(['t2', t2, 'exists', 'continue'])
+                continue
+
             t1 = [SLICE_LENGTH * i, SLICE_LENGTH * (i + 1)]
 
             if os.path.exists(t13):
@@ -1685,7 +1692,6 @@ def kernel_28():
                     )
                     cv2.imwrite(t10, frame)
 
-            t2 = os.path.join(t3, 'slice-%d' % i)
             os.makedirs(t2, exist_ok=True)
 
             t6 = '''
@@ -2312,3 +2318,5 @@ def kernel_38(video_path):
                 t1,
             ]
         )
+
+    kernel_28(t1)
