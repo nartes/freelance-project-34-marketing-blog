@@ -1839,7 +1839,11 @@ def kernel_30(
     video_path=None,
     low_portion=None,
     low_mean_conf=None,
+    no_dots=None,
 ):
+    if no_dits is None:
+        no_dots = False
+
     if low_portion is None:
         low_portion = 0.1
     if low_mean_conf is None:
@@ -2017,7 +2021,10 @@ def kernel_30(
             cap.set(cv2.CAP_PROP_POS_FRAMES, t3)
             ret, frame = cap.read()
             t4 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            t6 = kernel_24(t4, t2)['t3']
+            if not no_dots:
+                t6 = kernel_24(t4, t2)['t3']
+            else:
+                t6 = t4
             t7.append(t6)
         finally:
             if not cap is None:
@@ -2370,6 +2377,7 @@ def kernel_38(
     delay=None,
     low_mean_conf=None,
     low_portion=None,
+    no_dots=None,
 ):
     if ids is None:
         ids = 'v7'
@@ -2420,6 +2428,7 @@ def kernel_38(
         video_path=t1,
         low_mean_conf=low_mean_conf,
         low_portion=low_portion,
+        no_dots=no_dots,
     )
 
     return dict(
