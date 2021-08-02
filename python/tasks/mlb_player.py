@@ -1680,12 +1680,14 @@ def kernel_28(
         cap = cv2.VideoCapture(t5)
         fps = cap.get(cv2.CAP_PROP_FPS)      # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        duration = min(frame_count/fps, max_seconds)
+        real_duration = frame_count/fps
+        duration = min(real_duration, max_seconds)
         pprint.pprint(
             dict(
                 fps=fps,
                 frame_count=frame_count,
                 duration=duration,
+                real_duration=real_duration,
             )
         )
 
