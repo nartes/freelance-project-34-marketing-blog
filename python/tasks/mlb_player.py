@@ -1486,6 +1486,9 @@ def kernel_25(images, delay=None):
     import cv2
     import subprocess
 
+    if len(images) == 0:
+        pprint.pprint(['kernel_25', 'no images'])
+
     t3 = 'kernel_25-output.dir'
     os.makedirs(t3, exist_ok=True)
     t6 = []
