@@ -1,3 +1,4 @@
+import hashlib
 import pprint
 import tqdm
 import cv2
@@ -1714,11 +1715,20 @@ def kernel_28(video_path=None):
         if not cap is None:
             cap.release()
 
-def kernel_29():
-    t4 = '/kaggle/working/kernel_29-poses.json'
+def kernel_29(video_path=None, video_id=None,):
+    if video_id is None:
+        video_id = ''
+
+    if video_path is None:
+        video_path = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
+
+    assert os.path.exists(video_path)
+
+    t40 = 'kernel_29-poses%s.json' % video_id
+    t4 = os.path.join('/kaggle/working', t40)
     t6 = [
         t4,
-        '/kaggle/input/garbage/kernel_29-poses.json',
+        os.path.join('/kaggle/input/garbage', t40),
     ]
 
     t7 = [
@@ -1781,7 +1791,7 @@ def kernel_29():
     o_31 = kernel_31(
         image_id=t5.image_id.data,
         image_size=[
-            kernel_32('/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4')
+            kernel_32(video_path)
         ] * t5.index.shape[0],
         keypoints=t5.keypoints.data,
     )
@@ -2306,6 +2316,10 @@ def kernel_37():
     '''
 
 def kernel_38(video_path):
+    t2 = hashlib.sha256(
+        video_path.encode('utf-8')
+    ).hexdigest()
+
     t1 = '/kaggle/working/video.mp4'
     if not os.path.exists(t1):
         subprocess.check_call(
@@ -2320,3 +2334,8 @@ def kernel_38(video_path):
         )
 
     kernel_28(t1)
+
+    o_29 = kernel_29(
+        t1,
+        video_id=t2,
+    )
