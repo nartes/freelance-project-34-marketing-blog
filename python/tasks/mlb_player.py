@@ -1805,7 +1805,18 @@ def kernel_29(video_path=None, video_id=None,):
         t9=t9,
     )
 
-def kernel_30(o_29, ids=None, delay=None, prev_frames=None, max_frames=None, max_ids=None):
+def kernel_30(
+    o_29,
+    ids=None,
+    delay=None,
+    prev_frames=None,
+    max_frames=None,
+    max_ids=None,
+    video_path=None,
+):
+    if video_path is None:
+        video_path = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
+
     if max_frames is None:
         max_frames = 9999
     if max_ids is None:
@@ -1943,7 +1954,7 @@ def kernel_30(o_29, ids=None, delay=None, prev_frames=None, max_frames=None, max
 
     t7 = []
 
-    t16 = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
+    t16 = video_path
     t15 = kernel_32(t16)
 
     for o in tqdm.tqdm(ids):
