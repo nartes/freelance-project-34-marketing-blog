@@ -1645,7 +1645,7 @@ def kernel_27():
 
 def kernel_28(
     video_path=None,
-    framrate=None,
+    framerate=None,
     max_seconds=None,
 ):
     import cv2
