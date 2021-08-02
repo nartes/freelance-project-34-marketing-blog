@@ -2343,7 +2343,19 @@ def kernel_38(
     video_path,
     framerate=None,
     max_seconds=None,
+    ids=None,
+    prev_frames=None,
+    delay=None,
 ):
+    if ids is None:
+        ids = 'v7'
+
+    if prev_frames is None:
+        prev_frames = 59
+
+    if delay is None:
+        delay = 3
+
     t2 = hashlib.sha256(
         video_path.encode('utf-8')
     ).hexdigest()
@@ -2374,9 +2386,9 @@ def kernel_38(
 
     o_30 = kernel_30(
         o_29=o_29,
-        ids='v7',
-        delay=3,
-        prev_frames=59,
+        ids=ids,
+        delay=delay,
+        prev_frames=prev_frames,
         max_frames=9999,
         max_ids=999,
         video_path=t1,
