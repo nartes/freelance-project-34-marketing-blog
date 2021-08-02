@@ -1767,7 +1767,7 @@ def kernel_29(video_path=None, video_id=None,):
                 input_path=o
             )
             for o in glob.glob(
-                '/kaggle/working/kernel_28-output%s.dir/slice-*/*.json' $ video_id
+                '/kaggle/working/kernel_28-output%s.dir/slice-*/*.json' % video_id
             )
         ]
 
