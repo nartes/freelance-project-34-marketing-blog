@@ -2292,3 +2292,9 @@ def kernel_36():
     assert os.system(r'''!cd openpose && ./build/examples/openpose/openpose.bin --number_people_max 12 --video '{colab_video_path}' --display 0 --write_video_with_audio --write_video '{colab_openpose_video_path}' # --net_resolution "-1x736" --scale_number 4 --scale_gap 0.25 ''') == 0
 
     assert os.system(r'''!cmake -version ''') == 0
+
+def kernel_37():
+    return r'''
+1. https://www.youtube.com/channel/UCcTy8yBARva3WzrmIcaaWPA/about
+2. https://www.play-cricket.com/website/results/4721802
+    '''
