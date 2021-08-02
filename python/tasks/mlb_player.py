@@ -2340,6 +2340,16 @@ def kernel_38(video_path):
         video_id=t2,
     )
 
+    o_30 = kernel_30(
+        o_29=o_29,
+        ids='v7',
+        delay=3,
+        prev_frames=59,
+        max_frames=9999,
+        max_ids=999,
+    )
+
     return dict(
         o_29=o_29,
+        o_30=o_30,
     )
