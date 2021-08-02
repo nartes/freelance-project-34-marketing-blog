@@ -2261,18 +2261,18 @@ def kernel_36():
         colab_openpose_video_path = colab_video_path.replace('.mp4', '') + '-openpose.mp4'
         print(colab_openpose_video_path)
         if not exists(colab_openpose_video_path):
-          !cd openpose && ./build/examples/openpose/openpose.bin --hand --face --number_people_max 12 --video '{colab_video_path}' --display 0 --write_video_with_audio --write_video '{colab_openpose_video_path}' # --net_resolution "-1x736" --scale_number 4 --scale_gap 0.25
+          assert os.system(r'''!cd openpose && ./build/examples/openpose/openpose.bin --hand --face --number_people_max 12 --video '{colab_video_path}' --display 0 --write_video_with_audio --write_video '{colab_openpose_video_path}' # --net_resolution "-1x736" --scale_number 4 --scale_gap 0.25 ''') == 0
 
     """## From Youtube (Downloaded to your Drive)"""
 
-    !pip install youtube-dl
+    assert os.system(r'''!pip install youtube-dl ''') == 0
 
     youtube_id = '2021-05-07_22-00-55_UTC'
-    !youtube-dl -f mp4 -o '/content/drive/My Drive/openpose/%(id)s.mp4' {youtube_id}
+    assert os.system(r'''!youtube-dl -f mp4 -o '/content/drive/My Drive/openpose/%(id)s.mp4' {youtube_id} ''') == 0
     colab_video_path = '/content/drive/My Drive/openpose/' + youtube_id + '.mp4'
     colab_openpose_video_path = colab_video_path.replace('.mp4', '') + '-openpose.mp4'
 
-    !cd openpose && ./build/examples/openpose/openpose.bin --number_people_max 12 --video '{colab_video_path}' --display 0 --write_video_with_audio --write_video '{colab_openpose_video_path}' # --net_resolution "-1x736" --scale_number 4 --scale_gap 0.25
+    assert os.system(r'''!cd openpose && ./build/examples/openpose/openpose.bin --number_people_max 12 --video '{colab_video_path}' --display 0 --write_video_with_audio --write_video '{colab_openpose_video_path}' # --net_resolution "-1x736" --scale_number 4 --scale_gap 0.25 ''') == 0
 
 
 
