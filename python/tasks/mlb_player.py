@@ -1488,6 +1488,7 @@ def kernel_25(images, delay=None):
 
     if len(images) == 0:
         pprint.pprint(['kernel_25', 'no images'])
+        return
 
     t3 = 'kernel_25-output.dir'
     os.makedirs(t3, exist_ok=True)
