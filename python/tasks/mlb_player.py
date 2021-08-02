@@ -1681,7 +1681,7 @@ def kernel_28(
         fps = cap.get(cv2.CAP_PROP_FPS)      # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         duration = min(frame_count/fps, max_seconds)
-        pprint(
+        pprint.pprint(
             dict(
                 fps=fps,
                 frame_count=frame_count,
