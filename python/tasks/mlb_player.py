@@ -2298,3 +2298,17 @@ def kernel_37():
 1. https://www.youtube.com/channel/UCcTy8yBARva3WzrmIcaaWPA/about
 2. https://www.play-cricket.com/website/results/4721802
     '''
+
+def kernel_38(video_path):
+    t1 = '/kaggle/working/video.mp4'
+    if not os.path.exists(t1):
+        subprocess.check_call(
+            [
+                'youtube-dl',
+                '-f',
+                '18',
+                video_path,
+                '-o',
+                t1,
+            ]
+        )
