@@ -1850,14 +1850,16 @@ def kernel_30(
             10
         )
     elif ids == 'v1':
+        t8 = numpy.where(
+            numpy.logical_and(
+                o_29['t5'].portion > 0.1,
+                o_29['t5'].mean_conf > 0.6
+            )
+        )[0]
         ids = numpy.random.choice(
-            numpy.where(
-                numpy.logical_and(
-                    o_29['t5'].portion > 0.1,
-                    o_29['t5'].mean_conf > 0.6
-                )
-            )[0],
-            70
+            t8,
+            min(len(t8), 70),
+            replace=False,
         )
     elif ids == 'v2':
         t8 = numpy.stack(
