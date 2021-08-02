@@ -1643,12 +1643,21 @@ def kernel_27():
             p.wait()
             assert p.returncode == 0
 
-def kernel_28(video_path=None):
+def kernel_28(
+    video_path=None,
+    framrate=None,
+    max_seconds=None,
+):
     import cv2
     import tqdm
     import os
     import subprocess
     import pprint
+
+    if framerate is None:
+        framerate = 4
+    if max_seconds is None:
+        max_seconds = 999999
 
     if video_path is None:
         video_path = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
@@ -1663,10 +1672,10 @@ def kernel_28(video_path=None):
         cap = cv2.VideoCapture(t5)
         fps = cap.get(cv2.CAP_PROP_FPS)      # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        duration = frame_count/fps
+        duration = min(frame_count/fps, max_seconds)
 
         #R = int(round(30 / 5))
-        FRAMERATE = 4
+        FRAMERATE = framerate
         SLICE_LENGTH = 5 * 6
         for i in tqdm.tqdm(range(int(duration / SLICE_LENGTH + 1e-8))):
             t2 = os.path.join(t3, 'slice-%d' % i)
