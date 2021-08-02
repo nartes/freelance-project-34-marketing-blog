@@ -2358,6 +2358,7 @@ def kernel_38(video_path):
         prev_frames=59,
         max_frames=9999,
         max_ids=999,
+        video_path=t1,
     )
 
     return dict(
