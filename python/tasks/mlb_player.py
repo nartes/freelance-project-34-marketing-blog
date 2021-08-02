@@ -1841,7 +1841,7 @@ def kernel_30(
     low_mean_conf=None,
     no_dots=None,
 ):
-    if no_dits is None:
+    if no_dots is None:
         no_dots = False
 
     if low_portion is None:
