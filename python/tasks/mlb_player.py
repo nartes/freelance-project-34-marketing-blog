@@ -2360,7 +2360,7 @@ def kernel_38(
     kernel_28(
         t1,
         framerate=framerate,
-        max_seconds=max_seconds
+        max_seconds=max_seconds,
     )
 
     o_29 = kernel_29(
