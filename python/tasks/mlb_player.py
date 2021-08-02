@@ -2339,3 +2339,7 @@ def kernel_38(video_path):
         t1,
         video_id=t2,
     )
+
+    return dict(
+        o_29=o_29,
+    )
