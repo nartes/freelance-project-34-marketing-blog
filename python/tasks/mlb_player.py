@@ -1964,6 +1964,7 @@ def kernel_30(
     else:
         assert isinstance(ids, numpy.ndarray)
     ids = ids[:max_ids]
+    pprint.pprint(['ids', ids])
 
     t7 = []
 
