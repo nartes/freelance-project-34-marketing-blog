@@ -2335,7 +2335,11 @@ def kernel_37():
 2. https://www.play-cricket.com/website/results/4721802
     '''
 
-def kernel_38(video_path):
+def kernel_38(
+    video_path,
+    framerate=None,
+    max_seconds=None,
+):
     t2 = hashlib.sha256(
         video_path.encode('utf-8')
     ).hexdigest()
@@ -2353,7 +2357,11 @@ def kernel_38(video_path):
             ]
         )
 
-    kernel_28(t1)
+    kernel_28(
+        t1,
+        framerate=framerate,
+        max_seconds=max_seconds
+    )
 
     o_29 = kernel_29(
         t1,
