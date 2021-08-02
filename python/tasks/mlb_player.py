@@ -1651,7 +1651,11 @@ def kernel_28(
     video_path=None,
     framerate=None,
     max_seconds=None,
+    video_id=None,
 ):
+    if video_id is None:
+        video_id = ''
+
     import cv2
     import tqdm
     import os
@@ -1666,7 +1670,7 @@ def kernel_28(
     if video_path is None:
         video_path = '/kaggle/working/ATL AT TOR - April 19, 2015-T0MUK91ZWys.mp4'
     t5 = video_path
-    t3 = '/kaggle/working/kernel_28-output.dir'
+    t3 = '/kaggle/working/kernel_28-output%s.dir' % video_id
     t13 = '/root/kernel_28-output.dir/tmp-slice'
     os.makedirs(t3, exist_ok=True)
 
@@ -1763,7 +1767,7 @@ def kernel_29(video_path=None, video_id=None,):
                 input_path=o
             )
             for o in glob.glob(
-                '/kaggle/working/kernel_28-output.dir/slice-*/*.json'
+                '/kaggle/working/kernel_28-output%s.dir/slice-*/*.json' $ video_id
             )
         ]
 
@@ -2390,6 +2394,7 @@ def kernel_38(
         t1,
         framerate=framerate,
         max_seconds=max_seconds,
+        video_id=t2,
     )
 
     o_29 = kernel_29(
