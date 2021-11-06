@@ -8,3 +8,4 @@ services:
       - 80:80
     volumes:
       - .:/app:rw
+    restart: always
