@@ -20,46 +20,46 @@ def forward(config_dir, config):
         config_dir,
         config['ssh_key']
     )
-    ssh_command = 'ssh -o "ExitOnForwardFailure yes" -o "StrictHostKeyChecking no"'
+    ssh_command = [
+        'ssh',
+        '-o',
+        'ExitOnForwardFailure yes',
+        '-o',
+        'StrictHostKeyChecking no'
+    ]
 
     ports = dict(
-        target=r'''
-          %s -i %s \
-            %s@%s \
-            %s \
-            -N;
-        ''' % (
-            ssh_command,
-            ssh_key,
-            username,
-            server_address,
-            ' '.join([
-                '-R 0.0.0.0:%d:%s:%d' % (
-                    pair[0],
-                    target_address,
-                    pair[1],
-                )
+        target=[
+            *ssh_command,
+            '-i', ssh_key,
+            '%s@%s' % (username, server_address),
+            *sum([
+                [
+                    '-R', '0.0.0.0:%d:%s:%d' % (
+                        pair[0],
+                        target_address,
+                        pair[1],
+                    )
+                ]
                 for pair in target_ports
-            ]),
-        ),
-        blank=r'''
-          %s -i %s \
-            %s@%s \
-            %s \
-            -N;
-        ''' % (
-            ssh_command,
-            ssh_key,
-            username,
-            server_address,
-            ' '.join([
-                '-R 0.0.0.0:%d:%s' % (
-                    pair[0],
-                    blank_endpoint,
-                )
+            ], []),
+            '-N'
+        ],
+        blank=[
+            *ssh_command,
+            '-i', ssh_key,
+            '%s@%s' % (username, server_address),
+            *sum([
+                [
+                    '-R', '0.0.0.0:%d:%s' % (
+                        pair[0],
+                        blank_endpoint,
+                    )
+                ]
                 for pair in target_ports
-            ]),
-        )
+            ], []),
+            '-N'
+        ]
     )
 
     has_server = lambda : subprocess.call([
@@ -72,21 +72,21 @@ def forward(config_dir, config):
     while True:
         notify('started')
         if has_server():
-            t6 = ports['target']
+            t6 = 'target'
             notify('has_server')
         else:
-            t6 = ports['blank']
+            t6 = 'blank'
             notify('blank_app')
-        t2 = t6
-        with subprocess.Popen(t2, shell=True) as p:
+        t2 = ports[t6]
+        with subprocess.Popen(t2) as p:
             try:
                 while True:
                     time.sleep(10)
                     t3 = has_server()
                     t4 = None
-                    if t6 == ports['target'] and not t3:
+                    if t6 == 'target' and not t3:
                         t4 = 'no server'
-                    elif t6 == ports['blank'] and t3:
+                    elif t6 == 'blank' and t3:
                         t4 = 'server found'
                     if not t4 is None:
                         notify(t4)
