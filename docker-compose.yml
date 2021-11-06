@@ -4,8 +4,14 @@ services:
     build:
       context: .
       dockerfile: ./docker/blank-app/Dockerfile
-    ports:
-      - 80:80
     volumes:
       - .:/app:rw
+    restart: always
+  forward:
+    build:
+      context: .
+      dockerfile: ./docker/forward/Dockerfile
+    volumes:
+      - ./d1/forward.py:/app/d1/forward.py:ro
+      - ./tmp/cache/forward_data:/app/tmp/cache/forward_data:ro
     restart: always
