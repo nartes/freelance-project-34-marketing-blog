@@ -22,10 +22,10 @@ def forward(config_dir, config):
     )
     ssh_command = [
         'ssh',
-        '-o',
-        'ExitOnForwardFailure yes',
-        '-o',
-        'StrictHostKeyChecking no'
+        '-o', 'ExitOnForwardFailure yes',
+        '-o', 'StrictHostKeyChecking no',
+        '-o', 'ServerAliveInterval 1',
+        '-o', 'ConnectTimeout 1',
     ]
 
     ports = dict(

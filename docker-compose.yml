@@ -1,17 +1,20 @@
 version: '3.7'
 services:
-  blank-app:
+  app:
     build:
       context: .
-      dockerfile: ./docker/blank-app/Dockerfile
+      dockerfile: ./docker/app/Dockerfile
     volumes:
-      - .:/app:rw
+      - ./d1/nginx_config.py:/app/d1/nginx_config.py:ro
+      - ./tmp/cache/forward.nginx.json:/app/tmp/cache/forward.nginx.json:ro
     restart: always
-  forward:
-    build:
-      context: .
-      dockerfile: ./docker/forward/Dockerfile
-    volumes:
-      - ./d1/forward.py:/app/d1/forward.py:ro
-      - ./tmp/cache/forward_data:/app/tmp/cache/forward_data:ro
-    restart: always
+    ports:
+      - 80:80
+  #forward:
+  #  build:
+  #    context: .
+  #    dockerfile: ./docker/forward/Dockerfile
+  #  volumes:
+  #    - ./d1/forward.py:/app/d1/forward.py:ro
+  #    - ./tmp/cache/forward_data:/app/tmp/cache/forward_data:ro
+  #  restart: always
