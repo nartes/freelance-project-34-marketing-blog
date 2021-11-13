@@ -280,7 +280,7 @@ globalkeys = gears.table.join(
               {description = "flameshot", group = "launcher"}),
     awful.key({ modkey,           }, "space", function () mykeyboardlayout.next_layout() end,
               {description = "next layout", group = "keyboard"}),
-    awful.key({ modkey }, "l", function () awful.spawn("sh -c 'sleep 0.3 && xset dpms force off && slock' &")    end,
+    awful.key({ modkey }, "l", function () awful.spawn("sh -c 'sleep 0.3 && xset dpms force off && slock | bash' &")    end,
               {description = "screen lock", group = "dpms"}),
 
     awful.key({ modkey, "Control" }, "r", awesome.restart,
