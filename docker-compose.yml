@@ -8,8 +8,18 @@ services:
       - ./d1/nginx_config.py:/app/d1/nginx_config.py:ro
       - ./tmp/cache/forward.nginx.json:/app/tmp/cache/forward.nginx.json:ro
     restart: always
-    ports:
-      - 80:80
+  dynu:
+    build:
+      context: .
+      dockerfile: ./docker/dynu/Dockerfile
+    volumes:
+      - ./d1/dynu_update.py:/app/d1/dynu_update.py:ro
+      - ./tmp/cache/dynu.auth.json:/app/tmp/cache/dynu.auth.json:ro
+  ngrok:
+    image: wernight/ngrok
+    links:
+      - app
+    command: ['ngrok', 'http', 'app:80']
   #forward:
   #  build:
   #    context: .
