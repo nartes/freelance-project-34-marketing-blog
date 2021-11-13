@@ -15,11 +15,15 @@ services:
     volumes:
       - ./d1/dynu_update.py:/app/d1/dynu_update.py:ro
       - ./tmp/cache/dynu.auth.json:/app/tmp/cache/dynu.auth.json:ro
+    restart: always
+    links:
+      - ngrok
   ngrok:
     image: wernight/ngrok
     links:
       - app
     command: ['ngrok', 'http', 'app:80']
+    restart: always
   #forward:
   #  build:
   #    context: .
