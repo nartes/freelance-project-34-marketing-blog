@@ -23,6 +23,8 @@ services:
     links:
       - app
     command: ['ngrok', 'http', 'app:80']
+    volumes:
+      - ./tmp/cache/ngrok.yml:/home/ngrok/.ngrok2/ngrok.yml:ro
     restart: always
   #forward:
   #  build:
