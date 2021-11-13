@@ -1,0 +1,6 @@
+XTerm.termName: xterm-256color
+XTerm.vt100.metaSendsEscape: true
+XTerm.vt100.saveLines: 4096
+XTerm.vt100.scrollBar: true
+XTerm.vt100.scrollBar.width: 8
+XTerm.vt100.faceName: Terminus Regular:size=10:antialias=false
