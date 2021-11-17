@@ -34,13 +34,13 @@ with io.open(
     f.write(r'''
 events {
   multi_accept on;
-  worker_connections 8;
+  worker_connections 64;
 }
 
 http {
   server {
     listen 80;
-    client_max_body_size 200M;
+    client_max_body_size 50M;
 
     {sections_config}
 
