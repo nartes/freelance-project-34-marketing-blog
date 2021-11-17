@@ -165,6 +165,15 @@ readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
 				);
 				fflush(stdout);
 			}
+			else if (ksym == 0x1008ff14)
+			{
+				fprintf(
+					stdout,
+					"playerctl play-pause;"
+					"\n"
+				);
+				fflush(stdout);
+			}
 			else if (ksym == XK_Escape)
 			{
 				fprintf(
