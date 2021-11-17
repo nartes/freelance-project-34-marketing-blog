@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+import traceback
+import sys
+import subprocess
+
+msg = ''
+
+try:
+    if sys.argv[1] == 'media-play-pause':
+        subprocess.check_call(['playerctl', 'play-pause'])
+        msg = subprocess.check_output(['playerctl', 'status']).decode('utf-8').strip()
+    elif sys.argv[1] == 'media-lower-volume':
+        subprocess.check_call([
+            'pactl',
+            'set-sink-volume',
+            '@DEFAULT_SINK@',
+            '-5%'
+        ])
+        msg = subprocess.check_output([
+            'pactl',
+            'get-sink-volume',
+            '@DEFAULT_SINK@'
+        ]).decode('utf-8').strip()
+    elif sys.argv[1] == 'media-raise-volume':
+        subprocess.check_call([
+            'pactl',
+            'set-sink-volume',
+            '@DEFAULT_SINK@',
+            '+5%'
+        ])
+        msg = subprocess.check_output([
+            'pactl',
+            'get-sink-volume',
+            '@DEFAULT_SINK@'
+        ]).decode('utf-8').strip()
+    else:
+        raise NotImplementedError
+except:
+    msg = 'not implemented\n%s' % traceback.format_exc()
+
+subprocess.check_call([
+    'notify-send',
+    'commands',
+    msg
+])

@@ -42,7 +42,13 @@
 "pactl set-sink-mute @DEFAULT_SINK@ toggle; (pactl get-sink-mute @DEFAULT_SINK@ | grep -Po no > /dev/null); echo $? > /sys/class/leds/hda::mute/brightness"
   XF86AudioMute
 
-"playerctl play-pause"
+"commands media-raise-volume"
+  XF86AudioRaiseVolume
+
+"commands media-lower-volume"
+  XF86AudioLowerVolume
+
+"commands media-play-pause"
   XF86AudioPlay
 
 #"xbindkeys_show" 
