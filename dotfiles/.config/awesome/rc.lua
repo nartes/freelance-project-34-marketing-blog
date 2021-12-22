@@ -46,6 +46,7 @@ end
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
+beautiful.font = 'Monospace 10'
 
 -- This is used later as the default terminal and editor to run.
 terminal = "xterm"
@@ -107,7 +108,7 @@ mykeyboardlayout = awful.widget.keyboardlayout()
 
 -- {{{ Wibar
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock()
+mytextclock = wibox.widget.textclock(" %a %b %d %Y, %H:%M:%S", 1)
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -169,7 +170,10 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
+    awful.tag({
+        "1", "2"
+        --, "3", "4", "5", "6", "7", "8", "9" 
+    }, s, awful.layout.layouts[1])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -210,8 +214,38 @@ awful.screen.connect_for_each_screen(function(s)
         s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
             wibox.widget.systray(),
+            wibox.widget.textbox(' |'),
+            awful.widget.watch(
+                'bash -c "echo ' ..
+                'ZnJlZSAtaCB8IGdyZXAgLVAgTWVtOiB8IGdyZXAgLVBvICdbXHdcLlxkXSsnIHw' ..
+                'gdGFpbCAtbiArMiB8IGhlYWQgLW4gMyB8IHhhcmdzIGVjaG8gLW4K' ..
+                ' | base64 -d | bash"'
+            ),
+            wibox.widget.textbox('|'),
+            awful.widget.watch(
+                'bash -c "echo ' ..
+                'c2Vuc29ycyB8IGdyZXAgLVBvICdbXFxcK1xcXC1cXFx3XVteXFxcc10rQyAnIHwg' ..
+                'aGVhZCAtbiA1IHwgeGFyZ3MgZWNobyAtbgo=' ..
+                ' | base64 -d | bash"'
+            ),
+            wibox.widget.textbox('|'),
+            awful.widget.watch(
+                'bash -c "echo ' ..
+                'c3NoIG5hcnRlc0BwaXpjb29sMzA3MCBmcmVlIC1oIHwgZ3JlcCAtUCBNZW06IHw' ..
+                'gZ3JlcCAtUG8gJ1tcd1wuXGRdKycgfCB0YWlsIC1uICsyIHwgaGVhZCAtbiAzIH' ..
+                'wgeGFyZ3MgZWNobyAtbgo=' ..
+                ' | base64 -d | bash"'
+            ),
+            wibox.widget.textbox('|'),
+            awful.widget.watch(
+                'bash -c "echo ' ..
+                'c3NoIG5hcnRlc0BwaXpjb29sMzA3MCAic2Vuc29ycyB8IGdyZXAgLVBvICdbXFxc' ..
+                'K1xcXC1cXFx3XVteXFxcc10rQyAnIHwgaGVhZCAtbiAxIgo=' ..
+                ' | base64 -d | bash"'
+            ),
+            wibox.widget.textbox('| '),
+            mykeyboardlayout,
             mytextclock,
             s.mylayoutbox,
         },
@@ -296,10 +330,10 @@ globalkeys = gears.table.join(
               {description = "increase the number of master clients", group = "layout"}),
     awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1, nil, true) end,
               {description = "decrease the number of master clients", group = "layout"}),
-    awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
-              {description = "increase the number of columns", group = "layout"}),
-    awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
-              {description = "decrease the number of columns", group = "layout"}),
+    --awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
+    --          {description = "increase the number of columns", group = "layout"}),
+    --awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
+    --          {description = "decrease the number of columns", group = "layout"}),
     -- awful.key({ modkey,           }, "space", function () awful.layout.inc( 1)                end,
     --          {description = "select next", group = "layout"}),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
