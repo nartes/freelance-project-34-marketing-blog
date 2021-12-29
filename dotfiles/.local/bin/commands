@@ -1,14 +1,56 @@
 #!/usr/bin/python3
 import traceback
+import time
 import sys
 import subprocess
 
-msg = ''
+msg = None
+
+def player_metadata():
+    for k in range(20):
+        try:
+            time.sleep(1.0)
+            return subprocess.check_output(['playerctl', 'metadata']).decode('utf-8').strip()
+        except:
+            continue
+
+def status():
+    return ' | '.join([
+        subprocess.check_output(o, shell=True).decode('utf-8').strip()
+        for o in [
+            r'''
+                free -h | \
+                    grep -P Mem: | grep -Po '[\w\.\d]+' | tail -n +2 | head -n 3 | xargs echo -n;
+            ''',
+            r'''
+                sensors | \
+                    grep -Po '[\\\+\\\-\\\w][^\\\s]+C ' | head -n 5 | xargs echo -n
+            ''',
+            r'''
+                ssh nartes@pizcool3070 free -h | \
+                    grep -P Mem: | grep -Po '[\w\.\d]+' | tail -n +2 | head -n 3 | xargs echo -n;
+            ''',
+            r'''
+                ssh nartes@pizcool3070 sensors | \
+                    grep -Po '[\\\+\\\-\.0-9]+\s+C ' | head -n 1
+            ''',
+            r'''
+                date +'%Y-%m-%d %l:%M:%S %p';
+            ''',
+        ]
+    ]).replace('\n\r', '')
+
 
 try:
     if sys.argv[1] == 'media-play-pause':
         subprocess.check_call(['playerctl', 'play-pause'])
-        msg = subprocess.check_output(['playerctl', 'status']).decode('utf-8').strip()
+        msg = player_metadata()
+    elif sys.argv[1] == 'media-next':
+        subprocess.check_call(['playerctl', 'next'])
+        msg = player_metadata()
+    elif sys.argv[1] == 'media-prev':
+        subprocess.check_call(['playerctl', 'previous'])
+        msg = player_metadata()
     elif sys.argv[1] == 'media-lower-volume':
         subprocess.check_call([
             'pactl',
@@ -33,13 +75,27 @@ try:
             'get-sink-volume',
             '@DEFAULT_SINK@'
         ]).decode('utf-8').strip()
+    elif sys.argv[1] == 'status':
+        sys.stdout.write(status())
+        sys.stdout.flush()
+    elif sys.argv[1] == 'http-server':
+        subprocess.check_call(r'''
+            sudo docker run
+                -p 80:80
+                -u root
+                -it --entrypoint=/bin/bash
+                -v $PWD:/app:ro
+                nginx:latest
+                -c 'echo "server{listen 80; root /app; location / {autoindex on;}}" > /etc/nginx/conf.d/default.conf; nginx -g "daemon off;"'
+        ''', shell=True)
     else:
         raise NotImplementedError
 except:
     msg = 'not implemented\n%s' % traceback.format_exc()
 
-subprocess.check_call([
-    'notify-send',
-    'commands',
-    msg
-])
+if not msg is None:
+    subprocess.check_call([
+        'notify-send',
+        'commands',
+        msg
+    ])
