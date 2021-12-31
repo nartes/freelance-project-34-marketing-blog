@@ -88,6 +88,10 @@ try:
                 nginx:latest \
                 -c 'echo "server{listen 80; root /app; location / {autoindex on;}}" > /etc/nginx/conf.d/default.conf; nginx -g "daemon off;"'
         ''', shell=True)
+    elif sys.argv[1] == 'wl-screenshot':
+        subprocess.check_call(r'''
+            grim -g "$(slurp)" - | wl-copy
+        ''', shell=True)
     else:
         raise NotImplementedError
 except:
