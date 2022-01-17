@@ -232,6 +232,28 @@ def eternal_firefox(
                 if debug:
                     assert subprocess.check_call(['notify-send', '%s:Closed' % group_name]) == 0
 
+def resilient_ethernet(ip_addr, ethernet_device):
+    subprocess.check_call(
+        r'''
+            sudo sh -c '\
+while true; \
+do ping -c 3 -w 3 -W 1 {{IP_ADDR}} || (\
+    ip link set {{ETHERNET_DEVICE}} down; \
+    ip link set {{ETHERNET_DEVICE}} up; \
+    sleep 4; true;\
+); \
+sleep 10; clear; date; \
+done'
+        '''.replace(
+            '{{IP_ADDR}}',
+            ip_addr
+        ).replace(
+            '{{ETHERNET_DEVICE}}}',
+            ethernet_device
+        ),
+        shell=True
+    )
+
 def status():
     return ' | '.join([
         subprocess.check_output(o, shell=True).decode('utf-8').strip()
@@ -321,6 +343,11 @@ try:
             window_position=json.loads(sys.argv[4]),
             debug=json.loads(sys.argv[5]),
             tabs=sys.argv[6:],
+        )
+    elif sys.argv[1] == 'resilient-ethernet':
+        resilient_ethernet(
+            ip_addr=sys.argv[2],
+            ethernet_device=sys.argv[3],
         )
     else:
         raise NotImplementedError
