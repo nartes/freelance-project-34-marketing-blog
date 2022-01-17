@@ -14,6 +14,45 @@ def player_metadata():
         except:
             continue
 
+def eternal_oom():
+    import signal
+    import os
+    import re
+    import time
+    import io
+    import pandas
+    import numpy
+    import subprocess
+    import pprint
+    self_pid = os.getpid()
+    while True:
+        with io.BytesIO(subprocess.check_output('ps -e -o pid,rss,user', shell=True)) as f:
+            t1 = pandas.read_csv(f, sep='\s+', header=0)
+        with io.BytesIO(subprocess.check_output('free', shell=True)) as f:
+            t2 = pandas.read_csv(f, sep='\s+')
+        t5 = subprocess.check_output('ps -e -o pid,args', shell=True).decode('utf-8').splitlines()
+        t6 = pandas.DataFrame(
+            [
+                re.compile(r'^\s*(\d+)\s(.*)$').search(o).groups() for o in t5[1:]
+            ],
+            columns=tuple(t5[0].split())
+        ).assign(PID=lambda x: x.PID.values.astype(numpy.int32))
+        t7 = pandas.merge(t1, t6, on='PID')
+        t8 = t7.sort_values(by=['RSS'], ascending=False).assign(used=lambda x: (x.RSS / 1024).cumsum())
+        t11 = numpy.where(
+            numpy.stack([
+                t8.PID.values != self_pid,
+                t8.COMMAND.str.contains('freelancer').isin([False])
+            ], axis=0).prod(0)
+        )[0]
+        t9 = t8.iloc[t11]
+        t4 = lambda : os.kill(t9.PID.iloc[0], signal.SIGKILL)
+        t10 = lambda : t2.loc['Mem:', 'used'] > 3 * 1024 * 1024
+        if t10():
+            pprint.pprint(['Killing', t9.iloc[0], t2, t9])
+            t4()
+        time.sleep(1)
+
 def status():
     return ' | '.join([
         subprocess.check_output(o, shell=True).decode('utf-8').strip()
@@ -92,6 +131,8 @@ try:
         subprocess.check_call(r'''
             grim -g "$(slurp)" - | wl-copy
         ''', shell=True)
+    elif sys.argv[1] == 'eternal-oom':
+        eternal_oom()
     else:
         raise NotImplementedError
 except:
