@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import json
 import traceback
 import time
 import sys
@@ -167,13 +168,16 @@ def eternal_firefox(
 
                 #t2 = t3.split()[0]
                 #assert os.system('wmctrl -i -r %s -e %s' % (t2, window_position)) == 0
-                assert os.system(r'''
-                    swaymsg '[pid="{{PID}}"] move absolute position {{X}}px {{Y}}px'
-                '''.replace('{{PID}}', str(p.pid)) \
-                    .replace('{{X}}', str(window_position[1])) \
-                    .replace('{{Y}}', str(window_position[2]))) == 0
-
                 #assert os.system('wmctrl -i -r %s -b add,below' % t2) == 0
+                def reposition():
+                    assert os.system(r'''
+                        swaymsg '[pid="{{PID}}"] move absolute position {{X}}px {{Y}}px' && \
+                        swaymsg '[pid="{{PID}}"] move window to workspace {{WORKSPACE}}'
+                    '''.replace('{{PID}}', str(p.pid)) \
+                        .replace('{{X}}', str(window_position[1])) \
+                        .replace('{{Y}}', str(window_position[2])) \
+                        .replace('{{WORKSPACE}}', str(window_position[0]))) == 0
+                reposition()
 
                 if False:
                     for tab in tabs[1:]:
@@ -191,10 +195,16 @@ def eternal_firefox(
 
                 start = datetime.datetime.now()
                 is_to_restart = lambda : (datetime.datetime.now() - start).total_seconds() >= 900 * 4
+                polling_count = 0
+
                 while not is_to_restart():
+                    if polling_count == 0:
+                        reposition()
+
                     if not p.poll() is None:
                         break
                     time.sleep(10)
+                    polling_count += 1
 
                 if debug:
                     assert subprocess.check_call(['notify-send', '%s:Closing' % group_name]) == 0
@@ -204,6 +214,11 @@ def eternal_firefox(
                     swaymsg '[pid="%d"] kill'
                 ''' % (p.pid,)) == 0
 
+            except KeyboardInterrupt:
+                assert os.system(r'''
+                    swaymsg '[pid="%d"] kill'
+                ''' % (p.pid,)) == 0
+                break
             except:
                 import traceback
                 import pprint
@@ -304,7 +319,7 @@ try:
             profile=sys.argv[2],
             group_name=sys.argv[3],
             window_position=json.loads(sys.argv[4]),
-            debug=bool(sys.argv[5]),
+            debug=json.loads(sys.argv[5]),
             tabs=sys.argv[6:],
         )
     else:
