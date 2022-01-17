@@ -3,6 +3,7 @@ import traceback
 import time
 import sys
 import subprocess
+import logging
 
 msg = None
 
@@ -52,6 +53,66 @@ def eternal_oom():
             pprint.pprint(['Killing', t9.iloc[0], t2, t9])
             t4()
         time.sleep(1)
+
+def resilient_vlc(stream=None):
+    if stream is None:
+        streams_path = os.path.join(
+            os.environ['CACHE_PATH'],
+            'resilient-vlc-streams.json'
+        )
+
+        if os.path.exists(streams_path):
+            with io.open(
+                streams_path,
+                'r'
+            ) as f:
+                stream = json.load(f)
+        else:
+            raise RuntimeError(
+                'not found, %s' % streams_path
+            )
+
+    if isinstance(stream, str):
+        stream = [stream]
+
+    if len(stream) == 0:
+        raise RuntimeError('no streams')
+
+    import subprocess
+    import time
+    while True:
+        print('new start')
+        with subprocess.Popen([
+            'cvlc', '--verbose', '2', *stream,
+        ], stderr=subprocess.PIPE) as p:
+            while p.returncode is None:
+                t1 = p.stderr.readline().decode('utf-8')
+                if len(t1) > 0:
+                    print(t1)
+                if not all([
+                    o in t1
+                    for o in [
+                        'prefetch stream error',
+                        'terror',
+                        'main interface error',
+                    ]
+                ]) and any([
+                    o in t1
+                    for o in [
+                        'pulse audio output debug: underflow'
+                    ]
+                ]):
+                    print('shit')
+                    p.kill()
+                    while True:
+                        try:
+                            t2 = p.wait(timeout=1)
+                            print(t2)
+                            break
+                        except:
+                            print('shit')
+                            pass
+        time.sleep(1.0)
 
 def status():
     return ' | '.join([
@@ -133,14 +194,17 @@ try:
         ''', shell=True)
     elif sys.argv[1] == 'eternal-oom':
         eternal_oom()
+    elif sys.argv[1] == 'resilient-vlc':
+        resilient_vlc(sys.argv[2:])
     else:
         raise NotImplementedError
 except:
     msg = 'not implemented\n%s' % traceback.format_exc()
+    logging.error(msg)
 
 if not msg is None:
     subprocess.check_call([
         'notify-send',
         'commands',
-        msg
+        msg[-128:]
     ])
