@@ -22,36 +22,189 @@ def eternal_oom():
     import re
     import time
     import io
-    import pandas
-    import numpy
     import subprocess
     import pprint
     self_pid = os.getpid()
+
+    def pandas_data_frame(lines, groups_regex, header_regex, extra_columns):
+        header = re.compile(header_regex).search(lines[0]).groups()
+        rows = [
+            re.compile(groups_regex).search(row).groups()
+            for row in lines[1:]
+        ]
+        columns = {
+            column: []
+            for column in header
+        }
+        for row in rows:
+            for value, column in zip(row, header):
+                columns[column].append(value)
+        for column, transformation in extra_columns.items():
+            columns[column] = [
+                transformation(
+                    {
+                        k : v[index]
+                        for k, v in columns.items()
+                    }
+                )
+                for index in range(len(rows))
+            ]
+
+        return columns
+
+    def pandas_merge(left, right, on):
+        index = {}
+        input_data_frames = [
+            ('left', left),
+            ('right', right),
+        ]
+        for index_name, data_frame in input_data_frames:
+            current_index = {}
+            for row_index, value in enumerate(data_frame[on]):
+                if not value in current_index:
+                    current_index[value] = []
+                current_index[value].append(row_index)
+
+            index[index_name] = current_index
+
+        merged_data_frame = dict(
+            header=[
+                column + '_x'
+                for column in left
+            ] + [
+                column + '_y'
+                for column in right
+            ],
+            columns={},
+        )
+
+        for column in merged_data_frame['header']:
+            merged_data_frame['columns'][column] = []
+
+        common_values = {
+            left_value
+            for left_value in index['left']
+            if left_value in index['right']
+        }
+        common_rows = sorted(
+            [
+                dict(
+                    left_row_index=index['left'][value][0],
+                    right_row_index=index['right'][value][0],
+                )
+                for value in common_values
+            ],
+            key=lambda x: x['left_row_index'],
+        )
+        for common_row in common_rows:
+            row = sum([
+                [
+                    values[
+                        common_row['%s_row_index' % index_name]
+                    ]
+                    for column, values in data_frame.items()
+                ]
+                for index_name, data_frame in input_data_frames
+            ], [])
+            for column, value in zip(merged_data_frame['header'], row):
+                merged_data_frame['columns'][column].append(value)
+
+        return merged_data_frame['columns']
+
+    def pandas_sort_values(data_frame, by, ascending):
+        assert len(by) == 1
+        assert ascending is False
+        t1 = [
+            o['row_index']
+            for o in sorted(
+                [
+                    dict(
+                        row_index=row_index,
+                        value=value
+                    )
+                    for row_index, value in enumerate(data_frame[by[0]])
+                ],
+                key=lambda x: x['value']
+            )[::-1]
+        ]
+        return {
+            column : [
+                values[row_index]
+                for row_index in t1
+            ]
+            for column, values in data_frame.items()
+        }
+
+    def pandas_filter_values(data_frame, condition):
+        shape = [
+            len(data_frame),
+        ]
+        if shape[0] > 0:
+            shape.append(
+                len(list(data_frame.values())[0])
+            )
+        t1 = [
+            row_index
+            for row_index in range(shape[1])
+            if condition(
+                {
+                    column : values[row_index]
+                    for column, values in data_frame.items()
+                }
+            )
+        ]
+        return {
+            column : [
+                values[row_index]
+                for row_index in t1
+            ]
+            for column, values in data_frame.items()
+        }
+
+    def pandas_row(data_frame, row_index):
+        return {
+            column : values[row_index]
+            for column, values in data_frame.items()
+        }
+
     while True:
         with io.BytesIO(subprocess.check_output('ps -e -o pid,rss,user', shell=True)) as f:
-            t1 = pandas.read_csv(f, sep='\s+', header=0)
+            t1 = pandas_data_frame(
+                f.read().decode('utf-8').splitlines(),
+                r'^\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$',
+                r'^\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$',
+                dict(
+                    PID=lambda row: int(row['PID']),
+                    RSS=lambda row: int(row['RSS']),
+                ),
+            )
+
         with io.BytesIO(subprocess.check_output('free', shell=True)) as f:
-            t2 = pandas.read_csv(f, sep='\s+')
+            mem_used = int(f.read().decode('utf-8').splitlines()[1].strip().split()[2])
         t5 = subprocess.check_output('ps -e -o pid,args', shell=True).decode('utf-8').splitlines()
-        t6 = pandas.DataFrame(
-            [
-                re.compile(r'^\s*(\d+)\s(.*)$').search(o).groups() for o in t5[1:]
-            ],
-            columns=tuple(t5[0].split())
-        ).assign(PID=lambda x: x.PID.values.astype(numpy.int32))
-        t7 = pandas.merge(t1, t6, on='PID')
-        t8 = t7.sort_values(by=['RSS'], ascending=False).assign(used=lambda x: (x.RSS / 1024).cumsum())
-        t11 = numpy.where(
-            numpy.stack([
-                t8.PID.values != self_pid,
-                t8.COMMAND.str.contains('freelancer').isin([False])
-            ], axis=0).prod(0)
-        )[0]
-        t9 = t8.iloc[t11]
-        t4 = lambda : os.kill(t9.PID.iloc[0], signal.SIGKILL)
-        t10 = lambda : t2.loc['Mem:', 'used'] > 3 * 1024 * 1024
+        t6 = pandas_data_frame(
+            t5,
+            r'^\s*(\d+)\s(.*)$',
+            r'^\s+(\w+)\s+(\w+)\s*$',
+            dict(
+                PID=lambda row: int(row['PID'])
+            ),
+        )
+        t7 = pandas_merge(t1, t6, on='PID')
+        t8 = pandas_sort_values(t7, by=['RSS_x'], ascending=False)
+        t9 = pandas_filter_values(
+            t8,
+            lambda row: row['PID_x'] != self_pid and not 'freelancer' in row['COMMAND_y']
+        )
+        t4 = lambda : os.kill(t9['PID_x'][0], signal.SIGKILL)
+        t10 = lambda : mem_used > 3 * 1024 * 1024
         if t10():
-            pprint.pprint(['Killing', t9.iloc[0], t2, t9])
+            import pandas
+            pprint.pprint([
+                'Killing',
+                pandas_row(t9, 0),
+                mem_used,
+            ])
             t4()
         time.sleep(1)
 
