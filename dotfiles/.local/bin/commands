@@ -199,10 +199,9 @@ def eternal_oom():
         t4 = lambda : os.kill(t9['PID_x'][0], signal.SIGKILL)
         t10 = lambda : mem_used > 3 * 1024 * 1024
         if t10():
-            import pandas
             pprint.pprint([
                 'Killing',
-                pandas_row(t9, 0),
+                t9,
                 mem_used,
             ])
             t4()
