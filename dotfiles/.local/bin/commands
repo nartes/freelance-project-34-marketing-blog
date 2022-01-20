@@ -27,7 +27,9 @@ def eternal_oom(memory_limit=None):
     self_pid = os.getpid()
     if memory_limit is None:
         memory_limit = 3 * 1024 * 1024
-    assert isinstance(memory_limit, int) and memory_limit < 6 * 1024 * 1024
+    assert isinstance(memory_limit, int) \
+        and memory_limit < 6 * 1024 * 1024 \
+        and memory_limit > 512 * 1024 * 1024
 
     def pandas_data_frame(lines, groups_regex, header_regex, extra_columns):
         header = re.compile(header_regex).search(lines[0]).groups()
