@@ -16,7 +16,7 @@ def player_metadata():
         except:
             continue
 
-def eternal_oom():
+def eternal_oom(memory_limit=None):
     import signal
     import os
     import re
@@ -25,6 +25,9 @@ def eternal_oom():
     import subprocess
     import pprint
     self_pid = os.getpid()
+    if memory_limit is None:
+        memory_limit = 3 * 1024 * 1024
+    assert isinstance(memory_limit, int) and memory_limit < 6 * 1024 * 1024
 
     def pandas_data_frame(lines, groups_regex, header_regex, extra_columns):
         header = re.compile(header_regex).search(lines[0]).groups()
@@ -197,7 +200,7 @@ def eternal_oom():
             lambda row: row['PID_x'] != self_pid and not 'freelancer' in row['COMMAND_y']
         )
         t4 = lambda : os.kill(t9['PID_x'][0], signal.SIGKILL)
-        t10 = lambda : mem_used > 3 * 1024 * 1024
+        t10 = lambda : mem_used > memory_limit
         if t10():
             pprint.pprint([
                 'Killing',
@@ -485,7 +488,9 @@ try:
             grim -g "$(slurp)" - | wl-copy
         ''', shell=True)
     elif sys.argv[1] == 'eternal-oom':
-        eternal_oom()
+        eternal_oom(
+            memory_limit=json.loads(sys.argv[2]),
+        )
     elif sys.argv[1] == 'resilient-vlc':
         resilient_vlc(sys.argv[2:])
     elif sys.argv[1] == 'eternal-firefox':
