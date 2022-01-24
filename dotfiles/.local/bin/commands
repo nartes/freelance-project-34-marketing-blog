@@ -206,7 +206,7 @@ def eternal_oom(memory_limit=None):
         if t10():
             pprint.pprint([
                 'Killing',
-                t9,
+                pandas_row(t9, 0),
                 mem_used,
             ])
             t4()
