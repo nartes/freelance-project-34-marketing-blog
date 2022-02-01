@@ -513,12 +513,12 @@ try:
         assert all([
             env_name in os.environ
             for env_name in [
-				'GTK_IM_MODULE',
-				'XMODIFIERS',
-				'QT_IM_MODULE',
-				'I3SOCK',
-				'SWAYSOCK',
-				'WAYLAND_DISPLAY',
+                'GTK_IM_MODULE',
+                'XMODIFIERS',
+                'QT_IM_MODULE',
+                'I3SOCK',
+                'SWAYSOCK',
+                'WAYLAND_DISPLAY',
             ]
         ])
         services = []
