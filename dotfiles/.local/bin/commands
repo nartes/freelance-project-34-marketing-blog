@@ -508,6 +508,22 @@ try:
             ip_addr=sys.argv[2],
             ethernet_device=sys.argv[3],
         )
+    elif sys.argv[1] == 'desktop-services':
+        t1 = []
+        try:
+            t1.append(
+                subprocess.Popen(['ibus-daemon'])
+            )
+            for o in t1:
+                t1.wait()
+        finally:
+            for o in t1:
+                try:
+                    t1.terminate(timeout=10)
+                except:
+                    logging.error('killed %s' % str(t1.__dict__))
+                    t1.kill()
+
     else:
         raise NotImplementedError
 except:
