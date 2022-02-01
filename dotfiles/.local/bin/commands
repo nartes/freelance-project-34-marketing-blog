@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 import json
 import traceback
 import time
@@ -509,20 +510,31 @@ try:
             ethernet_device=sys.argv[3],
         )
     elif sys.argv[1] == 'desktop-services':
-        t1 = []
+        assert all([
+            env_name in os.environ
+            for env_name in [
+				'GTK_IM_MODULE',
+				'XMODIFIERS',
+				'QT_IM_MODULE',
+				'I3SOCK',
+				'SWAYSOCK',
+				'WAYLAND_DISPLAY',
+            ]
+        ])
+        services = []
         try:
-            t1.append(
+            services.append(
                 subprocess.Popen(['ibus-daemon'])
             )
-            for o in t1:
-                t1.wait()
+            for o in services:
+                o.wait()
         finally:
-            for o in t1:
+            for o in services:
                 try:
-                    t1.terminate(timeout=10)
+                    o.terminate(timeout=10)
                 except:
-                    logging.error('killed %s' % str(t1.__dict__))
-                    t1.kill()
+                    logging.error('killed %s' % str(o.__dict__))
+                    o.kill()
 
     else:
         raise NotImplementedError
