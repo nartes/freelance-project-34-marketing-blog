@@ -43,7 +43,10 @@ logging.warning('got dynu_redirect')
 
 NGROK_DOMAIN = sys.argv[2]
 t6 = requests.get('http://%s:4040/api/tunnels' % NGROK_DOMAIN).json()
-TUNNEL_URL = t6['tunnels'][0]['public_url'].replace('http://', 'https://')
+try:
+    TUNNEL_URL = t6['tunnels'][0]['public_url'].replace('http://', 'https://')
+except:
+    TUNNEL_URL = ''
 logging.warning('got tunnel_url')
 
 
