@@ -4,6 +4,7 @@ import json
 import traceback
 import time
 import sys
+import io
 import subprocess
 import logging
 
@@ -30,11 +31,8 @@ def memory_stats():
 
 def eternal_oom(memory_limit=None):
     import signal
-    import os
     import re
     import time
-    import io
-    import subprocess
     import pprint
     self_pid = os.getpid()
     if memory_limit is None:
