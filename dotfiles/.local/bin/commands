@@ -17,6 +17,17 @@ def player_metadata():
         except:
             continue
 
+def memory_stats():
+    with io.BytesIO(subprocess.check_output('free', shell=True)) as f:
+        t1 = f.read().decode('utf-8').splitlines()
+        mem_total = int(t1[1].strip().split()[1])
+        mem_used = int(t1[1].strip().split()[2])
+
+    return dict(
+        mem_total=mem_total,
+        mem_used=mem_used,
+    )
+
 def eternal_oom(memory_limit=None):
     import signal
     import os
@@ -29,7 +40,7 @@ def eternal_oom(memory_limit=None):
     if memory_limit is None:
         memory_limit = 3 * 1024 * 1024
     assert isinstance(memory_limit, int) \
-        and memory_limit < 6 * 1024 * 1024 \
+        and memory_limit < memory_stats()['mem_total'] * 0.8 \
         and memory_limit > 512 * 1024
 
     def pandas_data_frame(lines, groups_regex, header_regex, extra_columns):
@@ -185,8 +196,7 @@ def eternal_oom(memory_limit=None):
                 ),
             )
 
-        with io.BytesIO(subprocess.check_output('free', shell=True)) as f:
-            mem_used = int(f.read().decode('utf-8').splitlines()[1].strip().split()[2])
+        mem_used = memory_stats()['mem_used']
         t5 = subprocess.check_output('ps -e -o pid,args', shell=True).decode('utf-8').splitlines()
         t6 = pandas_data_frame(
             t5,
