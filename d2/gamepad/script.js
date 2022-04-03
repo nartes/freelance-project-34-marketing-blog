@@ -112,6 +112,16 @@
                             );
                         }
                     }
+                    if (o3.PAD_L_SHOULDER_1 || o3.PAD_R_SHOULDER_1)
+                    {
+                        window.context.drag_mouse(
+                            0,
+                            0,
+                            [
+                                0,
+                            ]
+                        );
+                    }
                     if (o3.PAD_SELECT == 1)
                     {
                         clearInterval(ctx.timer_id);
