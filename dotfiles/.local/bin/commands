@@ -336,14 +336,30 @@ def eternal_firefox(
                 #assert os.system('wmctrl -i -r %s -e %s' % (t2, window_position)) == 0
                 #assert os.system('wmctrl -i -r %s -b add,below' % t2) == 0
                 def reposition():
-                    assert os.system(r'''
-                        swaymsg '[pid="{{PID}}"] move absolute position {{X}}px {{Y}}px' && \
-                        swaymsg '[pid="{{PID}}"] move window to workspace {{WORKSPACE}}'
-                    '''.replace('{{PID}}', str(p.pid)) \
+                    t1 = lambda s: \
+                        s \
+                        .replace('{{PID}}', str(p.pid)) \
                         .replace('{{X}}', str(window_position[1])) \
                         .replace('{{Y}}', str(window_position[2])) \
-                        .replace('{{WORKSPACE}}', str(window_position[0]))) == 0
-                reposition()
+                        .replace('{{W}}', str(window_position[3])) \
+                        .replace('{{H}}', str(window_position[4])) \
+                        .replace('{{WORKSPACE}}', str(window_position[0]))
+
+                    assert os.system(t1(r'''
+                        swaymsg '[pid="{{PID}}"] move window to workspace {{WORKSPACE}}'
+                    ''')) == 0
+
+                    if window_position[1] != '' and window_position[2] != '':
+                        assert os.system(t1(r'''
+                            swaymsg '[pid="{{PID}}"] floating enable' \
+                            swaymsg '[pid="{{PID}}"] resize set width {{W}}px height {{H}}px' && \
+                            swaymsg '[pid="{{PID}}"] move absolute position {{X}}px {{Y}}px'
+                        ''')) == 0
+                    else:
+                        assert os.system(t1(r'''
+                            swaymsg '[pid="{{PID}}"] floating disable'
+                        ''')) == 0
+
 
                 if False:
                     for tab in tabs[1:]:
@@ -355,6 +371,8 @@ def eternal_firefox(
                             tab,
                         ]) == 0
 
+
+                reposition()
 
                 if debug:
                     assert subprocess.check_call(['notify-send', '%s:Started' % group_name]) == 0
