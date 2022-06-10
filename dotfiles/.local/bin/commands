@@ -586,9 +586,14 @@ try:
         ])
         services = []
         try:
-            services.append(
-                subprocess.Popen(['ibus-daemon'])
-            )
+            services.extend([
+                subprocess.Popen(['ibus-daemon']),
+                subprocess.Popen(r'''
+                    swayidle -w \
+                        timeout 300 'swaymsg "output * dpms off"' \
+                        resume 'swaymsg "output * dpms on"'
+                ''', shell=True),
+            ])
             for o in services:
                 o.wait()
         finally:
