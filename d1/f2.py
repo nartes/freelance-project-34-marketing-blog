@@ -1,4 +1,5 @@
 import os
+import tempfile
 import time
 import io
 import traceback
@@ -34,8 +35,18 @@ def application(environ, start_response):
             method=environ['REQUEST_METHOD'],
             protocol=environ['SERVER_PROTOCOL'],
         )
+        output_dat = None
+        input_dat = None
+        def op1():
+            for o in [input_dat, output_dat]:
+                if not o is None and os.path.exists(o):
+                    os.unlink(o)
         try:
-            with io.open('2.dat', 'wb') as f:
+            output_dat = tempfile.mktemp(suffix='.dat')
+            input_dat = tempfile.mktemp(suffix='.dat')
+            op1()
+
+            with io.open(input_dat, 'wb') as f:
                 f.write(t3)
 
             t17 = [
@@ -46,9 +57,9 @@ def application(environ, start_response):
                     for k, v in t2.items()
                 ], []),
                 '-X', t7['method'],
-                '--data-binary', '@2.dat',
+                '--data-binary', '@%s' % input_dat,
                 '--max-filesize', '%d' % (60 * 1024 * 1024),
-                '-o', '1.dat',
+                '-o', output_dat,
                 '-v',
                 '-q',
             ]
@@ -65,18 +76,23 @@ def application(environ, start_response):
                         if o.startswith('< ')
                     ]
                     t9 = '\r\n'.join(response_headers)
-                    while True:
-                        try:
-                            with io.open('1.dat', 'rb') as f:
-                                t10 = f.read()
-                            break
-                        except:
-                            time.sleep(0.05)
+                    if not 'Content-Length: 0' in t9:
+                        for k in range(3):
+                            try:
+                                with io.open(output_dat, 'rb') as f:
+                                    t10 = f.read()
+                                break
+                            except:
+                                time.sleep(0.05)
+                    else:
+                        t10 = b''
                 finally:
                     p.terminate()
         except:
             t9 = 'FUCK SHIT\r\n'
             t10 = traceback.format_exc().encode('utf-8')
+        finally:
+            op1()
 
         if not any([o.startswith('Content-Length') for o in t9]):
             t9 = t9.replace('Transfer-Encoding: chunked\r\n', '')
