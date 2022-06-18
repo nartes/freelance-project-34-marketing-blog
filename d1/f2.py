@@ -35,6 +35,9 @@ def application(environ, start_response):
             protocol=environ['SERVER_PROTOCOL'],
         )
         try:
+            with io.open('2.dat', 'wb') as f:
+                f.write(t3)
+
             t17 = [
                 'curl',
                 'http://127.0.0.1:9050%s' % t7['uri'],
@@ -43,7 +46,7 @@ def application(environ, start_response):
                     for k, v in t2.items()
                 ], []),
                 '-X', t7['method'],
-                '-d', '@-',
+                '--data-binary', '@2.dat',
                 '--max-filesize', '%d' % (60 * 1024 * 1024),
                 '-o', '1.dat',
                 '-v',
@@ -54,9 +57,6 @@ def application(environ, start_response):
             with subprocess.Popen(
                 t17, stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE
             ) as p:
-                p.stdin.write(t3)
-                p.stdin.flush()
-                p.stdin.close()
                 try:
                     p.wait(20)
                     response_headers = [
