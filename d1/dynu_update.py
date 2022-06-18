@@ -13,6 +13,9 @@ with io.open(
 ) as f:
     dynu_config = json.load(f)
 logging.warning('loaded dynu_config')
+if dynu_config.get('enabled') != True:
+    logging.warning('disabled')
+    sys.exit(0)
 
 t2 = requests.get(
     'https://api.dynu.com/v2/oauth2/token',
