@@ -1,4 +1,5 @@
 import os
+import time
 import io
 import traceback
 import subprocess
@@ -18,7 +19,7 @@ def application(environ, start_response):
         t6 = ['%s%s' % (o[0].upper(), o[1:].lower()) for o in t5]
         return '-'.join(t6)
     t2 = {
-    op1(k[5:]) : v
+        op1(k[5:]) : v
         for k, v in environ.items()
         if k.startswith('HTTP_')
     }
@@ -63,8 +64,13 @@ def application(environ, start_response):
                     if o.startswith('< ')
                 ]
                 t9 = '\r\n'.join(response_headers)
-                with io.open('1.dat', 'rb') as f:
-                    t10 = f.read()
+                while True:
+                    try:
+                        with io.open('1.dat', 'rb') as f:
+                            t10 = f.read()
+                        break
+                    except:
+                        time.sleep(0.05)
             finally:
                 p.terminate()
     except:
@@ -72,7 +78,6 @@ def application(environ, start_response):
         t10 = traceback.format_exc().encode('utf-8')
 
     if not any([o.startswith('Content-Length') for o in t9]):
-        #t9 = t9.replace('keep-alive', 'closed')
         t9 = t9.replace('Transfer-Encoding: chunked\r\n', '')
         t9 += 'Content-Length: %d\r\n' % len(t10)
     t11 = t9.encode('utf-8') + t10
@@ -81,8 +86,13 @@ def application(environ, start_response):
     t14 = t13.find(' ')
     t15 = t13[t14 + 1:]
     t16 = [(o[:o.find(':')], o[o.find(':') + 1:]) for o in t9.splitlines()[1:]]
-
-    t1 = start_response(t15, t16)
-    t1(t10)
-
+    if False:
+        t1 = start_response('200 OK', [('Content-Type', 'text/plain')])
+        t1(t15)
+        t1(json.dumps(t16))
+        t1(json.dumps(t17))
+        t1(t10)
+    else:
+        t1 = start_response(t15, t16)
+        t1(t10)
     return []
