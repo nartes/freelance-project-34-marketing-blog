@@ -1,6 +1,7 @@
 import os
 import tempfile
 import time
+import numpy
 import io
 import traceback
 import subprocess
@@ -49,9 +50,24 @@ def application(environ, start_response):
             with io.open(input_dat, 'wb') as f:
                 f.write(t3)
 
+            try:
+                with io.open(
+                    os.path.join(
+                        os.environ['HOME'],
+                        'proxy.json'
+                    ),
+                    'r'
+                ) as f:
+                    PROXY_URL = numpy.random.choice(json.load(f))
+            except:
+                with io.open('log.txt', 'a') as f:
+                    f.write(traceback.format_exc())
+
+                PROXY_URL = '127.0.0.1:9050'
+
             t17 = [
                 'curl',
-                'http://127.0.0.1:9050%s' % t7['uri'],
+                'http://%s%s' % (PROXY_URL, t7['uri']),
                 *sum([
                     ['--header', '%s: %s' % (k, v)]
                     for k, v in t2.items()
