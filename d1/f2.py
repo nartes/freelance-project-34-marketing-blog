@@ -14,6 +14,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 
 def application(environ, start_response):
+    def op1(data=None):
+        if data is None:
+            data = traceback.format_exc()
+        with io.open('log.txt', 'a') as f:
+            f.write(data)
+
     try:
         t4 = int(environ.get('CONTENT_LENGTH', '0'))
         t3 = environ['wsgi.input'].read(t4)
@@ -79,8 +85,7 @@ def application(environ, start_response):
                 '-v',
                 '-q',
             ]
-            with io.open('1.json', 'w') as f:
-                f.write(json.dumps(dict(t17=t17, t3=t3.decode('utf-8'))))
+
             with subprocess.Popen(
                 t17, stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE
             ) as p:
@@ -128,7 +133,6 @@ def application(environ, start_response):
             t1 = start_response(t15, t16)
             t1(t10)
     except:
-        with io.open('log.txt', 'a') as f:
-            f.write(traceback.format_exc())
+        op1()
 
     return []
