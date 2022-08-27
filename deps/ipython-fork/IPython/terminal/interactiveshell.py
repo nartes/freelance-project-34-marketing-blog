@@ -210,6 +210,11 @@ class TerminalInteractiveShell(InteractiveShell):
         help="Shortcut style to use at the prompt. 'vi' or 'emacs'.",
     ).tag(config=True)
 
+    fast_prompt = Bool(
+        False,
+        help="fast prompt with dynamic slow down",
+    ).tag(config=True)
+
     emacs_bindings_in_vi_insert_mode = Bool(
         True,
         help="Add shortcuts from 'emacs' insert mode to 'vi' insert mode.",
@@ -430,8 +435,10 @@ class TerminalInteractiveShell(InteractiveShell):
             return
 
         # Set up keyboard shortcuts
-        key_bindings = create_ipython_shortcuts(self)
-
+        key_bindings = create_ipython_shortcuts(
+            self,
+            enable_escape_shortcuts=not self.fast_prompt,
+        )
 
         # Pre-populate history from IPython's history database
         history = PtkHistoryAdapter(self)
@@ -601,9 +608,12 @@ class TerminalInteractiveShell(InteractiveShell):
             policy.set_event_loop(self.pt_loop)
         try:
             with patch_stdout(raw=True):
+                extra_options = self._extra_prompt_options()
+
                 text = self.pt_app.prompt(
                     default=default,
-                    **self._extra_prompt_options())
+                    **extra_options
+                )
         finally:
             # Restore the original event loop.
             if old_loop is not None and old_loop is not self.pt_loop:
