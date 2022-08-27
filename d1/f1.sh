@@ -6,3 +6,6 @@ mkdir -p ~/.sway
 cp dotfiles/.sway/config ~/.sway/config
 cp dotfiles/.zshenv ~/.zshenv
 cp dotfiles/.tmux.conf ~/.tmux.conf
+cp -rp \
+    dotfiles/.ipython/profile_default/ipython_config.py \
+    ~/.ipython/profile_default/ipython_config.py
