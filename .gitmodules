@@ -1,3 +1,6 @@
 [submodule "deps/alpha-pose"]
 	path = deps/alpha-pose
 	url = https://github.com/WildflowerSchools/AlphaPose
+[submodule "deps/ipython"]
+	path = deps/ipython
+	url = https://github.com/ipython/ipython
