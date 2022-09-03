@@ -1,3 +1,4 @@
+import signal
 import multiprocessing
 import time
 import traceback
@@ -88,6 +89,20 @@ def service():
 
     need_wait = False
     last_disabled = False
+
+    def handle_exit(*argv):
+        sys.stderr.write('got %s\n' % pprint.pformat(argv))
+        sys.stderr.flush()
+        raise KeyboardInterrupt
+
+    for current_signal in [
+        signal.SIGINT,
+        signal.SIGTERM
+    ]:
+        signal.signal(
+            current_signal,
+            handle_exit,
+        )
 
     while True:
         try:

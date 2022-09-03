@@ -3,4 +3,5 @@ WORKDIR /app
 
 RUN pip3 install requests
 
-ENTRYPOINT exec python3 d1/dynu_update tmp/cache/dynu.auth.json ngrok
+CMD ["-c", "exec python3 d1/dynu_update.py tmp/cache/dynu.auth.json ngrok"]
+ENTRYPOINT ["/bin/bash"]
