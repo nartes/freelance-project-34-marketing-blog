@@ -87,6 +87,7 @@ def service():
     logging.warning('start dynu_update')
 
     need_wait = False
+    last_disabled = False
 
     while True:
         try:
@@ -101,9 +102,13 @@ def service():
                 dynu_config = json.load(f)
 
             if dynu_config.get('enabled') != True:
-                logging.warning('disabled')
+                if not last_disabled:
+                    last_disabled = True
+                    logging.warning('disabled')
+                need_wait = True
                 continue
             else:
+                last_disabled = False
                 logging.warning('loaded dynu_config')
 
             with multiprocessing.Pool(processes=1) as pool:
