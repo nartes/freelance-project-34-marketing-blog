@@ -5,6 +5,7 @@ cp dotfiles/.local/bin/commands ~/.local/bin/commands
 mkdir -p ~/.sway
 cp dotfiles/.sway/config ~/.sway/config
 cp dotfiles/.zshenv ~/.zshenv
+cp dotfiles/.vimrc ~/.vimrc
 cp dotfiles/.tmux.conf ~/.tmux.conf
 cp -rp \
     dotfiles/.ipython/profile_default/ipython_config.py \
