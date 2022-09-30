@@ -12,6 +12,21 @@ def f1():
     t3 = t2 // 3
     vim.command('vertical resize %d' % t3)
     vim.current.window = t1
+
+def f2():
+    context = {
+        k : vim.options['splitright']
+        for k in ['splitright']
+    }
+    try:
+        current_window = vim.current.window
+        vim.options['splitright'] = True
+        vim.command('vnew')
+        vim.command('r! tmux show-buffer')
+        vim.current.window = current_window
+    finally:
+        for k, v in context.items():
+            vim.options[k] = v
 EOF
 
 filetype plugin indent on
@@ -31,6 +46,10 @@ map <Leader>w <C-w>
 map <Leader>r :source ~/.vimrc<CR>:echo 'reloaded'<CR>
 map <Leader>m :py3 f1()<CR>
 map <Leader>cq :cq<CR>
+map <Leader>f2 :py3 f2()<CR>
+map <Leader>qy :q!<CR>
+map <Leader>cq :cq1<CR>
+map <Leader>dq :cq2<CR>
 map <Leader>i1 :set sw=4 sts=4 ts=4 et ai ci<CR>:retab<CR>
 map <Leader>i2 :set sw=2 sts=2 ts=2 et ai ci<CR>:retab<CR>
 set foldmethod=indent
