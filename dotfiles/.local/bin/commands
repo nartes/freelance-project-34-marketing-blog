@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import socket
+import optparse
 import os
 import json
 import traceback
@@ -438,6 +440,78 @@ done'
         shell=True
     )
 
+def http_server(argv):
+    assert isinstance(argv, list) and all([isinstance(o, str) for o in argv])
+    parser = optparse.OptionParser()
+    parser.add_option(
+        '--public',
+        dest='public',
+        action='store_true',
+        default=False,
+    )
+    parser.add_option(
+        '--port',
+        dest='port',
+        type='int',
+        default=80,
+    )
+    parser.add_option(
+        '--host',
+        dest='host',
+        type='str',
+        default='127.0.0.1',
+    )
+    options, args = parser.parse_args(argv)
+
+    assert options.port >= 1
+
+    try:
+        assert not socket.inet_aton(options.host) is None
+        subprocess.check_call([
+            'ping', '-w', '1',
+            options.host
+        ])
+    except:
+        raise RuntimeError('invalid ip address %s' % options.host)
+
+
+    index_section = 'autoindex on;'
+    if len(sys.argv) == 3 and sys.argv[2] == '--public':
+        location_section = 'location / {%s}' % index_section
+    else:
+        token = os.urandom(16).hex()
+        print(
+            'access url is http://%s:%d/%s/' % (
+                socket.gethostname(),
+                options.port,
+                token,
+            )
+        )
+        location_section = (
+            'location / {'
+            'deny all;'
+            '}'
+            'location /%s/ {'
+            'alias /app/;'
+            '%s'
+            '}'
+        ) % (token, index_section)
+    subprocess.check_call(
+        r'''
+            sudo docker run \
+                -p %s:%d:80 \
+                -u root \
+                -it --entrypoint=/bin/bash \
+                -v $PWD:/app:ro \
+                nginx:latest \
+                -c 'echo "server{listen 80; charset UTF-8; root /app; %s}" > /etc/nginx/conf.d/default.conf; nginx -g "daemon off;"'
+        ''' % (
+            options.host,
+            options.port,
+            location_section,
+        ),
+        shell=True)
+
 def player_v1(folder_url, item_id):
     import sys
     import urllib.parse
@@ -535,15 +609,7 @@ try:
         sys.stdout.write(status())
         sys.stdout.flush()
     elif sys.argv[1] == 'http-server':
-        subprocess.check_call(r'''
-            sudo docker run \
-                -p 80:80 \
-                -u root \
-                -it --entrypoint=/bin/bash \
-                -v $PWD:/app:ro \
-                nginx:latest \
-                -c 'echo "server{listen 80; charset UTF-8; root /app; location / {autoindex on;}}" > /etc/nginx/conf.d/default.conf; nginx -g "daemon off;"'
-        ''', shell=True)
+        http_server(sys.argv[2:])
     elif sys.argv[1] == 'wl-screenshot':
         subprocess.check_call(r'''
             grim -g "$(slurp)" - | wl-copy
@@ -606,6 +672,8 @@ try:
 
     else:
         raise NotImplementedError
+except SystemExit:
+    pass
 except:
     msg = 'not implemented\n%s' % traceback.format_exc()
     logging.error(msg)
