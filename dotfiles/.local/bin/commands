@@ -482,7 +482,7 @@ def http_server(argv):
         token = os.urandom(16).hex()
         print(
             'access url is http://%s:%d/%s/' % (
-                socket.gethostname(),
+                options.host,
                 options.port,
                 token,
             )
