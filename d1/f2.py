@@ -114,7 +114,10 @@ class Application:
             finally:
                 p.terminate()
 
-        return t10
+        return dict(
+            headers_text=t9,
+            content=t10
+        )
 
     def op7(self):
         try:
@@ -160,11 +163,9 @@ class Application:
                 '-q',
             ]
 
-            t10 = self.op6(t17)
+            return self.op6(t17)
         finally:
             self.op3()
-
-        return t10
 
     def run(self):
         try:
@@ -187,9 +188,15 @@ class Application:
                 protocol=self.environ['SERVER_PROTOCOL'],
             )
 
+            o_8 = self.op8(
+                t3,
+                headers=t2,
+                uri=t7['uri'],
+                method=t7['method'],
+            )
+
             return self.op5(
-                headers_text=t9,
-                content=t10,
+                **o_8,
             )
         except:
             self.op1()
