@@ -1,4 +1,5 @@
 import os
+import datetime
 import tempfile
 import time
 import numpy
@@ -21,8 +22,14 @@ class Application:
     def op1(self, data=None):
         if data is None:
             data = traceback.format_exc()
+
         with io.open('log.txt', 'a') as f:
-            f.write(data)
+            f.write(
+                '\n%s\n%s\n' % (
+                    datetime.datetime.now().isoformat(),
+                    data,
+                )
+            )
 
     def op2(self, rh):
         t5 = rh.split('_')
@@ -39,6 +46,7 @@ class Application:
         self.input_dat = tempfile.mktemp(suffix='.dat')
 
     def op5(
+        self,
         status_code=None,
         status_text=None,
         content_type=None,
@@ -52,7 +60,7 @@ class Application:
                         'Transfer-Encoding: chunked\r\n',
                         ''
                     )
-                headers_text += 'Content-Length: %d\r\n' % len(t10)
+                headers_text += 'Content-Length: %d\r\n' % len(content)
 
             t13 = headers_text.splitlines()[0]
             t14 = t13.find(' ')
@@ -95,9 +103,10 @@ class Application:
         ) as p:
             try:
                 p.wait(20)
+                curl_stderr = p.stderr.read().decode('utf-8')
                 response_headers = [
                     o[2:]
-                    for o in p.stderr.read().decode('utf-8').splitlines()
+                    for o in curl_stderr.splitlines()
                     if o.startswith('< ')
                 ]
                 t9 = '\r\n'.join(response_headers)
@@ -111,6 +120,25 @@ class Application:
                             time.sleep(0.05)
                 else:
                     t10 = b''
+
+                try:
+                    output_dat_stat = repr(
+                        os.stat(self.output_dat)
+                    )
+                except:
+                    output_dat_stat = None
+
+                self.op1(
+                    json.dumps(
+                        dict(
+                            curl_return_code=p.returncode,
+                            curl_stderr=curl_stderr,
+                            output_dat=self.output_dat,
+                            output_dat_stat=output_dat_stat,
+                            headers=t9,
+                        )
+                    )
+                )
             finally:
                 p.terminate()
 
@@ -123,7 +151,7 @@ class Application:
         try:
             with io.open(
                 os.path.join(
-                    os.self.environ['HOME'],
+                    os.environ['HOME'],
                     'proxy.json'
                 ),
                 'r'
@@ -153,13 +181,15 @@ class Application:
                 'http://%s%s' % (proxy_url, uri),
                 *sum([
                     ['--header', '%s: %s' % (k, v)]
-                    for k, v in t2.items()
+                    for k, v in headers.items()
                 ], []),
                 '-X', method,
+                '-v',
+                '--no-buffer',
+                '--silent',
                 '--data-binary', '@%s' % self.input_dat,
                 '--max-filesize', '%d' % (60 * 1024 * 1024),
                 '-o', self.output_dat,
-                '-v',
                 '-q',
             ]
 
