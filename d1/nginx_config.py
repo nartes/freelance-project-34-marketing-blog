@@ -45,7 +45,7 @@ http {
     {sections_config}
 
     location / {
-      return 302 https://product-development-service.blogspot.com;
+      return 302 https://product-development-service.blogspot.com$request_uri;
     }
   }
 
