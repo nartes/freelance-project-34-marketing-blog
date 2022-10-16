@@ -1,4 +1,5 @@
 import os
+import shutil
 import datetime
 import tempfile
 import time
@@ -18,12 +19,43 @@ class Application:
     def __init__(self, environ, start_response):
         self.environ = environ
         self.start_response = start_response
+        self.log_path = 'log.txt'
+
+    def trim_log(self):
+        if not os.path.exists(self.log_path):
+            return
+
+        log_size = 0
+
+        try:
+            log_stats = os.stat(self.log_path)
+            log_size = log_stats.st_size
+        except:
+            return
+
+        if log_size > 10 * 1024 * 1024:
+            try:
+                log_path2 = os.path.splitext(self.log_path)
+                os.rename(
+                    self.log_path,
+                    '%s-backup%s' % (
+                        log_path2[0],
+                        log_path2[1],
+                    ),
+                )
+            except:
+                return
 
     def op1(self, data=None):
         if data is None:
             data = traceback.format_exc()
 
-        with io.open('log.txt', 'a') as f:
+        self.trim_log()
+
+        with io.open(
+            self.log_path,
+            'a'
+        ) as f:
             f.write(
                 '\n%s\n%s\n' % (
                     datetime.datetime.now().isoformat(),
