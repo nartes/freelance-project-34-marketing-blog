@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 
 class Application:
-    MAX_CHUNK = 512 * 1024 * 1024
+    MAX_FILE_SIZE = 512 * 1024 * 1024
     LOG_SIZE = 10 * 1024 * 1024
     MAX_TIME = 16
 
@@ -256,6 +256,8 @@ class Application:
             first_output = False
             sent_bytes = 0
 
+            content_length = None
+
             def dump_headers():
                 self.op1(
                     json_data=dict(
@@ -264,9 +266,14 @@ class Application:
                         output_length=get_output_length()
                     )
                 )
-                output_stream.sendall(
-                    headers_detailed['first_line'].encode('latin-1')
-                )
+
+                nonlocal content_length
+                content_length2 = None
+
+                if 'Content-Length' in headers_detailed['headers']:
+                    content_length = int(headers_detailed['headers']['Content-Length'])
+                else:
+                    content_length = 0
 
                 if headers_detailed['headers'].get('Transfer-Encoding') == 'chunked':
                     del headers_detailed['headers']['Transfer-Encoding']
@@ -275,7 +282,7 @@ class Application:
                     if finished_output:
                         content_length = get_output_length()
                     else:
-                        content_length = Application.MAX_CHUNK
+                        content_length = Application.MAX_FILE_SIZE
 
                     headers_detailed['headers']['Content-Length'] = \
                         '%d' % content_length 
@@ -284,7 +291,36 @@ class Application:
                             headers_detailed=headers_detailed,
                         )
                     )
+                elif content_length > 512 * 1024:
+                    content_length2 = content_length
+                    content_length = min(2 * 1024 * 1024, content_length)
+
+                    headers_detailed['headers']['Content-Length'] = '%d' % content_length
+                    content_range_header = headers_detailed['headers'].get('Content-Range')
+                    if not content_range_header is None:
+                        parsed_range = re.compile(r'(\w+) (\d+)-(\d+)\/(\d+)').match(
+                            content_range_header
+                        )
+                        assert parsed_range[1] == 'bytes'
+                        start = int(parsed_range[2])
+                        total = int(parsed_range[3])
+                    else:
+                        total = content_length2
+                        start = 0
+                    end = start + content_length
+
+                    headers_detailed['first_line'] = 'HTTP/1.1 206 Partial Content'
+                    headers_detailed['headers']['Status'] = '206 Partial Content'
+                    headers_detailed['headers']['Content-Range'] = \
+                        'bytes %d-%d/%d' % (
+                            start, end - 1, total,
+                        )
+
                 headers_detailed['headers']['Connection'] = 'close'
+
+                output_stream.sendall(
+                    headers_detailed['first_line'].encode('latin-1')
+                )
 
                 for k, v in headers_detailed['headers'].items():
                     output_stream.sendall(
@@ -324,9 +360,14 @@ class Application:
                 if first_output and len(content_chunks) > 0:
                     chunk = content_chunks[0]
                     del content_chunks[0]
-                    if len(chunk) > 0:
-                        output_stream.sendall(chunk)
-                        sent_bytes += len(chunk)
+                    if sent_bytes + len(chunk) > content_length:
+                        chunk2 = chunk[:content_length - sent_bytes]
+                        finished_output = True
+                    else:
+                        chunk2 = chunk
+                    if len(chunk2) > 0:
+                        output_stream.sendall(chunk2)
+                        sent_bytes += len(chunk2)
                         #self.op1(
                         #    json_data=dict(sent_bytes=sent_bytes)
                         #)
@@ -459,7 +500,7 @@ class Application:
                 '--no-buffer',
                 '--silent',
                 '--data-binary', '@%s' % self.input_dat,
-                '--max-filesize', '%d' % Application.MAX_CHUNK,
+                '--max-filesize', '%d' % Application.MAX_FILE_SIZE,
                 '--max-time', '%d' % Application.MAX_TIME,
                 #'-o', self.output_dat,
                 '-q',
