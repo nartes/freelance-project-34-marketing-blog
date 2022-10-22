@@ -299,16 +299,16 @@ class Application:
             while True:
                 if not finished_output:
                     try:
-                        self.op1(json_data=dict(action='fetch-chunk-started'))
+                        #self.op1(json_data=dict(action='fetch-chunk-started'))
                         chunk_detailed = next(content)
-                        self.op1(
-                            json_data=dict(
-                                action='fetch-chunk-done',
-                                returncode=chunk_detailed[2],
-                                stderr=chunk_detailed[0],
-                                chunk_length=len(chunk_detailed[1]),
-                            )
-                        )
+                        #self.op1(
+                        #    json_data=dict(
+                        #        action='fetch-chunk-done',
+                        #        returncode=chunk_detailed[2],
+                        #        stderr=chunk_detailed[0],
+                        #        chunk_length=len(chunk_detailed[1]),
+                        #    )
+                        #)
                         if (len(chunk_detailed[1]) > 0):
                             content_chunks.append(chunk_detailed[1])
                     except StopIteration:
@@ -327,9 +327,9 @@ class Application:
                     if len(chunk) > 0:
                         output_stream.sendall(chunk)
                         sent_bytes += len(chunk)
-                        self.op1(
-                            json_data=dict(sent_bytes=sent_bytes)
-                        )
+                        #self.op1(
+                        #    json_data=dict(sent_bytes=sent_bytes)
+                        #)
 
                 if finished_output and first_output and len(content_chunks) == 0:
                     break
