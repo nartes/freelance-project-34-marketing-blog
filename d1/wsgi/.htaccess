@@ -1,3 +1,17 @@
+
+#PassengerResponseBufferHighWatermark 134217728
+#PassengerLogLevel 7
+#PassengerLogFile fuck.txt
+#PassengerHighPerformance on
+PassengerAppRoot "/home/productg/p1/p1"
+PassengerBaseURI "/"
+PassengerPython "/home/productg/p1/tmp/env3/bin/python"
+PassengerBufferResponse off
+PassengerBufferUpload off
+#PassengerMaxRequests 1
+#PassengerMaxRequestQueueSize 1
+#PassengerForceMaxConcurrentRequestsPerProcess 1
+
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -5,7 +19,3 @@ RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 </IfModule>
-
-PassengerAppRoot "/home/productg/p1/p1"
-PassengerBaseURI "/"
-PassengerPython "/home/productg/p1/tmp/env3/bin/python"
