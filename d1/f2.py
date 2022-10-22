@@ -23,11 +23,38 @@ class Application:
     MAX_FILE_SIZE = 512 * 1024 * 1024
     LOG_SIZE = 10 * 1024 * 1024
     MAX_TIME = 16
+    EASTER_TOKEN = 'FUCK'
 
     def __init__(self, environ, start_response):
         self.environ = environ
+
+        try:
+            with io.open(
+                'wsgi_config.json',
+                'r'
+            ) as f:
+                config = json.load(f)
+
+            assert isinstance(config, dict)
+        except:
+            config = dict()
+
+        self.config = config
         self.start_response = start_response
         self.log_path = 'log.txt'
+
+    def debug(self):
+        debug_token = self.config.get('debug_token')
+        if not (
+            not debug_token is None and \
+            isinstance(debug_token, str)
+        ):
+            return False
+
+        return self.environ.get('HTTP_%s' % Application.EASTER_TOKEN) == \
+            self.config.get('debug_token') or \
+            ('%s=%s' % (Application.EASTER_TOKEN, debug_token)) in \
+            self.environ['QUERY_STRING']
 
     def trim_log(self):
         if not os.path.exists(self.log_path):
@@ -55,6 +82,9 @@ class Application:
                 return
 
     def op1(self, data=None, json_data=None,):
+        if not self.debug():
+            return
+
         if data is None:
             if not json_data is None:
                 data = json.dumps(json_data)
@@ -375,6 +405,7 @@ class Application:
                         finished_output = True
                     else:
                         chunk2 = chunk
+
                     if len(chunk2) > 0:
                         output_stream.sendall(chunk2)
                         sent_bytes += len(chunk2)
@@ -392,11 +423,10 @@ class Application:
 
             self.op1(json_data=dict(
                 action='close_connection',
-                extra=pprint.pformat([
-                    output_stream,
-                    output_stream.__class__,
-                    dir(output_stream),
-                ]),
+                extra=pprint.pformat(dict(
+                    content_length2=content_length2,
+                    sent_bytes=sent_bytes,
+                )),
             ))
             return
 
@@ -528,7 +558,7 @@ class Application:
             )
         )
 
-        if 'HTTP_FUCK' in self.environ:
+        if self.environ.get('HTTP_%s' % Application.EASTER_TOKEN) == 'fuck':
             output_stream = self.environ['passenger.hijack'](True)
 
             content = 'fuck off'
