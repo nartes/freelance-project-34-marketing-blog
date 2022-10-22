@@ -423,50 +423,40 @@ class Application:
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE
         ) as p:
-            stderr_lines = []
-            response_headers_all = []
+            response_headers = []
             returncode = None
 
             try:
-                stderr_poll = select.poll()
-                stderr_poll.register(
-                    p.stderr,
-                    select.POLLIN & select.POLLPRI
-                )
                 stdout_length = 0
+                last_header = None
+
+                while True:
+                    if last_header == '\r\n' or not p.poll() is None:
+                        break
+
+                    last_header = p.stdout.readline().decode('utf-8')
+                    response_headers.append(
+                        last_header.rstrip('\r\n')
+                    )
+
+                yield (response_headers, b'', None)
+
                 while True:
                     returncode = p.poll()
-
-                    poll_result = stderr_poll.poll(100)
-
-                    self.op1(json_data=[pprint.pformat(poll_result)])
-                    if len(poll_result) > 0:
-                        stderr = p.stderr.readline(1024).decode('utf-8')
-                        stderr_lines.append(stderr)
-                    else:
-                        stderr = ''
 
                     stdout = p.stdout.read(1024)
                     stdout_length += len(stdout)
 
-                    response_headers = [
-                        o[2:]
-                        for o in stderr.splitlines()
-                        if o.startswith('< ')
-                    ]
-                    response_headers_all.extend(response_headers)
+                    yield ([], stdout, returncode)
 
-                    yield (response_headers, stdout, returncode)
-
-                    if len(stderr) == 0 and len(stdout) == 0 and not returncode is None:
+                    if len(stdout) == 0 and not returncode is None:
                         break
 
                 assert returncode == 0
             except Exception as exception:
                 self.op1(json_data=dict(
-                    stderr_lines=stderr_lines,
                     stdout_length=stdout_length,
-                    response_headers_all=response_headers_all,
+                    response_headers=response_headers,
                     returncode=returncode,
                 ))
                 raise exception
@@ -512,8 +502,8 @@ class Application:
                 'http://%s%s' % (proxy_url, uri),
                 '-g',
                 '-X', method,
-                '-v',
                 '--no-buffer',
+                '-i',
                 '--silent',
                 '--data-binary', '@%s' % self.input_dat,
                 '--max-filesize', '%d' % Application.MAX_FILE_SIZE,
