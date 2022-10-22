@@ -226,6 +226,14 @@ class Application:
                     content_chunks.append(chunk[1])
                 returncode = chunk[2]
 
+                self.op1(
+                    json_data=[
+                        headers_lines,
+                        returncode,
+                        len(chunk[1]),
+                        len(content_chunks),
+                    ]
+                )
                 if len(headers_lines) > 0 and headers_lines[-1] == '':
                     break
 
@@ -257,6 +265,7 @@ class Application:
             sent_bytes = 0
 
             content_length = None
+            content_length2 = None
 
             def dump_headers():
                 self.op1(
@@ -268,53 +277,54 @@ class Application:
                 )
 
                 nonlocal content_length
-                content_length2 = None
+                nonlocal content_length2
 
                 if 'Content-Length' in headers_detailed['headers']:
-                    content_length = int(headers_detailed['headers']['Content-Length'])
+                    content_length2 = int(headers_detailed['headers']['Content-Length'])
                 else:
-                    content_length = 0
+                    content_length2 = 0
 
                 if headers_detailed['headers'].get('Transfer-Encoding') == 'chunked':
                     del headers_detailed['headers']['Transfer-Encoding']
                     assert sent_bytes == 0
 
                     if finished_output:
-                        content_length = get_output_length()
+                        content_length2 = get_output_length()
                     else:
-                        content_length = Application.MAX_FILE_SIZE
+                        content_length2 = Application.MAX_FILE_SIZE
 
                     headers_detailed['headers']['Content-Length'] = \
-                        '%d' % content_length 
+                        '%d' % content_length2
                     self.op1(
                         json_data=dict(
                             headers_detailed=headers_detailed,
                         )
                     )
-                elif content_length > 512 * 1024:
-                    content_length2 = content_length
-                    content_length = min(2 * 1024 * 1024, content_length)
+                elif content_length2 > 512 * 1024:
+                    content_length = min(2 * 1024 * 1024, content_length2)
 
-                    headers_detailed['headers']['Content-Length'] = '%d' % content_length
+                    #headers_detailed['headers']['Content-Length'] = '%d' % content_length
                     content_range_header = headers_detailed['headers'].get('Content-Range')
-                    if not content_range_header is None:
+                    if not content_range_header is None and False:
                         parsed_range = re.compile(r'(\w+) (\d+)-(\d+)\/(\d+)').match(
                             content_range_header
                         )
                         assert parsed_range[1] == 'bytes'
                         start = int(parsed_range[2])
                         total = int(parsed_range[3])
-                    else:
-                        total = content_length2
-                        start = 0
-                    end = start + content_length
+                        end = start + content_length
 
-                    headers_detailed['first_line'] = 'HTTP/1.1 206 Partial Content'
-                    headers_detailed['headers']['Status'] = '206 Partial Content'
-                    headers_detailed['headers']['Content-Range'] = \
-                        'bytes %d-%d/%d' % (
-                            start, end - 1, total,
-                        )
+                        headers_detailed['headers']['Content-Length'] = \
+                            '%d' % content_length
+                        headers_detailed['first_line'] = 'HTTP/1.1 206 Partial Content'
+                        headers_detailed['headers']['Status'] = '206 Partial Content'
+                        headers_detailed['headers']['Content-Range'] = \
+                            'bytes %d-%d/%d' % (
+                                start, end - 1, total,
+                            )
+
+                if content_length is None:
+                    content_length = content_length2
 
                 headers_detailed['headers']['Connection'] = 'close'
 
@@ -419,12 +429,18 @@ class Application:
 
             try:
                 stderr_poll = select.poll()
-                stderr_poll.register(p.stderr, select.POLLIN)
+                stderr_poll.register(
+                    p.stderr,
+                    select.POLLIN & select.POLLPRI
+                )
                 stdout_length = 0
                 while True:
                     returncode = p.poll()
 
-                    if len(stderr_poll.poll(1)) > 0:
+                    poll_result = stderr_poll.poll(100)
+
+                    self.op1(json_data=[pprint.pformat(poll_result)])
+                    if len(poll_result) > 0:
                         stderr = p.stderr.readline(1024).decode('utf-8')
                         stderr_lines.append(stderr)
                     else:
@@ -530,7 +546,7 @@ class Application:
                 ''.join([
                     'HTTP/1.1 200\r\n',
                     'Status: 200\r\n',
-                    'Connection-Length: %d\r\n' % len(content),
+                    'Connection-Length: %d\r\n' % (len(content) + 10),
                     'Connection: close\r\n',
                     '\r\n',
                 ]).encode('latin-1')
