@@ -373,13 +373,16 @@ class Application:
             stdin=subprocess.PIPE
         ) as p:
             stderr_lines = []
+            response_headers_all = []
             returncode = None
 
             try:
-
                 stderr_poll = select.poll()
                 stderr_poll.register(p.stderr, select.POLLIN)
+                stdout_length = 0
                 while True:
+                    returncode = p.poll()
+
                     if len(stderr_poll.poll(1)) > 0:
                         stderr = p.stderr.readline(1024).decode('utf-8')
                         stderr_lines.append(stderr)
@@ -387,14 +390,15 @@ class Application:
                         stderr = ''
 
                     stdout = p.stdout.read(1024)
+                    stdout_length += len(stdout)
 
                     response_headers = [
                         o[2:]
                         for o in stderr.splitlines()
                         if o.startswith('< ')
                     ]
+                    response_headers_all.extend(response_headers)
 
-                    returncode = p.poll()
                     yield (response_headers, stdout, returncode)
 
                     if len(stderr) == 0 and len(stdout) == 0 and not returncode is None:
@@ -404,6 +408,9 @@ class Application:
             except Exception as exception:
                 self.op1(json_data=dict(
                     stderr_lines=stderr_lines,
+                    stdout_length=stdout_length,
+                    response_headers_all=response_headers_all,
+                    returncode=returncode,
                 ))
                 raise exception
             finally:
@@ -446,6 +453,7 @@ class Application:
             t17 = [
                 'curl',
                 'http://%s%s' % (proxy_url, uri),
+                '-g',
                 '-X', method,
                 '-v',
                 '--no-buffer',
