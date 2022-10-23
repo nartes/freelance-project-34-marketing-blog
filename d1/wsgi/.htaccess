@@ -1,4 +1,3 @@
-
 #PassengerResponseBufferHighWatermark 134217728
 #PassengerLogLevel 7
 #PassengerLogFile fuck.txt
@@ -13,7 +12,8 @@ PassengerBufferUpload off
 #PassengerForceMaxConcurrentRequestsPerProcess 1
 
 <IfModule mod_rewrite.c>
-RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
