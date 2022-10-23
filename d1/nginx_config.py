@@ -38,6 +38,15 @@ events {
 }
 
 http {
+  log_format main
+    '[$time_local][$remote_addr, $http_x_forwarded_for]'
+    '[$request_length,$bytes_sent,$request_time]'
+    '[$status][$request]'
+    '[$http_user_agent][$http_referer]';
+
+  access_log /dev/null combined;
+  access_log /dev/stderr main;
+
   server {
     listen 80;
     client_max_body_size 50M;
