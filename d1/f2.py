@@ -434,7 +434,11 @@ class Application:
         self,
         cmd_args,
         headers=None,
+        input_content=None,
+        input_content_length=None,
     ):
+        assert isinstance(input_content_length, int) and input_content_length >= 0
+
         if not headers is None:
             extra_cmd_args = sum([
                 ['--header', '%s: %s' % (k, v)]
@@ -455,6 +459,19 @@ class Application:
         ) as p:
             response_headers = []
             returncode = None
+
+            sent_bytes = 0
+            while sent_bytes < input_content_length and p.poll() is None:
+                input_chunk = input_content.read(
+                    min(1024, input_content_length - sent_bytes)
+                )
+                p.stdin.write(
+                    input_chunk,
+                )
+                p.stdin.flush()
+
+                sent_bytes += len(input_chunk)
+            p.stdin.close()
 
             try:
                 stdout_length = 0
@@ -493,8 +510,19 @@ class Application:
             finally:
                 p.terminate()
 
-    def op6(self, cmd_args, headers=None,):
-        return self.op9(cmd_args, headers)
+    def op6(
+        self,
+        cmd_args,
+        headers=None,
+        input_content=None,
+        input_content_length=None,
+    ):
+        return self.op9(
+            cmd_args,
+            headers,
+            input_content=input_content,
+            input_content_length=input_content_length,
+        )
 
     def op7(self):
         try:
@@ -512,16 +540,16 @@ class Application:
 
             return '127.0.0.1:9050'
 
-    def op8(self, input_content, headers, uri, method):
+    def op8(
+        self,
+        input_content,
+        input_content_length,
+        headers,
+        uri,
+        method
+    ):
         try:
             self.op4()
-
-            with io.open(
-                self.input_dat,
-                'wb'
-            ) as f:
-                f.write(input_content)
-
 
             proxy_url = self.op7()
 
@@ -535,7 +563,7 @@ class Application:
                 '--no-buffer',
                 '-i',
                 '--silent',
-                '--data-binary', '@%s' % self.input_dat,
+                '--data-binary', '@-',
                 '--max-filesize', '%d' % Application.MAX_FILE_SIZE,
                 '--max-time', '%d' % Application.MAX_TIME,
                 #'-o', self.output_dat,
@@ -545,6 +573,8 @@ class Application:
             return self.op6(
                 t17,
                 headers=headers,
+                input_content=input_content,
+                input_content_length=input_content_length,
             )
         finally:
             self.op3()
@@ -579,7 +609,6 @@ class Application:
 
         try:
             t4 = int(self.environ.get('CONTENT_LENGTH', '0'))
-            t3 = self.environ['wsgi.input'].read(t4)
             t2 = {
                 self.op2(k[5:]) : v
                 for k, v in self.environ.items()
@@ -598,7 +627,8 @@ class Application:
             )
 
             o_8 = self.op8(
-                t3,
+                input_content=self.environ['wsgi.input'],
+                input_content_length=t4,
                 headers=t2,
                 uri=t7['uri'],
                 method=t7['method'],
