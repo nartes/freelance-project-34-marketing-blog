@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 import datetime
 import sys
 import select
@@ -611,7 +612,7 @@ def pass_ssh_osx(argv):
         gpgconf --reload gpg-agent;
     '''
 
-    with subprocess.Popen([
+    ssh_command = [
         'ssh', '-C',
         '-o', 'ConnectTimeout 10',
         '-o', 'ServerAliveInterval 1',
@@ -624,13 +625,27 @@ def pass_ssh_osx(argv):
                 -q -u $(cat ~/.password-store/.gpg-id) \
                 --decrypt \
                 ~/.password-store/%s.gpg;
+            echo -n '['$?']';
             %s
         ''' % (
             reset_gpg_agent,
             t1[t3],
             reset_gpg_agent,
         ),
-    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+    ]
+
+    if options.debug:
+        pprint.pprint(
+            dict(
+                ssh_command=ssh_command,
+            )
+        )
+
+    with subprocess.Popen(
+        ssh_command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    ) as p:
         password = None
         last_chunk = None
 
@@ -672,7 +687,21 @@ def pass_ssh_osx(argv):
 
         assert not last_chunk is None
         assert last_chunk['returncode'] == 0
-        last_line = last_chunk['data'].splitlines()[-1]
+        if options.debug:
+            pprint.pprint(last_chunk['data'])
+
+        if last_chunk['data'].endswith('\r\n[0]'.encode('utf-8')) and \
+            last_chunk['data'].rfind(pinentry_delimeter) != -1:
+            last_line = last_chunk['data'].splitlines()[-2]
+        else:
+            raise RuntimeError(
+                'gpg failure %s' % str(
+                    last_chunk['data'][
+                        max(last_chunk['data'].find(pinentry_delimeter), -128):
+                    ]
+                )
+            )
+
         pos2 = last_line.rfind(pinentry_delimeter)
         if pos2 == -1:
             last_line2 = last_line
@@ -764,6 +793,26 @@ def status():
             ''',
         ]
     ]).replace('\n\r', '')
+
+def custom_translate(current_string, check, none_char=None,):
+    if none_char is None:
+        none_char = '.'
+
+    class A:
+        def __getitem__(self, k):
+            t1 = chr(k)
+
+            t2 = check(k, t1)
+            if isinstance(t2, bool):
+                if t2:
+                    return t1
+                else:
+                    return none_char
+            elif isinstance(t2, str):
+                return t2
+    return current_string.translate(
+        A()
+    )
 
 
 try:
@@ -876,8 +925,24 @@ except:
     logging.error(msg)
 
 if not msg is None:
-    subprocess.check_call([
-        'notify-send',
-        'commands',
-        msg[-128:]
-    ])
+    if sys.platform == 'darwin':
+        subprocess.check_call([
+            'osascript',
+            '-e',
+            'display notification "%s" with title "commands failure"' % (
+                custom_translate(
+                    msg,
+                    lambda a, b:
+                        not re.compile(
+                            r'^[a-zA-Z0-9\<\>\/\(\)\s\.\,\:]*$'
+                        )\
+                            .match(b) is None,
+                )
+            )
+        ])
+    else:
+        subprocess.check_call([
+            'notify-send',
+            'commands',
+            msg[-128:]
+        ])

@@ -1,5 +1,7 @@
 import bleak
+import traceback
 import pprint
+
 
 async def f1():
     devices = await bleak.BleakScanner.discover()
@@ -61,7 +63,15 @@ async def f5(name=None):
 
     return t2
 
-async def f4(timeout=None):
+async def f4(
+    timeout=None,
+    characteristics=None,
+):
+    if characteristics is None:
+        characteristics = [
+            '0000ffd1-0000-1000-8000-00805f9b34fb',
+        ]
+
     t2 = await f5(name='watch fit')
 
     if len(t2) == 0:
@@ -73,6 +83,16 @@ async def f4(timeout=None):
         t3 = await f2(t2[0], timeout=timeout)
         t4 = await f3(t3)
         pprint.pprint(t4)
+
+        t6 = {}
+        for o in characteristics:
+            try:
+                t7 = await t3.read_gatt_char(o)
+            except Exception as exception:
+                print(traceback.format_exc())
+                t7 = None
+            t6[o] = t7
+        pprint.pprint(t6)
     finally:
         if not t3 is None:
             await t3.disconnect()
