@@ -465,6 +465,17 @@ def eternal_oom(argv):
                 msg='oom_kill, failed to kill pid %d' % pid
             )
 
+    def oom_status():
+        print(
+            '\r%6.2f / %.2f %%, %6.2f / %.2f GiB' % (
+                oom_mean_cpu() / os.cpu_count() * 100,
+                options.cpu_limit / os.cpu_count() * 100,
+                memory_stats()['mem_used'] / 1024 / 1024,
+                options.memory_limit / 1024 / 1024,
+            ),
+            end=''
+        )
+
     def first_check():
         current_memory_stats = memory_stats()
 
@@ -505,10 +516,38 @@ def eternal_oom(argv):
 
     first_check()
 
+    last_total_cpu = []
+
+    last_cpu_high = None
+
+    def oom_add_cpu(total_cpu):
+        last_total_cpu.append(total_cpu)
+        if len(last_total_cpu) > 30:
+            del last_total_cpu[-30:]
+
+    def oom_mean_cpu():
+        return sum(last_total_cpu) / (len(last_total_cpu) + 1e-8)
+
+    def oom_cpu_high():
+        nonlocal last_cpu_high
+
+        if oom_mean_cpu() > options.cpu_limit:
+            if last_cpu_high is None:
+                datetime.datetime.now().timestamp()
+
+            if datetime.datetime.now().timestamp() - last_cpu_high > 10:
+                last_cpu_high = None
+                return True
+
+        return False
+
     while True:
         mem_used = memory_stats()['mem_used']
 
         t11 = oom_get_processes()
+
+        oom_add_cpu(t11['total_cpu'])
+
         t8 = t11['by_mem']
 
         t9 = t8
@@ -524,13 +563,15 @@ def eternal_oom(argv):
             ])
             t4()
 
-        if t11['total_cpu'] > options.cpu_limit:
+        if oom_cpu_high():
             pprint.pprint([
                 'Killing [CPU]',
                 pandas_row(t11['by_cpu'], 0),
-                t11['total_cpu'],
+                [options.cpu_limit, oom_mean_cpu(), t11['total_cpu']],
             ])
             oom_kill(t11['by_cpu']['PID_x'][0])
+
+        oom_status()
         time.sleep(1)
 
 def resilient_vlc(stream=None):
