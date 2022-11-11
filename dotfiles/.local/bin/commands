@@ -533,7 +533,7 @@ def eternal_oom(argv):
 
         if oom_mean_cpu() > options.cpu_limit:
             if last_cpu_high is None:
-                datetime.datetime.now().timestamp()
+                last_cpu_high = datetime.datetime.now().timestamp()
 
             if datetime.datetime.now().timestamp() - last_cpu_high > 10:
                 last_cpu_high = None
