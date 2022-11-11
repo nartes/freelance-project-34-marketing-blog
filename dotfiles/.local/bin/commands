@@ -496,7 +496,8 @@ def eternal_oom(argv):
 
     def oom_status():
         print(
-            '\r%6.2f / %.2f %%, %6.2f / %.2f GiB' % (
+            '\r%s %6.2f / %.2f %%, %6.2f / %.2f GiB' % (
+                datetime.datetime.now().isoformat(),
                 oom_mean_cpu() / os.cpu_count() * 100,
                 options.cpu_limit / os.cpu_count() * 100,
                 memory_stats()['mem_used'] / 1024 / 1024,
