@@ -71,27 +71,85 @@ def player_metadata():
             continue
 
 def memory_stats():
-    with io.BytesIO(subprocess.check_output('free', shell=True)) as f:
-        t1 = f.read().decode('utf-8').splitlines()
-        mem_total = int(t1[1].strip().split()[1])
-        mem_used = int(t1[1].strip().split()[2])
+    if sys.platform == 'linux':
+        with io.BytesIO(
+            subprocess.check_output(
+                'free',
+                shell=True
+            )
+        ) as f:
+            t1 = f.read().decode('utf-8').splitlines()
+            mem_total = int(t1[1].strip().split()[1])
+            mem_used = int(t1[1].strip().split()[2])
 
-    return dict(
-        mem_total=mem_total,
-        mem_used=mem_used,
-    )
+        return dict(
+            mem_total=mem_total,
+            mem_used=mem_used,
+        )
+    elif sys.platform == 'darwin':
+        sysctl_value = lambda name, custom_cast=int: \
+            custom_cast(
+                subprocess.check_output(
+                    'sysctl -a | grep %s' % name,
+                    shell=True,
+                ).decode('utf-8').split(':')[1]
+            )
 
-def eternal_oom(memory_limit=None):
+        vm_pagesize = sysctl_value('vm.pagesize')
+        mem_total = sysctl_value('hw.memsize')
+
+        t1 = subprocess.check_output('vm_stat').decode('utf-8')
+        t2 = [o.split(':') for o in t1.splitlines() if ':' in o]
+        t3 = {
+            o[0].replace(' ', '_').replace('-', '_').lower() \
+            : \
+            int(o[1].strip().rstrip('.'))
+            for o in t2
+            if len(o) == 2 and len(o[0]) > 0 \
+                and not re.compile(r'^\s*\d+\.\s*$').match(o[1]) is None \
+                and not re.compile(r'^[a-zA-Z0-9\_\-\s]+$').match(o[0]) is None
+        }
+        mem_used = mem_total - (
+            t3['pages_inactive'] + t3['pages_free']
+        ) * vm_pagesize
+
+        return dict(
+            mem_total=mem_total / 1024,
+            mem_used=mem_used / 1024,
+        )
+    else:
+        raise NotImplementedError
+
+
+def eternal_oom(argv):
     import signal
     import re
     import time
     import pprint
+
+    assert isinstance(argv, list) and all([isinstance(o, str) for o in argv])
+    parser = optparse.OptionParser()
+    parser.add_option(
+        '--memory_limit',
+        dest='memory_limit',
+        default=None,
+        type=int,
+    )
+    parser.add_option(
+        '--debug',
+        dest='debug',
+        action='store_true',
+        default=False,
+    )
+    options, args = parser.parse_args(argv)
+
     self_pid = os.getpid()
-    if memory_limit is None:
-        memory_limit = 3 * 1024 * 1024
-    assert isinstance(memory_limit, int) \
-        and memory_limit < memory_stats()['mem_total'] * 0.8 \
-        and memory_limit > 512 * 1024
+
+    if options.memory_limit is None:
+        options.memory_limit = 3 * 1024 * 1024
+    assert isinstance(options.memory_limit, int) \
+        and options.memory_limit < memory_stats()['mem_total'] * 0.8 \
+        and options.memory_limit > 512 * 1024
 
     def pandas_data_frame(lines, groups_regex, header_regex, extra_columns):
         header = re.compile(header_regex).search(lines[0]).groups()
@@ -234,8 +292,27 @@ def eternal_oom(memory_limit=None):
             for column, values in data_frame.items()
         }
 
-    while True:
-        with io.BytesIO(subprocess.check_output('ps -e -o pid,rss,user', shell=True)) as f:
+    def pandas_shape(data_frame):
+        columns_count = len(data_frame)
+        if columns_count > 0:
+            rows_count = len(data_frame[
+                next(iter(data_frame.keys()))
+            ])
+        else:
+            rows_count = 0
+
+        return [
+            columns_count,
+            rows_count,
+        ]
+
+    def oom_get_processes():
+        with io.BytesIO(
+            subprocess.check_output(
+                'ps -e -o pid,rss,user',
+                shell=True
+            )
+        ) as f:
             t1 = pandas_data_frame(
                 f.read().decode('utf-8').splitlines(),
                 r'^\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$',
@@ -245,9 +322,12 @@ def eternal_oom(memory_limit=None):
                     RSS=lambda row: int(row['RSS']),
                 ),
             )
+            assert set(t1.keys()) == set(['PID', 'RSS', 'USER'])
 
-        mem_used = memory_stats()['mem_used']
-        t5 = subprocess.check_output('ps -e -o pid,args', shell=True).decode('utf-8').splitlines()
+        t5 = subprocess.check_output(
+            'ps -e -o pid,args',
+            shell=True
+        ).decode('utf-8').splitlines()
         t6 = pandas_data_frame(
             t5,
             r'^\s*(\d+)\s(.*)$',
@@ -256,14 +336,85 @@ def eternal_oom(memory_limit=None):
                 PID=lambda row: int(row['PID'])
             ),
         )
+
+        if not 'COMMAND' in t6:
+            if sys.platform == 'darwin' and 'ARGS' in t6:
+                t6['COMMAND'] = t6['ARGS']
+                del t6['ARGS']
+            else:
+                raise NotImplementedError
+
+        assert set(t6.keys()) == set(['PID', 'COMMAND'])
         t7 = pandas_merge(t1, t6, on='PID')
-        t8 = pandas_sort_values(t7, by=['RSS_x'], ascending=False)
+        t8 = pandas_sort_values(
+            t7,
+            by=['RSS_x'],
+            ascending=False
+        )
+
+        return t8
+
+    def first_check():
+        current_memory_stats = memory_stats()
+
+        if current_memory_stats['mem_used'] > options.memory_limit:
+            t8 = oom_get_processes()
+            print('\n'.join([
+                (
+                    lambda row: \
+                        '% 8d\t% 6.3f GiB\t% 10s\t%s' % (
+                            row['PID_x'],
+                            row['RSS_x'] / 1024 / 1024,
+                            row['USER_x'],
+                            row['COMMAND_y'],
+                        )
+                )(
+                    pandas_row(t8, k)
+                )
+                for k in range(
+                    0,
+                    min(
+                        5,
+                        pandas_shape(t8)[1],
+                    )
+                )
+            ]))
+
+        free_before_oom = (
+            options.memory_limit - current_memory_stats['mem_used']
+        )
+
+        print(
+            '%5.2f GiB [%5.2f%%] out of %5.2f GiB of free memory before OOM' % (
+                free_before_oom / 1024 / 1024,
+                free_before_oom / options.memory_limit * 100,
+                options.memory_limit / 1024 / 1024,
+            )
+        )
+
+        print('press Enter to start monitoring')
+        input()
+
+    first_check()
+
+    while True:
+        mem_used = memory_stats()['mem_used']
+
+        t8 = oom_get_processes()
+
         t9 = pandas_filter_values(
             t8,
-            lambda row: row['PID_x'] != self_pid and not 'freelancer' in row['COMMAND_y']
+            lambda row: \
+                row['PID_x'] != self_pid and \
+                not 'freelancer' in row['COMMAND_y']
         )
-        t4 = lambda : os.kill(t9['PID_x'][0], signal.SIGKILL)
-        t10 = lambda : mem_used > memory_limit
+        t4 = lambda : os.kill(
+            t9['PID_x'][0],
+            signal.SIGKILL
+        )
+
+        t10 = lambda : mem_used > options.memory_limit
+
         if t10():
             pprint.pprint([
                 'Killing',
@@ -880,9 +1031,7 @@ try:
             grim -g "$(slurp)" - | wl-copy
         ''', shell=True)
     elif sys.argv[1] == 'eternal-oom':
-        eternal_oom(
-            memory_limit=json.loads(sys.argv[2]),
-        )
+        eternal_oom(sys.argv[2:])
     elif sys.argv[1] == 'resilient-vlc':
         resilient_vlc(sys.argv[2:])
     elif sys.argv[1] == 'eternal-firefox':
