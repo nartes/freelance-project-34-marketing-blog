@@ -176,6 +176,12 @@ def eternal_oom(argv):
         type=int,
     )
     parser.add_option(
+        '--period',
+        dest='period',
+        default=None,
+        type=float,
+    )
+    parser.add_option(
         '--memory_limit',
         dest='memory_limit',
         default=None,
@@ -197,6 +203,8 @@ def eternal_oom(argv):
 
     self_pid = os.getpid()
 
+    if options.period is None:
+        options.period = 1
     if options.memory_limit is None:
         options.memory_limit = 3 * 1024 * 1024
     if options.cpu_limit is None:
@@ -213,6 +221,8 @@ def eternal_oom(argv):
     assert isinstance(options.cpu_limit, float) \
         and options.cpu_limit > 0.2 * os.cpu_count() and \
             options.cpu_limit < os.cpu_count() * 0.8
+
+    assert options.period >= 1
 
     assert options.cpu_wait >= 10
     assert options.mean_size >= 16
@@ -593,7 +603,7 @@ def eternal_oom(argv):
                 [options.cpu_limit, oom_mean_cpu(), t11['total_cpu']],
             ])
             oom_kill(t11['by_cpu']['PID_x'][0])
-        time.sleep(1)
+        time.sleep(options.period)
 
 def resilient_vlc(stream=None):
     if stream is None:
