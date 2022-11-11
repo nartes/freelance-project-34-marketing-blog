@@ -574,7 +574,10 @@ def eternal_oom(argv):
 
         t10 = lambda : mem_used > options.memory_limit
 
+        oom_status()
+
         if t10():
+            print('\n', end='')
             pprint.pprint([
                 'Killing [OOM]',
                 pandas_row(t9, 0),
@@ -583,14 +586,13 @@ def eternal_oom(argv):
             t4()
 
         if oom_cpu_high():
+            print('\n', end='')
             pprint.pprint([
                 'Killing [CPU]',
                 pandas_row(t11['by_cpu'], 0),
                 [options.cpu_limit, oom_mean_cpu(), t11['total_cpu']],
             ])
             oom_kill(t11['by_cpu']['PID_x'][0])
-
-        oom_status()
         time.sleep(1)
 
 def resilient_vlc(stream=None):
