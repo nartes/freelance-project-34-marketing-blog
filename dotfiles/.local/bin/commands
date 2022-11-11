@@ -143,8 +143,9 @@ def memory_stats():
                 and not re.compile(r'^\s*\d+\.\s*$').match(o[1]) is None \
                 and not re.compile(r'^[a-zA-Z0-9\_\-\s]+$').match(o[0]) is None
         }
-        mem_used = mem_total - (
-            t3['pages_inactive'] + t3['pages_free']
+        mem_used = (
+            t3['pages_active'] + \
+            t3['pages_wired_down']
         ) * vm_pagesize
 
         return dict(
