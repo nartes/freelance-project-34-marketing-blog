@@ -164,6 +164,18 @@ def eternal_oom(argv):
     assert isinstance(argv, list) and all([isinstance(o, str) for o in argv])
     parser = optparse.OptionParser()
     parser.add_option(
+        '--cpu_wait',
+        dest='cpu_wait',
+        default=None,
+        type=float,
+    )
+    parser.add_option(
+        '--mean_size',
+        dest='mean_size',
+        default=None,
+        type=int,
+    )
+    parser.add_option(
         '--memory_limit',
         dest='memory_limit',
         default=None,
@@ -189,6 +201,10 @@ def eternal_oom(argv):
         options.memory_limit = 3 * 1024 * 1024
     if options.cpu_limit is None:
         options.cpu_limit = 0.6 * os.cpu_count()
+    if options.cpu_wait is None:
+        options.cpu_wait = 10
+    if options.mean_size is None:
+        options.mean_size = 30
 
     assert isinstance(options.memory_limit, int) \
         and options.memory_limit < memory_stats()['mem_total'] * 0.8 \
@@ -197,6 +213,9 @@ def eternal_oom(argv):
     assert isinstance(options.cpu_limit, float) \
         and options.cpu_limit > 0.2 * os.cpu_count() and \
             options.cpu_limit < os.cpu_count() * 0.8
+
+    assert options.cpu_wait >= 10
+    assert options.mean_size >= 16
 
     def pandas_data_frame(lines, groups_regex, header_regex, extra_columns):
         header = re.compile(header_regex).search(lines[0]).groups()
@@ -522,8 +541,8 @@ def eternal_oom(argv):
 
     def oom_add_cpu(total_cpu):
         last_total_cpu.append(total_cpu)
-        if len(last_total_cpu) > 30:
-            del last_total_cpu[-30:]
+        if len(last_total_cpu) > options.mean_size:
+            del last_total_cpu[-options.mean_size:]
 
     def oom_mean_cpu():
         return sum(last_total_cpu) / (len(last_total_cpu) + 1e-8)
@@ -535,7 +554,7 @@ def eternal_oom(argv):
             if last_cpu_high is None:
                 last_cpu_high = datetime.datetime.now().timestamp()
 
-            if datetime.datetime.now().timestamp() - last_cpu_high > 10:
+            if datetime.datetime.now().timestamp() - last_cpu_high > options.cpu_wait:
                 last_cpu_high = None
                 return True
 
