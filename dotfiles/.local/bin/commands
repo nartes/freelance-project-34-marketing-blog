@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import functools
 import re
 import datetime
 import sys
@@ -16,7 +17,40 @@ import io
 import subprocess
 import logging
 
-msg = None
+def custom_notify(
+    title=None,
+    msg=None
+):
+    if title is None:
+        title = 'commands'
+
+    assert isinstance(title, str) and len(title) > 0
+    assert isinstance(msg, str) and len(msg) > 0
+
+    if sys.platform == 'darwin':
+        osascript_translate = functools.partial(
+            custom_translate,
+            check=lambda a, b:
+                not re.compile(
+                    r'^[a-zA-Z0-9\<\>\/\(\)\s\.\,\:]*$'
+                )\
+                    .match(b) is None,
+        )
+
+        subprocess.check_call([
+            'osascript',
+            '-e',
+            'display notification "%s" with title "%s"' % (
+                osascript_translate(msg),
+                osascript_translate(title),
+            )
+        ])
+    else:
+        subprocess.check_call([
+            'notify-send',
+            title,
+            msg[-128:]
+        ])
 
 def intercept_output(
     current_subprocess,
@@ -136,6 +170,12 @@ def eternal_oom(argv):
         type=int,
     )
     parser.add_option(
+        '--cpu_limit',
+        dest='cpu_limit',
+        default=None,
+        type=float,
+    )
+    parser.add_option(
         '--debug',
         dest='debug',
         action='store_true',
@@ -147,9 +187,16 @@ def eternal_oom(argv):
 
     if options.memory_limit is None:
         options.memory_limit = 3 * 1024 * 1024
+    if options.cpu_limit is None:
+        options.cpu_limit = 0.6 * os.cpu_count()
+
     assert isinstance(options.memory_limit, int) \
         and options.memory_limit < memory_stats()['mem_total'] * 0.8 \
         and options.memory_limit > 512 * 1024
+
+    assert isinstance(options.cpu_limit, float) \
+        and options.cpu_limit > 0.2 * os.cpu_count() and \
+            options.cpu_limit < os.cpu_count() * 0.8
 
     def pandas_data_frame(lines, groups_regex, header_regex, extra_columns):
         header = re.compile(header_regex).search(lines[0]).groups()
@@ -306,23 +353,33 @@ def eternal_oom(argv):
             rows_count,
         ]
 
+    def ps_regex(groups_cnt):
+        assert groups_cnt >= 1
+        return ''.join([
+            r'^\s*',
+            r'([^\s]+)\s+' * (groups_cnt - 1),
+            r'([^\s]+)\s*$',
+        ])
+
     def oom_get_processes():
         with io.BytesIO(
             subprocess.check_output(
-                'ps -e -o pid,rss,user',
+                'ps -e -o pid,rss,user,%cpu',
                 shell=True
             )
         ) as f:
             t1 = pandas_data_frame(
                 f.read().decode('utf-8').splitlines(),
-                r'^\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$',
-                r'^\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$',
+                ps_regex(4),
+                ps_regex(4),
                 dict(
                     PID=lambda row: int(row['PID']),
                     RSS=lambda row: int(row['RSS']),
+                    CPU=lambda row: float(row['%CPU']),
                 ),
             )
-            assert set(t1.keys()) == set(['PID', 'RSS', 'USER'])
+            del t1['%CPU']
+            assert set(t1.keys()) == set(['PID', 'RSS', 'USER', 'CPU'])
 
         t5 = subprocess.check_output(
             'ps -e -o pid,args',
@@ -345,83 +402,135 @@ def eternal_oom(argv):
                 raise NotImplementedError
 
         assert set(t6.keys()) == set(['PID', 'COMMAND'])
-        t7 = pandas_merge(t1, t6, on='PID')
+        t11 = pandas_merge(t1, t6, on='PID')
+        t7 = pandas_filter_values(
+            t11,
+            lambda row: \
+                row['PID_x'] != self_pid and \
+                not 'freelancer' in row['COMMAND_y']
+        )
+
         t8 = pandas_sort_values(
             t7,
             by=['RSS_x'],
             ascending=False
         )
+        t9 = pandas_sort_values(
+            t7,
+            by=['CPU_x'],
+            ascending=False
+        )
+        t10 = sum(t7['CPU_x'], 0.0) / 100
 
-        return t8
+        return dict(
+            by_mem=t8,
+            by_cpu=t9,
+            total_cpu=t10,
+        )
+
+    def oom_display_rows(current_dataframe):
+        print('\n'.join([
+            (
+                lambda row: \
+                    '% 8d\t% 6.3f GiB\t% 10s\t%s' % (
+                        row['PID_x'],
+                        row['RSS_x'] / 1024 / 1024,
+                        row['USER_x'],
+                        row['COMMAND_y'],
+                    )
+            )(
+                pandas_row(current_dataframe, k)
+            )
+            for k in range(
+                0,
+                min(
+                    5,
+                    pandas_shape(current_dataframe)[1],
+                )
+            )
+        ]))
+
+    def oom_kill(pid):
+        assert isinstance(pid, int)
+
+        try:
+            logging.info('%s oom_kill, pid %d' % (
+                datetime.datetime.now().isoformat(),
+                pid,
+            ))
+            os.kill(pid, signal.SIGKILL)
+        except:
+            logging.error(traceback.format_exc())
+            custom_notify(
+                msg='oom_kill, failed to kill pid %d' % pid
+            )
 
     def first_check():
         current_memory_stats = memory_stats()
 
+        t11 = oom_get_processes()
+        t8 = t11['by_mem']
+
         if current_memory_stats['mem_used'] > options.memory_limit:
-            t8 = oom_get_processes()
-            print('\n'.join([
-                (
-                    lambda row: \
-                        '% 8d\t% 6.3f GiB\t% 10s\t%s' % (
-                            row['PID_x'],
-                            row['RSS_x'] / 1024 / 1024,
-                            row['USER_x'],
-                            row['COMMAND_y'],
-                        )
-                )(
-                    pandas_row(t8, k)
-                )
-                for k in range(
-                    0,
-                    min(
-                        5,
-                        pandas_shape(t8)[1],
-                    )
-                )
-            ]))
+            oom_display_rows(t8)
+
+        if t11['total_cpu'] > options.cpu_limit:
+            oom_display_rows(t11['by_cpu'])
 
         free_before_oom = (
             options.memory_limit - current_memory_stats['mem_used']
         )
 
         print(
-            '%5.2f GiB [%5.2f%%] out of %5.2f GiB of free memory before OOM' % (
+            '%5.2f %% out of %5.2f %% of cpu limit before OOC' % (
+                (options.cpu_limit - t11['total_cpu']) * 100 / os.cpu_count(),
+                options.cpu_limit * 100 / os.cpu_count(),
+            )
+        )
+
+        print(
+            '%5.2f GiB [%5.2f %%] out of %5.2f GiB of free memory before OOM' % (
                 free_before_oom / 1024 / 1024,
                 free_before_oom / options.memory_limit * 100,
                 options.memory_limit / 1024 / 1024,
             )
         )
 
-        print('press Enter to start monitoring')
+        del t8
+        del t11
+
+        print('press Enter to start monitoring: ...', end='')
         input()
+        print('\nstarted...')
 
     first_check()
 
     while True:
         mem_used = memory_stats()['mem_used']
 
-        t8 = oom_get_processes()
+        t11 = oom_get_processes()
+        t8 = t11['by_mem']
 
-        t9 = pandas_filter_values(
-            t8,
-            lambda row: \
-                row['PID_x'] != self_pid and \
-                not 'freelancer' in row['COMMAND_y']
-        )
-        t4 = lambda : os.kill(
-            t9['PID_x'][0],
-            signal.SIGKILL
-        )
+        t9 = t8
+        t4 = lambda : oom_kill(t9['PID_x'][0])
 
         t10 = lambda : mem_used > options.memory_limit
 
         if t10():
             pprint.pprint([
-                'Killing',
+                'Killing [OOM]',
                 pandas_row(t9, 0),
                 mem_used,
             ])
             t4()
+
+        if t11['total_cpu'] > options.cpu_limit:
+            pprint.pprint([
+                'Killing [CPU]',
+                pandas_row(t11['by_cpu'], 0),
+                t11['total_cpu'],
+            ])
+            oom_kill(t11['by_cpu']['PID_x'][0])
         time.sleep(1)
 
 def resilient_vlc(stream=None):
@@ -985,132 +1094,121 @@ def custom_translate(current_string, check, none_char=None,):
     )
 
 
-try:
-    if sys.argv[1] == 'media-play-pause':
-        subprocess.check_call(['playerctl', 'play-pause'])
-        msg = player_metadata()
-    elif sys.argv[1] == 'media-next':
-        subprocess.check_call(['playerctl', 'next'])
-        msg = player_metadata()
-    elif sys.argv[1] == 'media-prev':
-        subprocess.check_call(['playerctl', 'previous'])
-        msg = player_metadata()
-    elif sys.argv[1] == 'media-lower-volume':
-        subprocess.check_call([
-            'pactl',
-            'set-sink-volume',
-            '@DEFAULT_SINK@',
-            '-5%'
-        ])
-        msg = subprocess.check_output([
-            'pactl',
-            'get-sink-volume',
-            '@DEFAULT_SINK@'
-        ]).decode('utf-8').strip()
-    elif sys.argv[1] == 'media-raise-volume':
-        subprocess.check_call([
-            'pactl',
-            'set-sink-volume',
-            '@DEFAULT_SINK@',
-            '+5%'
-        ])
-        msg = subprocess.check_output([
-            'pactl',
-            'get-sink-volume',
-            '@DEFAULT_SINK@'
-        ]).decode('utf-8').strip()
-    elif sys.argv[1] == 'status':
-        sys.stdout.write(status())
-        sys.stdout.flush()
-    elif sys.argv[1] == 'http-server':
-        http_server(sys.argv[2:])
-    elif sys.argv[1] == 'pass-ssh-osx':
-        pass_ssh_osx(sys.argv[2:])
-    elif sys.argv[1] == 'wl-screenshot':
-        subprocess.check_call(r'''
-            grim -g "$(slurp)" - | wl-copy
-        ''', shell=True)
-    elif sys.argv[1] == 'eternal-oom':
-        eternal_oom(sys.argv[2:])
-    elif sys.argv[1] == 'resilient-vlc':
-        resilient_vlc(sys.argv[2:])
-    elif sys.argv[1] == 'eternal-firefox':
-        eternal_firefox(
-            profile=sys.argv[2],
-            group_name=sys.argv[3],
-            window_position=json.loads(sys.argv[4]),
-            debug=json.loads(sys.argv[5]),
-            tabs=sys.argv[6:],
-        )
-    elif sys.argv[1] == 'resilient-ethernet':
-        resilient_ethernet(
-            ip_addr=sys.argv[2],
-            ethernet_device=sys.argv[3],
-        )
-    elif sys.argv[1] == 'player':
-        player_v1(
-            folder_url=sys.argv[2],
-            item_id=int(sys.argv[3]),
-        )
-    elif sys.argv[1] == 'desktop-services':
-        assert all([
-            env_name in os.environ
-            for env_name in [
-                'GTK_IM_MODULE',
-                'XMODIFIERS',
-                'QT_IM_MODULE',
-                'I3SOCK',
-                'SWAYSOCK',
-                'WAYLAND_DISPLAY',
-            ]
-        ])
-        services = []
-        try:
-            services.extend([
-                subprocess.Popen(['ibus-daemon']),
-                subprocess.Popen(r'''
-                    swayidle -w \
-                        timeout 300 'swaymsg "output * dpms off"' \
-                        resume 'swaymsg "output * dpms on"'
-                ''', shell=True),
+def commands_cli():
+    logging.getLogger().setLevel(logging.INFO)
+
+    msg = None
+
+    try:
+        if sys.argv[1] == 'media-play-pause':
+            subprocess.check_call(['playerctl', 'play-pause'])
+            msg = player_metadata()
+        elif sys.argv[1] == 'media-next':
+            subprocess.check_call(['playerctl', 'next'])
+            msg = player_metadata()
+        elif sys.argv[1] == 'media-prev':
+            subprocess.check_call(['playerctl', 'previous'])
+            msg = player_metadata()
+        elif sys.argv[1] == 'media-lower-volume':
+            subprocess.check_call([
+                'pactl',
+                'set-sink-volume',
+                '@DEFAULT_SINK@',
+                '-5%'
             ])
-            for o in services:
-                o.wait()
-        finally:
-            for o in services:
-                try:
-                    o.terminate(timeout=10)
-                except:
-                    logging.error('killed %s' % str(o.__dict__))
-                    o.kill()
-
-    else:
-        raise NotImplementedError
-except SystemExit:
-    pass
-except:
-    msg = 'not implemented\n%s' % traceback.format_exc()
-    logging.error(msg)
-
-if not msg is None:
-    if sys.platform == 'darwin':
-        subprocess.check_call([
-            'osascript',
-            '-e',
-            'display notification "%s" with title "commands failure"' % (
-                custom_translate(
-                    msg,
-                    lambda a, b:
-                        not re.compile(
-                            r'^[a-zA-Z0-9\<\>\/\(\)\s\.\,\:]*$'
-                        )\
-                            .match(b) is None,
-                )
+            msg = subprocess.check_output([
+                'pactl',
+                'get-sink-volume',
+                '@DEFAULT_SINK@'
+            ]).decode('utf-8').strip()
+        elif sys.argv[1] == 'media-raise-volume':
+            subprocess.check_call([
+                'pactl',
+                'set-sink-volume',
+                '@DEFAULT_SINK@',
+                '+5%'
+            ])
+            msg = subprocess.check_output([
+                'pactl',
+                'get-sink-volume',
+                '@DEFAULT_SINK@'
+            ]).decode('utf-8').strip()
+        elif sys.argv[1] == 'status':
+            sys.stdout.write(status())
+            sys.stdout.flush()
+        elif sys.argv[1] == 'http-server':
+            http_server(sys.argv[2:])
+        elif sys.argv[1] == 'pass-ssh-osx':
+            pass_ssh_osx(sys.argv[2:])
+        elif sys.argv[1] == 'wl-screenshot':
+            subprocess.check_call(r'''
+                grim -g "$(slurp)" - | wl-copy
+            ''', shell=True)
+        elif sys.argv[1] == 'eternal-oom':
+            eternal_oom(sys.argv[2:])
+        elif sys.argv[1] == 'resilient-vlc':
+            resilient_vlc(sys.argv[2:])
+        elif sys.argv[1] == 'eternal-firefox':
+            eternal_firefox(
+                profile=sys.argv[2],
+                group_name=sys.argv[3],
+                window_position=json.loads(sys.argv[4]),
+                debug=json.loads(sys.argv[5]),
+                tabs=sys.argv[6:],
             )
-        ])
-    else:
-        subprocess.check_call([
-            'notify-send',
-            'commands',
-            msg[-128:]
-        ])
+        elif sys.argv[1] == 'resilient-ethernet':
+            resilient_ethernet(
+                ip_addr=sys.argv[2],
+                ethernet_device=sys.argv[3],
+            )
+        elif sys.argv[1] == 'player':
+            player_v1(
+                folder_url=sys.argv[2],
+                item_id=int(sys.argv[3]),
+            )
+        elif sys.argv[1] == 'desktop-services':
+            assert all([
+                env_name in os.environ
+                for env_name in [
+                    'GTK_IM_MODULE',
+                    'XMODIFIERS',
+                    'QT_IM_MODULE',
+                    'I3SOCK',
+                    'SWAYSOCK',
+                    'WAYLAND_DISPLAY',
+                ]
+            ])
+            services = []
+            try:
+                services.extend([
+                    subprocess.Popen(['ibus-daemon']),
+                    subprocess.Popen(r'''
+                        swayidle -w \
+                            timeout 300 'swaymsg "output * dpms off"' \
+                            resume 'swaymsg "output * dpms on"'
+                    ''', shell=True),
+                ])
+                for o in services:
+                    o.wait()
+            finally:
+                for o in services:
+                    try:
+                        o.terminate(timeout=10)
+                    except:
+                        logging.error('killed %s' % str(o.__dict__))
+                        o.kill()
+
+        else:
+            raise NotImplementedError
+    except SystemExit:
+        pass
+    except:
+        msg = 'not implemented\n%s' % traceback.format_exc()
+        logging.error(msg)
+
+    if not msg is None:
+        custom_notify(msg=msg)
+
+
+if __name__ == '__main__':
+    commands_cli()
