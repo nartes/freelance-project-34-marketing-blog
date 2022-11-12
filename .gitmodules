@@ -7,3 +7,6 @@
 [submodule "deps/jessfraz-dotfiles"]
 	path = deps/jessfraz-dotfiles
 	url = https://github.com/jessfraz/dotfiles
+[submodule "deps/argrento-huami-token"]
+	path = deps/argrento-huami-token
+	url = https://github.com/argrento/huami-token
