@@ -1,4 +1,5 @@
 import bleak
+import inspect
 import traceback
 import pprint
 
@@ -32,16 +33,20 @@ async def f3(client):
     ]
     return t1
 
-async def f5(name=None):
+async def f5(
+    name_check=None,
+):
     t2 = []
 
     attempt = 0
+
     while True:
         t1 = await f1()
         pprint.pprint([o.__dict__ for o in t1])
 
-        if not name is None:
-            assert isinstance(name, str)
+        if not name_check is None:
+            assert inspect.isfunction(name_check)
+
             t5 = {
                 i : o.details[0].name()
                 for i, o in enumerate(t1)
@@ -51,9 +56,11 @@ async def f5(name=None):
                 [
                     t1[k]
                     for k, v in t5.items()
-                    if isinstance(v, str) and v.lower() == name
+                    if isinstance(v, str) and name_check(v)
                 ]
             )
+        else:
+            t2.extend(t1)
 
         if len(t2) > 0:
             break
@@ -66,13 +73,26 @@ async def f5(name=None):
 async def f4(
     timeout=None,
     characteristics=None,
+    name_check=None,
 ):
+    if isinstance(name_check, str):
+        assert name_check in [
+            'watch fit',
+        ]
+        name_check2 = lambda current_name: name_check.lower() in current_name.lower()
+    else:
+        name_check2 = name_check
+
+    assert not name_check2 is None
+
     if characteristics is None:
         characteristics = [
             '0000ffd1-0000-1000-8000-00805f9b34fb',
         ]
 
-    t2 = await f5(name='watch fit')
+    t2 = await f5(
+        name_check=name_check2,
+    )
 
     if len(t2) == 0:
         print('not found')
