@@ -4,3 +4,6 @@
 [submodule "deps/ipython"]
 	path = deps/ipython
 	url = https://github.com/ipython/ipython
+[submodule "deps/jessfraz-dotfiles"]
+	path = deps/jessfraz-dotfiles
+	url = https://github.com/jessfraz/dotfiles
