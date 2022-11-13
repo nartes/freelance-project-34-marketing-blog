@@ -13,3 +13,6 @@
 [submodule "deps/rbaron-m6-reveng"]
 	path = deps/rbaron-m6-reveng
 	url = https://github.com/rbaron/m6-reveng
+[submodule "deps/melianmiko-mb7-apps"]
+	path = deps/melianmiko-mb7-apps
+	url = https://notabug.org/melianmiko/mb7_apps
