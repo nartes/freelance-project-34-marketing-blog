@@ -73,6 +73,7 @@ async def f5(
 async def f4(
     timeout=None,
     characteristics=None,
+    operations=None,
     name_check=None,
 ):
     if isinstance(name_check, str):
@@ -104,15 +105,21 @@ async def f4(
         t4 = await f3(t3)
         pprint.pprint(t4)
 
-        t6 = {}
-        for o in characteristics:
-            try:
-                t7 = await t3.read_gatt_char(o)
-            except Exception as exception:
-                print(traceback.format_exc())
-                t7 = None
-            t6[o] = t7
-        pprint.pprint(t6)
+        if not operations is None and inspect.isfunction(operations):
+            await operations(
+                client=t3,
+                t4=t4,
+            )
+        else:
+            t6 = {}
+            for o in characteristics:
+                try:
+                    t7 = await t3.read_gatt_char(o)
+                except Exception as exception:
+                    print(traceback.format_exc())
+                    t7 = None
+                t6[o] = t7
+            pprint.pprint(t6)
     finally:
         if not t3 is None:
             await t3.disconnect()

@@ -10,3 +10,6 @@
 [submodule "deps/argrento-huami-token"]
 	path = deps/argrento-huami-token
 	url = https://github.com/argrento/huami-token
+[submodule "deps/rbaron-m6-reveng"]
+	path = deps/rbaron-m6-reveng
+	url = https://github.com/rbaron/m6-reveng
