@@ -478,6 +478,18 @@ class Application:
                 last_header = None
 
                 while True:
+                    if last_header == '\r\n' and len(response_headers) > 0 and \
+                        'HTTP/1.1 100 Continue' in response_headers[0]:
+                        self.op1(
+                            json_data=dict(
+                                last_header=last_header,
+                                response_headers=response_headers,
+                                action='restart_reading',
+                            )
+                        )
+                        last_header = None
+                        del response_headers[:]
+
                     if last_header == '\r\n' or not p.poll() is None:
                         break
 
