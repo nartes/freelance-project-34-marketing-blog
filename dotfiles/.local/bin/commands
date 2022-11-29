@@ -451,7 +451,9 @@ def eternal_oom(argv):
             by=['CPU_x'],
             ascending=False
         )
-        t10 = sum(t7['CPU_x'], 0.0) / 100
+        t10 = sum(t9['CPU_x'], 0.0) / 100
+        if options.debug:
+            pprint.pprint([t9['CPU_x'][:10], t10 * 100])
 
         return dict(
             by_mem=t8,
@@ -525,7 +527,7 @@ def eternal_oom(argv):
         )
 
         print(
-            '%5.2f %% out of %5.2f %% of cpu limit before OOC' % (
+            'available %5.2f %% out of %5.2f %% of cpu limit before OOC' % (
                 (options.cpu_limit - t11['total_cpu']) * 100 / os.cpu_count(),
                 options.cpu_limit * 100 / os.cpu_count(),
             )
@@ -553,6 +555,8 @@ def eternal_oom(argv):
     last_cpu_high = None
 
     def oom_add_cpu(total_cpu):
+        if options.debug:
+            pprint.pprint([total_cpu, last_total_cpu])
         last_total_cpu.append(total_cpu)
         if len(last_total_cpu) > options.mean_size:
             del last_total_cpu[-options.mean_size:]
