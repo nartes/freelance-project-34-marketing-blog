@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import functools
 import re
+import signal
 import datetime
 import sys
 import select
@@ -1121,6 +1122,124 @@ def player_v1(folder_url, item_id):
                 assert p.returncode == 0
             progress_bar.update(1)
 
+def share_wifi(argv):
+    parser = optparse.OptionParser()
+    parser.add_option(
+        '--to-wifi',
+        dest='to_wifi',
+        default=None,
+        type=str,
+    )
+    parser.add_option(
+        '--from-eth',
+        dest='from_eth',
+        default=None,
+        type=str,
+    )
+    parser.add_option(
+        '--ap-name',
+        dest='ap_name',
+        default=None,
+        type=str,
+    )
+    parser.add_option(
+        '--restart-delay',
+        dest='restart_delay',
+        default=None,
+        type=int,
+    )
+    options, args = parser.parse_args(argv)
+
+    if options.restart_delay is None:
+        options.restart_delay = 2
+
+
+    assert not options.to_wifi is None
+    assert not options.from_eth is None
+    assert not options.ap_name is None
+    assert options.restart_delay >= 1
+
+    print('enter password:')
+
+    pw = subprocess.check_output(
+        'read -s PW; echo -n $PW',
+        shell=True
+    ).decode('utf-8')
+    if len(pw) == 0:
+        p2 = subprocess.check_output(
+            'pwgen -syn 20 1',
+            shell=True
+        ).decode('utf-8')
+    with subprocess.Popen(
+        ['qrencode', '-t', 'UTF8'],
+        stdin=subprocess.PIPE
+    ) as p:
+        p.stdin.write(pw.encode('utf-8'))
+        p.stdin.flush()
+        p.stdin.close()
+        try:
+            p.wait(5)
+        except Exception as exception:
+            p.kill()
+            raise exception
+
+    last_timestamp = datetime.datetime.now()
+    hostapd = None
+    restart = False
+
+    def on_interrupt(*args, **kwargs):
+        nonlocal restart
+        restart = True
+
+    signal.signal(
+        signal.SIGINT,
+        on_interrupt,
+    )
+    signal.signal(
+        signal.SIGTERM,
+        on_interrupt,
+    )
+
+    while True:
+        try:
+            if hostapd is None:
+                print('\n%s, start new' % last_timestamp)
+                hostapd = subprocess.Popen([
+                    'create_ap',
+                    '--hostapd-timestamps',
+                    options.to_wifi,
+                    options.from_eth,
+                    options.ap_name,
+                    pw,
+                ])
+            else:
+                if restart:
+                    print('\n%s, shutdown current' % last_timestamp)
+                    os.kill(
+                        hostapd.pid,
+                        signal.SIGINT
+                    )
+                    try:
+                        hostapd.wait(20)
+                    except:
+                        hostapd.terminate()
+                    restart = False
+
+                if not hostapd.poll() is None:
+                    hostapd = None
+
+            if (
+                datetime.datetime.now() - last_timestamp
+            ).total_seconds() > options.restart_delay:
+                restart = True
+
+            last_timestamp = datetime.datetime.now()
+        except:
+            print(traceback.format_exc())
+            restart = True
+        finally:
+            time.sleep(1)
+
 def status():
     return ' | '.join([
         subprocess.check_output(o, shell=True).decode('utf-8').strip()
@@ -1240,6 +1359,8 @@ def commands_cli():
                 folder_url=sys.argv[2],
                 item_id=int(sys.argv[3]),
             )
+        elif sys.argv[1] == 'share-wifi':
+            share_wifi(sys.argv[2:])
         elif sys.argv[1] == 'desktop-services':
             assert all([
                 env_name in os.environ
@@ -1257,9 +1378,14 @@ def commands_cli():
                 services.extend([
                     subprocess.Popen(['ibus-daemon']),
                     subprocess.Popen(r'''
-                        swayidle -w \
-                            timeout 300 'swaymsg "output * dpms off"' \
-                            resume 'swaymsg "output * dpms on"'
+                        exec swayidle -d -w \
+                            timeout 300 'echo t1; swaymsg "output * dpms off"' \
+                            lock 'echo t6; pkill --signal SIGUSR1 swayidle;' \
+                            unlock 'echo t7; pkill --signal SIGINT swaylock; swaymsg "output * dpms on";' \
+                            timeout 900 'echo t5; swaylock -f -d;' \
+                            resume 'echo t2; swaymsg "output * dpms on"' \
+                            before-sleep 'echo t3; loginctl lock-session;' \
+                            after-resume 'echo t4; pkill --signal SIGUSR1 swayidle;'
                     ''', shell=True),
                 ])
                 for o in services:
