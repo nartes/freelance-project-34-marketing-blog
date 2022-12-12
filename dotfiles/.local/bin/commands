@@ -1122,6 +1122,32 @@ def player_v1(folder_url, item_id):
                 assert p.returncode == 0
             progress_bar.update(1)
 
+def suspend_timer(argv):
+    import datetime;
+    import subprocess;
+    import time;
+    import sys;
+    if len(argv) == 0:
+        print("enter HH:MM");
+        t3 = input().strip()
+    else:
+        t3 = argv[0]
+    t2 = datetime.datetime.strptime(t3, "%H:%M").time()
+    while True:
+        t1 = datetime.datetime.now()
+        if ((t1.hour, t1.minute) >= (t2.hour, t2.minute)):
+            break
+        else:
+            print("\r%s, %02d:%02d" % (
+                t1,
+                (t2.hour - t1.hour),
+                (t2.minute - t1.minute + 60) % 60,
+            ), end="")
+        time.sleep(1)
+    print("suspend computer at %s" % t1.isoformat())
+    subprocess.check_call(["systemctl", "suspend"]);
+
+
 def share_wifi(argv):
     parser = optparse.OptionParser()
     parser.add_option(
@@ -1361,6 +1387,8 @@ def commands_cli():
             )
         elif sys.argv[1] == 'share-wifi':
             share_wifi(sys.argv[2:])
+        elif sys.argv[1] == 'suspend-timer':
+            suspend_timer(sys.argv[2:])
         elif sys.argv[1] == 'desktop-services':
             assert all([
                 env_name in os.environ
