@@ -1142,10 +1142,16 @@ def suspend_timer(argv):
         if ((t1.hour, t1.minute) >= (t2.hour, t2.minute)):
             break
         else:
+            t3 = [
+                (t2.hour - t1.hour),
+                t2.minute - t1.minute
+            ]
+            if t3[1] < 0:
+                t3[1] += 60
+                t3[0] -= 1
             print("\r%s, %02d:%02d" % (
                 t1,
-                (t2.hour - t1.hour),
-                (t2.minute - t1.minute + 60) % 60,
+                *t3,
             ), end="")
         time.sleep(1)
     print("suspend computer at %s" % t1.isoformat())
