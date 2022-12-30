@@ -57,7 +57,10 @@ def intercept_output(
     current_subprocess,
     return_aggregated=None,
     transform_callback=None,
+    timeout=None,
 ):
+    start_timestamp = datetime.datetime.now()
+
     if not return_aggregated:
         return_aggregated = False
 
@@ -72,6 +75,10 @@ def intercept_output(
         not current_subprocess.poll() is None and \
         not last_data is None and len(last_data) == 0
     ):
+        if not timeout is None and \
+                (datetime.datetime.now() - start_timestamp).total_seconds() > timeout:
+            break
+
         t2 = t1.poll(100)
         if len(t2) == 1 and (t2[0][1] & select.POLLIN) > 0 and \
             not (isinstance(last_data, bytes) and len(last_data) == 0):
@@ -918,13 +925,27 @@ def pass_ssh_osx(argv):
         type=str,
     )
     parser.add_option(
+        '--clipboard_copy',
+        dest='clipboard_copy',
+        default=None,
+        type=str,
+    )
+    parser.add_option(
         '--debug',
         dest='debug',
         action='store_true',
         default=False,
     )
-    assert sys.platform == 'darwin'
+    assert sys.platform in ['darwin', 'linux']
     options, args = parser.parse_args(argv)
+
+    if options.clipboard_copy is None:
+        if sys.platform == 'linux':
+            options.clipboard_copy  = 'wl-copy'
+        elif sys.platform == 'darwin':
+            options.clipboard_copy = 'pbcopy'
+        else:
+            raise NotImplementedError
 
     if len(args) == 0:
         raise RuntimeError('ssh_command is required')
@@ -933,8 +954,6 @@ def pass_ssh_osx(argv):
         print(options.pass_option)
         pprint.pprint(args)
 
-    t1 = options.pass_option
-    assert len(t1) > 0
 
 
     reset_gpg_agent = r'''
@@ -943,6 +962,9 @@ def pass_ssh_osx(argv):
     '''
 
     if not options.list:
+        t1 = options.pass_option
+        assert len(t1) > 0
+
         print(
             'select on of pass names\n%s' % '\n'.join([
                 '%d: %s' % (k, v)
@@ -995,9 +1017,9 @@ def pass_ssh_osx(argv):
     if options.list:
         subprocess.check_call(ssh_command)
     else:
-        def cliboard_set(text):
+        def clipboard_set(text):
             with subprocess.Popen([
-                'pbcopy',
+                options.clipboard_copy,
             ], stdin=subprocess.PIPE) as p:
                 p.stdin.write(text.encode('utf-8'))
                 p.stdin.flush()
@@ -1044,6 +1066,7 @@ def pass_ssh_osx(argv):
                 current_subprocess=p,
                 return_aggregated=True,
                 transform_callback=transform_callback,
+                timeout=10,
             ):
                 if chunk['aggregated']:
                     last_chunk = chunk
@@ -1078,7 +1101,7 @@ def pass_ssh_osx(argv):
             password = last_line2.decode('utf-8').rstrip('\r\n')
             assert not password is None
 
-        cliboard_set(password)
+        clipboard_set(password)
 
         get_time = lambda : datetime.datetime.now().timestamp()
         start = get_time()
@@ -1091,7 +1114,7 @@ def pass_ssh_osx(argv):
                 print('\r%5.2fs remains' % remains, end='')
             time.sleep(0.1)
 
-        cliboard_set('')
+        clipboard_set('')
         print('\rcleared cliboard\n', end='')
 
 def player_v1(folder_url, item_id):
@@ -1125,6 +1148,76 @@ def player_v1(folder_url, item_id):
                 p.wait()
                 assert p.returncode == 0
             progress_bar.update(1)
+
+def desktop_services(argv):
+    parser = optparse.OptionParser()
+    parser.add_option(
+        '--background_image',
+        dest='background_image',
+        default=None,
+        type=str,
+    )
+
+    options, args = parser.parse_args(argv)
+
+    assert all([
+        env_name in os.environ
+        for env_name in [
+            'GTK_IM_MODULE',
+            'XMODIFIERS',
+            'QT_IM_MODULE',
+            'I3SOCK',
+            'SWAYSOCK',
+            'WAYLAND_DISPLAY',
+        ]
+    ])
+    services = []
+    try:
+        swaylock_cmd = [
+            'swaylock', '-f', '-d',
+        ]
+        if not options.background_image is None:
+            swaylock_cmd.extend(
+                [
+                    '-i',
+                    '"%s"' % options.background_image,
+                ]
+            )
+            subprocess.check_call([
+                'swaymsg',
+                '--',
+                'output',
+                '*',
+                'bg',
+                options.background_image,
+                'fit',
+            ])
+
+        services.extend([
+            subprocess.Popen(['ibus-daemon']),
+            subprocess.Popen(r'''
+                exec swayidle -d -w \
+                    timeout 300 'echo t1; swaymsg "output * dpms off"' \
+                    lock 'echo t6; pkill --signal SIGUSR1 swayidle;' \
+                    unlock 'echo t7; pkill --signal SIGINT swaylock; swaymsg "output * dpms on";' \
+                    timeout 900 'echo t5; {swaylock_cmd};' \
+                    resume 'echo t2; swaymsg "output * dpms on"' \
+                    before-sleep 'echo t3; loginctl lock-session;' \
+                    after-resume 'echo t4; pkill --signal SIGUSR1 swayidle;'
+            '''.format(
+                swaylock_cmd=' '.join(swaylock_cmd),
+            ), shell=True),
+        ])
+        for o in services:
+            o.wait()
+    finally:
+        for o in services:
+            try:
+                o.terminate(timeout=10)
+            except:
+                logging.error('killed %s' % str(o.__dict__))
+                o.kill()
+
 
 def suspend_timer(argv):
     import datetime;
@@ -1276,8 +1369,39 @@ def share_wifi(argv):
         finally:
             time.sleep(1)
 
-def status():
-    return ' | '.join([
+def status(argv):
+    assert isinstance(argv, list) and all([isinstance(o, str) for o in argv])
+    parser = optparse.OptionParser()
+    parser.add_option(
+        '--sh',
+        dest='sh',
+        default=[],
+        action='append',
+        type=str,
+    )
+    parser.add_option(
+        '--config',
+        dest='config',
+        default=None,
+        type=str,
+    )
+    options, args = parser.parse_args(argv)
+
+    config = dict()
+    try:
+        with io.open(options.config, 'r') as f:
+            config.update(
+                json.load(f)
+            )
+    except:
+        logging.error(traceback.format_exc())
+        pass
+
+    options.sh.extend(
+        config.get('sh', [])
+    )
+
+    t1 = [
         subprocess.check_output(o, shell=True).decode('utf-8').strip()
         for o in [
             r'''
@@ -1289,18 +1413,20 @@ def status():
                     grep -Po '[\\\+\\\-\\\w][^\\\s]+C ' | head -n 5 | xargs echo -n
             ''',
             r'''
-                ssh nartes@pizcool3070 free -h | \
-                    grep -P Mem: | grep -Po '[\w\.\d]+' | tail -n +2 | head -n 3 | xargs echo -n;
-            ''',
-            r'''
-                ssh nartes@pizcool3070 sensors | \
-                    grep -Po '[\\\+\\\-\.0-9]+\s+C ' | head -n 1
-            ''',
-            r'''
                 date +'%Y-%m-%d %l:%M:%S %p';
             ''',
         ]
-    ]).replace('\n\r', '')
+    ]
+
+    t2 = [
+        subprocess.check_output(o, shell=True).decode('utf-8').strip()
+        for o in options.sh
+    ]
+
+    t3 = ' | '.join(t2 + t1).replace('\n\r', '')
+
+    sys.stdout.write(t3)
+    sys.stdout.flush()
 
 def custom_translate(current_string, check, none_char=None,):
     if none_char is None:
@@ -1363,8 +1489,7 @@ def commands_cli():
                 '@DEFAULT_SINK@'
             ]).decode('utf-8').strip()
         elif sys.argv[1] == 'status':
-            sys.stdout.write(status())
-            sys.stdout.flush()
+            status(sys.argv[2:])
         elif sys.argv[1] == 'http-server':
             http_server(sys.argv[2:])
         elif sys.argv[1] == 'pass-ssh-osx':
@@ -1400,42 +1525,7 @@ def commands_cli():
         elif sys.argv[1] == 'suspend-timer':
             suspend_timer(sys.argv[2:])
         elif sys.argv[1] == 'desktop-services':
-            assert all([
-                env_name in os.environ
-                for env_name in [
-                    'GTK_IM_MODULE',
-                    'XMODIFIERS',
-                    'QT_IM_MODULE',
-                    'I3SOCK',
-                    'SWAYSOCK',
-                    'WAYLAND_DISPLAY',
-                ]
-            ])
-            services = []
-            try:
-                services.extend([
-                    subprocess.Popen(['ibus-daemon']),
-                    subprocess.Popen(r'''
-                        exec swayidle -d -w \
-                            timeout 300 'echo t1; swaymsg "output * dpms off"' \
-                            lock 'echo t6; pkill --signal SIGUSR1 swayidle;' \
-                            unlock 'echo t7; pkill --signal SIGINT swaylock; swaymsg "output * dpms on";' \
-                            timeout 900 'echo t5; swaylock -f -d;' \
-                            resume 'echo t2; swaymsg "output * dpms on"' \
-                            before-sleep 'echo t3; loginctl lock-session;' \
-                            after-resume 'echo t4; pkill --signal SIGUSR1 swayidle;'
-                    ''', shell=True),
-                ])
-                for o in services:
-                    o.wait()
-            finally:
-                for o in services:
-                    try:
-                        o.terminate(timeout=10)
-                    except:
-                        logging.error('killed %s' % str(o.__dict__))
-                        o.kill()
-
+            desktop_services(sys.argv[2:])
         else:
             raise NotImplementedError
     except SystemExit:

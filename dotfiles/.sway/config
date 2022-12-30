@@ -1,4 +1,4 @@
-# Default config for sway
+
 #
 # Copy this to ~/.config/sway/config and edit it to your liking.
 #
@@ -21,12 +21,12 @@ set $term weston-terminal
 #for_window [app_id="^launcher$"] floating enable, sticky enable, resize set 30 ppt 60 ppt, border pixel 10
 #set $menu exec $term --class=launcher -e /usr/bin/sway-launcher-desktop
 set $dmenu_path /usr/bin/bemenu-run
-set $menu dmenu_path | dmenu | xargs swaymsg exec --
+set $menu $dmenu_path | xargs swaymsg exec --
 
 ### Output configuration
 #
 # Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
-output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
+#output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 #
 # Example configuration:
 #
@@ -217,12 +217,15 @@ bar {
 
     # When the status_command prints a new line to stdout, swaybar updates.
     # The default just shows the current date and time.
-    status_command while true; do commands status; sleep 1; done
+    status_command while true; \
+        do commands status --config ~/.config/commands-status.json; \
+        sleep 1; \
+    done
 
     colors {
         statusline #ffffff
-        background #323232
-        inactive_workspace #32323200 #32323200 #5c5c5c
+        background #323232aa
+        inactive_workspace #323232aa #323232aa #ffffff
     }
 }
 
