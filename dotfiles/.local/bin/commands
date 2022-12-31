@@ -1495,8 +1495,29 @@ def share_wifi(argv):
             time.sleep(1)
 
 def status(argv):
+    import inspect
+    import textwrap
+
     assert isinstance(argv, list) and all([isinstance(o, str) for o in argv])
-    parser = optparse.OptionParser()
+
+    class c1(optparse.IndentedHelpFormatter):
+        def format_option(self, *args, **kwargs):
+            f1 = lambda text, width: '\n'.join([
+                textwrap.fill('\t' + o, width, replace_whitespace=False)
+                for o in text.splitlines()
+            ]).splitlines()
+            t1 = inspect.getsource(optparse.IndentedHelpFormatter.format_option)
+            t2 = '\n'.join([o[4:] for o in t1.splitlines()[:]]).replace(
+                'textwrap.wrap', 'f1',
+            ).replace('format_option', 'f2')
+            exec(t2, dict(f1=f1), locals())
+            return locals()['f2'](self, *args, **kwargs)
+
+    parser = optparse.OptionParser(
+        formatter=c1(
+            width=None,
+        ),
+    )
     parser.add_option(
         '--sh',
         dest='sh',
@@ -1509,6 +1530,16 @@ def status(argv):
         dest='config',
         default=None,
         type=str,
+        help=''.join([
+            '.json file with array of strings, each is a shell command ',
+            'that outputs a separate status text value, ',
+            'like\n',
+            r'''
+sensors -j | jq -r '.\"coretemp-isa-0000\".\"Package id 0\".temp1_input|tostring + \" C\"'
+printf '%d RPM' $(cat /sys/devices/platform/applesmc.768/fan1_input)
+printf '% 3.0f%%' $(upower -d | grep -Po 'percentage:\\s+\\d+(\\.\\d+)?%' | grep -Po '\\d+(\\.\\d+)?' | head -n 1)
+            '''.strip()
+        ])
     )
     options, args = parser.parse_args(argv)
 
