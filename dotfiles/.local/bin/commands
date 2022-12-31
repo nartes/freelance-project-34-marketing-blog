@@ -1534,10 +1534,6 @@ def status(argv):
                     grep -P Mem: | grep -Po '[\w\.\d]+' | tail -n +2 | head -n 3 | xargs echo -n;
             ''',
             r'''
-                sensors | \
-                    grep -Po '[\\\+\\\-\\\w][^\\\s]+C ' | head -n 5 | xargs echo -n
-            ''',
-            r'''
                 date +'%Y-%m-%d %l:%M:%S %p';
             ''',
         ]
