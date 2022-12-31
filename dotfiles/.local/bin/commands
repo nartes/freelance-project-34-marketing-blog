@@ -1158,6 +1158,13 @@ def desktop_services(argv):
         default=None,
         type=str,
     )
+    parser.add_option(
+        '--cpufreq',
+        dest='cpufreq',
+        default=None,
+        type=int,
+        help='0 - mac book air (no turbo boost, max pct 30, every 4 seconds',
+    )
 
     options, args = parser.parse_args(argv)
 
@@ -1194,6 +1201,18 @@ def desktop_services(argv):
                 'fit',
             ])
 
+        if options.cpufreq == 0:
+            print('launching cpufreq, need sudo')
+            services.append(
+                subprocess.Popen(r'''
+                    while true; do
+                        echo 30 | sudo tee /sys/devices/system/cpu/intel_pstate/max_perf_pct;
+                        echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo;
+                        sleep 1;
+                    done;
+                ''', shell=True, stdout=subprocess.DEVNULL)
+            )
+
         services.extend([
             subprocess.Popen(['ibus-daemon']),
             subprocess.Popen(r'''
@@ -1209,8 +1228,15 @@ def desktop_services(argv):
                 swaylock_cmd=' '.join(swaylock_cmd),
             ), shell=True),
         ])
-        for o in services:
-            o.wait()
+
+        while True:
+            if all([not o.poll() is None for o in services]):
+                print('done')
+                break
+
+            time.sleep(1)
+    except:
+        logging.error(traceback.format_exc())
     finally:
         for o in services:
             try:
