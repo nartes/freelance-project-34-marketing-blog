@@ -1205,12 +1205,18 @@ def desktop_services(argv):
             print('launching cpufreq, need sudo')
             services.append(
                 subprocess.Popen(r'''
+                    sudo sh -c 'echo cpufreq, user; whoami;
                     while true; do
-                        echo 30 | sudo tee /sys/devices/system/cpu/intel_pstate/max_perf_pct;
-                        echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo;
-                        sleep 1;
-                    done;
-                ''', shell=True, stdout=subprocess.DEVNULL)
+                        echo passive > /sys/devices/system/cpu/intel_pstate/status;
+                        echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo;
+                        echo 40 > /sys/devices/system/cpu/intel_pstate/max_perf_pct;
+                        for cpu_path in /sys/devices/system/cpu/cpu?; do
+                            echo 900000 > $cpu_path/cpufreq/scaling_max_freq;
+                            echo schedutil > $cpu_path/cpufreq/scaling_governor;
+                        done;
+                        sleep 10;
+                    done;'
+                ''', shell=True)
             )
 
         services.extend([

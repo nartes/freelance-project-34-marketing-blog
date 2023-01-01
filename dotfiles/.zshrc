@@ -21,5 +21,6 @@ bindkey -v
 eval `keychain --eval --quiet`
 
 if [[ $TTY == "/dev/tty1" ]] {
-  exec startx
+  #exec startx
+  exec sway
 }
