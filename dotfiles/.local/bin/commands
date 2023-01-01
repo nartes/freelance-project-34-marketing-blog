@@ -1188,6 +1188,8 @@ def desktop_services(argv):
     try:
         if options.cpufreq == 0:
             print('launching cpufreq, need sudo')
+            subprocess.check_call(['sudo', 'whoami'])
+
             services.append(
                 subprocess.Popen(r'''
                     exec sudo sh -c 'echo cpufreq, user; whoami;
@@ -1509,7 +1511,7 @@ def socat_ssh(argv):
                 r'''
                     exec %s
                 ''' % ' '.join(
-                    ssh_command + options.gateway_command
+                    ssh_command + [options.gateway_command]
                 )
             )
             gateway.flush()
