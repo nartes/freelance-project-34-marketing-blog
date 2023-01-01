@@ -58,8 +58,12 @@ def intercept_output(
     current_subprocess,
     return_aggregated=None,
     transform_callback=None,
+    real_time=None,
     timeout=None,
 ):
+    if real_time is None:
+        real_time = False
+
     start_timestamp = datetime.datetime.now()
 
     if not return_aggregated:
@@ -74,7 +78,7 @@ def intercept_output(
 
     while not (
         not current_subprocess.poll() is None and \
-        not last_data is None and len(last_data) == 0
+        not last_data is None
     ):
         if not timeout is None and \
                 (datetime.datetime.now() - start_timestamp).total_seconds() > timeout:
@@ -97,7 +101,7 @@ def intercept_output(
                 if not t5 is None:
                     t6 = t5
             os.write(sys.stdout.fileno(), t6)
-        else:
+        elif real_time:
             yield dict(
                 data=b'',
                 aggregated=False,
@@ -1050,7 +1054,6 @@ def pass_ssh_osx(argv):
 
                 data2 = None
 
-
                 if pinentry_delimeter in data:
                     hide_password = True
                     pos = data.rfind(pinentry_delimeter)
@@ -1072,7 +1075,8 @@ def pass_ssh_osx(argv):
                 current_subprocess=p,
                 return_aggregated=True,
                 transform_callback=transform_callback,
-                timeout=10,
+                real_time=True,
+                #timeout=10,
             ):
                 if chunk['aggregated']:
                     last_chunk = chunk
@@ -1259,7 +1263,10 @@ def desktop_services(argv):
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                 )
-                self.output = intercept_output(self.swayidle)
+                self.output = intercept_output(
+                    self.swayidle,
+                    real_time=True,
+                )
                 self.events = []
                 self.data = []
 
@@ -1463,7 +1470,7 @@ def socat_ssh(argv):
     )
     options, args = parser.parse_args(argv)
 
-    ssh_command = ['ssh', '-T']
+    ssh_command = ['ssh', '-T', '-C']
 
     if not options.ssh_key is None:
         subprocess.check_call(['ssh-add', options.ssh_key])
