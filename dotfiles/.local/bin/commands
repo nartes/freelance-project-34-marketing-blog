@@ -1246,7 +1246,7 @@ def desktop_services(argv):
                     r'''
                         exec swayidle -d -w \
                             timeout 300 'echo t1;' \
-                            lock 'echo t2;' \
+                            lock 'echo t2; read;' \
                             unlock 'echo t3;' \
                             timeout 900 'echo t4;' \
                             resume 'echo t5; ' \
@@ -1263,6 +1263,10 @@ def desktop_services(argv):
 
             def poll(self):
                 return self.swayidle.poll()
+
+            def release_lock(self):
+                self.swayidle.stdin.write(b'\n')
+                self.swayidle.stdin.flush()
 
             def force_idle(self):
                 if self.last_force_idle is None or (
@@ -1324,10 +1328,13 @@ def desktop_services(argv):
                                 subprocess.check_call(self.commands['timeout2'], shell=True)
                                 subprocess.check_call(self.commands['timeout1'], shell=True)
                         elif o == 't2':
+                            print('started lock')
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
                                 subprocess.check_call(self.commands['timeout2'], shell=True)
                                 subprocess.check_call(self.commands['timeout1'], shell=True)
+                            print('done lock')
+                            self.release_lock()
                         elif o == 't3':
                             pass
                         elif o == 't4':
@@ -1341,8 +1348,7 @@ def desktop_services(argv):
                             subprocess.check_call(self.commands['timeout2'], shell=True),
                             subprocess.check_call(self.commands['timeout1'], shell=True),
                             print('started before-done')
-                            self.swayidle.stdin.write(b'\n')
-                            self.swayidle.stdin.flush()
+                            self.release_lock()
                         elif o == 't7':
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
