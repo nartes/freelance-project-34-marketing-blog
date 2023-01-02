@@ -20,7 +20,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 
 class Application:
-    MAX_FILE_SIZE = 512 * 1024 * 1024
+    MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
+    CHUNK_SIZE = 4096
+    MAX_OUTPUT_SIZE = 4 * 1024 * 1024
     LOG_SIZE = 10 * 1024 * 1024
     MAX_TIME = 16
     EASTER_TOKEN = 'FUCK'
@@ -330,8 +332,8 @@ class Application:
                             headers_detailed=headers_detailed,
                         )
                     )
-                elif content_length2 > 512 * 1024:
-                    content_length = min(2 * 1024 * 1024, content_length2)
+                elif content_length2 > Application.MAX_OUTPUT_SIZE:
+                    content_length = min(Application.MAX_OUTPUT_SIZE, content_length2)
 
                     #headers_detailed['headers']['Content-Length'] = '%d' % content_length
                     content_range_header = headers_detailed['headers'].get('Content-Range')
@@ -391,7 +393,7 @@ class Application:
                         finished_output = True
 
                 if (
-                    not finished_output and get_output_length() > 2048 or \
+                    not finished_output and get_output_length() > Application.CHUNK_SIZE or \
                     finished_output
                 ) and not first_output:
                     dump_headers()
