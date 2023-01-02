@@ -1334,13 +1334,13 @@ def desktop_services(argv):
                     for o in self.events:
                         if o == 't1':
                             if self.force_idle():
-                                subprocess.check_call(self.commands['timeout2'], shell=True)
+                                subprocess.call(self.commands['timeout2'], shell=True)
                                 subprocess.check_call(self.commands['timeout1'], shell=True)
                         elif o == 't2':
                             print('started lock')
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
-                                subprocess.check_call(self.commands['timeout2'], shell=True)
+                                subprocess.call(self.commands['timeout2'], shell=True)
                                 subprocess.check_call(self.commands['timeout1'], shell=True)
                             print('done lock')
                             self.release_lock()
@@ -1354,7 +1354,7 @@ def desktop_services(argv):
                             subprocess.check_call(self.commands['resume'], shell=True),
                         elif o == 't6':
                             print('started before-sleep')
-                            subprocess.check_call(self.commands['timeout2'], shell=True),
+                            subprocess.call(self.commands['timeout2'], shell=True),
                             subprocess.check_call(self.commands['timeout1'], shell=True),
                             print('started before-done')
                             self.release_lock()
