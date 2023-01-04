@@ -692,6 +692,24 @@ def resilient_vlc(stream=None):
                             pass
         time.sleep(1.0)
 
+def sway_sock():
+    import glob
+    uid = os.stat(os.environ['HOME']).st_uid
+    t1 = glob.glob(
+        os.path.join(
+            '/run',
+            'user',
+            '%d' % uid,
+            'sway-ipc.%d*.sock' % uid,
+        )
+    )
+    t2 = [
+        os.stat(o).st_mtime
+        for o in t1
+    ]
+    t3 = sorted(enumerate(t1), key=lambda x: t2[x[0]])[-1][0]
+    return t1[t3]
+
 def eternal_firefox(
     tabs=None,
     profile=None,
@@ -1180,6 +1198,8 @@ def desktop_services(argv):
 
     options, args = parser.parse_args(argv)
 
+    os.environ['SWAYSOCK'] = sway_sock()
+
     assert all([
         env_name in os.environ
         for env_name in [
@@ -1190,7 +1210,7 @@ def desktop_services(argv):
             'SWAYSOCK',
             'WAYLAND_DISPLAY',
         ]
-    ])
+    ]) and os.environ['SWAYSOCK'] == sway_sock()
     services = []
     try:
         if options.cpufreq == 0:
@@ -1331,7 +1351,10 @@ def desktop_services(argv):
                             if line in [
                                 't1', 't2', 't3', 't4',
                                 't5', 't5', 't6', 't7',
-                            ]
+                            ] or (
+                                'idle state' in line or \
+                                'active state' in line
+                            )
                         ])
 
                 if len(self.events) > 0:

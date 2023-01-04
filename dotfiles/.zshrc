@@ -22,5 +22,5 @@ eval `keychain --eval --quiet`
 
 if [[ $TTY == "/dev/tty1" ]] {
   #exec startx
-  exec sway
+  exec sh -c $'sway 2>&1 | logger -d --tag sway --id=$(pgrep  -i \'sway$\');'
 }
