@@ -204,7 +204,7 @@ def eternal_oom(argv):
         '--memory_limit',
         dest='memory_limit',
         default=None,
-        type=int,
+        type=float,
     )
     parser.add_option(
         '--cpu_limit',
@@ -232,6 +232,9 @@ def eternal_oom(argv):
         options.cpu_wait = 10
     if options.mean_size is None:
         options.mean_size = 30
+
+    if isinstance(options.memory_limit, float):
+        options.memory_limit = int(options.memory_limit)
 
     assert isinstance(options.memory_limit, int) \
         and options.memory_limit < memory_stats()['mem_total'] * 0.8 \
@@ -1229,35 +1232,36 @@ def desktop_services(argv):
                         '*',
                         'bg',
                         options.background_image,
-                        'fit',
+                        'fill',
                     ])
 
                 self.commands = dict(
                     swaylock_cmd2=' '.join(swaylock_cmd),
-                    timeout1='echo t1; swaymsg "output * dpms off";',
-                    lock='echo t6; pkill --signal SIGUSR1 swayidle;',
-                    unlock='echo t7; pkill --signal SIGINT swaylock; swaymsg "output * dpms on";',
+                    timeout1='echo timeout1; swaymsg "output * dpms off";',
+                    lock='echo lock; pkill --signal SIGUSR1 swayidle;',
+                    unlock='echo unlock; pkill --signal SIGINT swaylock; swaymsg "output * dpms on";',
                     unlock2='pkill --signal SIGINT swaylock;',
-                    resume='echo t2; swaymsg "output * dpms on";',
-                    before_sleep='echo t3; loginctl lock-session;',
-                    after_resume='echo t4; pkill --signal SIGUSR1 swayidle;',
+                    resume='echo resume; swaymsg "output * dpms on";',
+                    before_sleep='echo before_sleep; loginctl lock-session;',
+                    after_resume='echo after_resume; pkill --signal SIGUSR1 swayidle;',
                 )
                 self.last_force_idle = None
                 self.commands.update(
-                    timeout2='echo t5; {swaylock_cmd};'.format(
+                    timeout2='echo timeout2; {swaylock_cmd};'.format(
                         swaylock_cmd=self.commands['swaylock_cmd2']
                     )
                 )
                 self.swayidle = subprocess.Popen(
                     r'''
                         exec swayidle -d -w \
-                            timeout 300 'echo t1;' \
+                            timeout 300 'echo t1; read;' \
+                                resume 'echo t5; ' \
+                            timeout 900 'echo t4; read;' \
+                                resume 'echo t5; ' \
                             lock 'echo t2; read;' \
                             unlock 'echo t3;' \
-                            timeout 900 'echo t4;' \
-                            resume 'echo t5; ' \
                             before-sleep 'echo t6; read;' \
-                            after-resume 'echo t7;'
+                            after-resume 'echo t7; read;'
                     ''',
                     shell=True,
                     stdin=subprocess.PIPE,
@@ -1333,9 +1337,13 @@ def desktop_services(argv):
                 if len(self.events) > 0:
                     for o in self.events:
                         if o == 't1':
+                            #if self.force_idle():
+                            #    subprocess.check_call(self.commands['lock'], shell=True)
+                            print('started t1')
                             if self.force_idle():
-                                subprocess.call(self.commands['timeout2'], shell=True)
                                 subprocess.check_call(self.commands['timeout1'], shell=True)
+                            print('done t1')
+                            self.release_lock()
                         elif o == 't2':
                             print('started lock')
                             if self.force_idle():
@@ -1347,21 +1355,31 @@ def desktop_services(argv):
                         elif o == 't3':
                             pass
                         elif o == 't4':
-                            pass
+                            print('started t4')
+                            if self.force_idle():
+                                subprocess.check_call(self.commands['lock'], shell=True)
+                                subprocess.call(self.commands['timeout2'], shell=True)
+                                subprocess.check_call(self.commands['timeout1'], shell=True)
+                            print('done t4')
+                            self.release_lock()
                         elif o == 't5':
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
                             subprocess.check_call(self.commands['resume'], shell=True),
                         elif o == 't6':
                             print('started before-sleep')
-                            subprocess.call(self.commands['timeout2'], shell=True),
-                            subprocess.check_call(self.commands['timeout1'], shell=True),
-                            print('started before-done')
+                            if self.force_idle():
+                                subprocess.call(self.commands['timeout2'], shell=True),
+                                subprocess.check_call(self.commands['timeout1'], shell=True),
+                            print('done before-sleep')
                             self.release_lock()
                         elif o == 't7':
+                            print('started resume')
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
                             subprocess.check_call(self.commands['resume'], shell=True),
+                            print('done resume')
+                            self.release_lock()
                         else:
                             raise NotImplementedError
 
