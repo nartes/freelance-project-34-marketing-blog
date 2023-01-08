@@ -1313,6 +1313,9 @@ def desktop_services(argv):
             def terminate(self, *args, **kwargs):
                 return self.swayidle.terminate(*args, **kwargs)
 
+            def wait(self, *args, **kwargs):
+                return self.swayidle.wait(*args, **kwargs)
+
             def kill(self):
                 return self.swayidle.kill()
 
@@ -1386,9 +1389,11 @@ def desktop_services(argv):
                             print('done t4')
                             self.release_lock()
                         elif o == 't5':
+                            print('started timeout resume')
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
                             subprocess.check_call(self.commands['resume'], shell=True),
+                            print('done timeout resume')
                         elif o == 't6':
                             print('started before-sleep')
                             if self.force_idle():
@@ -1397,11 +1402,18 @@ def desktop_services(argv):
                             print('done before-sleep')
                             self.release_lock()
                         elif o == 't7':
-                            print('started resume')
-                            if self.force_idle():
-                                subprocess.check_call(self.commands['lock'], shell=True)
-                            subprocess.check_call(self.commands['resume'], shell=True),
-                            print('done resume')
+                            print('started after-resume')
+                            #if self.force_idle():
+                            #subprocess.check_call(self.commands['lock'], shell=True)
+                            while True:
+                                if subprocess.call(
+                                    self.commands['resume'],
+                                    shell=True
+                                ) == 0:
+                                    break
+                                else:
+                                    time.sleep(0.5)
+                            print('done after-resume')
                             self.release_lock()
                         else:
                             raise NotImplementedError
@@ -1429,8 +1441,10 @@ def desktop_services(argv):
     finally:
         for o in services:
             try:
-                o.terminate(timeout=10)
+                o.terminate()
+                o.wait(timeout=10)
             except:
+                logging.error(traceback.format_exc())
                 logging.error('killed %s' % str(o.__dict__))
                 o.kill()
 
@@ -1891,6 +1905,8 @@ def commands_cli():
             share_wifi(sys.argv[2:])
         elif sys.argv[1] == 'socat-ssh':
             socat_ssh(sys.argv[2:])
+        elif sys.argv[1] == 'sway_sock':
+            print(sway_sock())
         elif sys.argv[1] == 'suspend-timer':
             suspend_timer(sys.argv[2:])
         elif sys.argv[1] == 'desktop-services':

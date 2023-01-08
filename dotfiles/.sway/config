@@ -71,7 +71,7 @@ input type:touchpad {
 #
 # Basics:
 #
-bindsym $mod+Shift+l exec loginctl lock-session --no-ask-password
+bindsym $mod+Shift+l exec loginctl list-sessions | tail '-n' +2 | head -n -2 | awk '{print $1}' | xargs loginctl lock-session
 
 # Start a terminal
 bindsym $mod+t exec $term
