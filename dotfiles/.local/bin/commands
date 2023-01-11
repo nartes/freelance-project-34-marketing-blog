@@ -132,7 +132,9 @@ def memory_stats():
         ) as f:
             t1 = f.read().decode('utf-8').splitlines()
             mem_total = int(t1[1].strip().split()[1])
-            mem_used = int(t1[1].strip().split()[2])
+            mem_used = \
+                int(t1[1].strip().split()[2]) + \
+                int(t1[1].strip().split()[4])
 
         return dict(
             mem_total=mem_total,
@@ -1075,7 +1077,12 @@ def pass_ssh_osx(argv):
 
                 data2 = None
 
-                if pinentry_delimeter in data:
+                if not last_chunk is None:
+                    data = last_chunk['data'] + data
+
+                if hide_password:
+                    data2 = b''
+                elif pinentry_delimeter in data:
                     hide_password = True
                     pos = data.rfind(pinentry_delimeter)
                     if pos == -1:
@@ -1085,8 +1092,6 @@ def pass_ssh_osx(argv):
                 elif data == b'':
                     #return b'\r\n'
                     return b''
-                elif hide_password:
-                    data2 = b''
                 else:
                     data2 = None
 
@@ -1212,6 +1217,22 @@ def desktop_services(argv):
         ]
     ]) and os.environ['SWAYSOCK'] == sway_sock()
     services = []
+
+    shutdown = False
+
+    def on_interrupt(*args, **kwargs):
+        nonlocal shutdown
+        shutdown = True
+
+    signal.signal(
+        signal.SIGINT,
+        on_interrupt,
+    )
+    signal.signal(
+        signal.SIGTERM,
+        on_interrupt,
+    )
+
     try:
         if options.cpufreq == 0:
             print('launching cpufreq, need sudo')
@@ -1220,7 +1241,7 @@ def desktop_services(argv):
             services.append(
                 subprocess.Popen(r'''
                     exec sudo sh -c 'echo cpufreq, user; whoami;
-                    while true; do
+                    while [[ -a /proc/{pid} ]]; do
                         echo passive > /sys/devices/system/cpu/intel_pstate/status;
                         echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo;
                         echo 40 > /sys/devices/system/cpu/intel_pstate/max_perf_pct;
@@ -1230,7 +1251,7 @@ def desktop_services(argv):
                         done;
                         sleep 10;
                     done;'
-                ''', shell=True)
+                '''.format(pid=os.getpid()), shell=True)
             )
 
         class start_swayidle:
@@ -1426,7 +1447,12 @@ def desktop_services(argv):
             start_swayidle(),
         ])
 
+
         while True:
+            if shutdown:
+                print('shutdown')
+                break
+
             if all([not o.poll() is None for o in services]):
                 print('done')
                 break
@@ -1879,6 +1905,23 @@ def commands_cli():
             subprocess.check_call(r'''
                 grim -g "$(slurp)" - | wl-copy
             ''', shell=True)
+        elif sys.argv[1] == 'chrome':
+            user_data_dir = os.path.join(
+                os.environ['HOME'],
+                '.config',
+                'google-chrome',
+            )
+
+            if sys.platform == 'linux':
+                subprocess.check_call([
+                    'google-chrome-stable',
+                    '--enable-features=useOzonePlatform',
+                    '--ozone-platform=wayland',
+                    '--process-per-site',
+                    '--user-data-dir=%s' % user_data_dir,
+                ])
+            else:
+                raise NotImplementedError
         elif sys.argv[1] == 'eternal-oom':
             eternal_oom(sys.argv[2:])
         elif sys.argv[1] == 'resilient-vlc':
