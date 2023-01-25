@@ -1200,8 +1200,55 @@ def desktop_services(argv):
         type=int,
         help='0 - mac book air (no turbo boost, max pct 30, every 4 seconds',
     )
+    parser.add_option(
+        '--backlight-increase',
+        dest='backlight_increase',
+        default=False,
+        action='store_true',
+        help='increase keyboard backlight',
+    )
+    parser.add_option(
+        '--backlight-decrease',
+        dest='backlight_decrease',
+        default=False,
+        action='store_true',
+        help='decrease keyboard backlight',
+    )
 
     options, args = parser.parse_args(argv)
+
+    if options.backlight_increase or options.backlight_decrease:
+        if sys.platform == 'linux':
+            leds = \
+                [
+                    o.strip()
+                    for o in subprocess.check_output(['light', '-L'])\
+                        .decode('utf-8')\
+                        .splitlines()[1:]
+                ]
+
+            if 'sysfs/leds/smc::kbd_backlight' in leds:
+                extra_args = []
+                if options.backlight_increase:
+                    extra_args.extend(['-A', '20'])
+                elif options.backlight_decrease:
+                    extra_args.extend(['-U', '20'])
+                else:
+                    raise NotImplementedError
+
+                subprocess.check_call([
+                    'light', '-v', '3',
+                    '-s', 'sysfs/leds/smc::kbd_backlight',
+                    *extra_args,
+                ])
+            else:
+                raise NotImplementedError
+
+        else:
+            raise NotImplementedError
+        return
+    else:
+        pass
 
     os.environ['SWAYSOCK'] = sway_sock()
 

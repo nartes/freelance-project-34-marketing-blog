@@ -1,1 +1,2 @@
 ACTION=="add|change", SUBSYSTEM=="leds", DEVPATH=="/devices/pci0000:00/0000:00:1b.0/hdaudioC0D0/leds/hda::mute", RUN{program}+="/usr/bin/chmod 666 /sys$devpath/brightness"
+ACTION=="add|change", SUBSYSTEM=="leds", DEVPATH=="/devices/platform/applesmc.768/leds/smc::kbd_backlight", RUN{program}+="/usr/bin/chmod 666 /sys$devpath/brightness"
