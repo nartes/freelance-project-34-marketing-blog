@@ -905,7 +905,7 @@ def http_server(argv):
 
 
     index_section = 'autoindex on;'
-    if len(sys.argv) == 3 and sys.argv[2] == '--public':
+    if options.public:
         location_section = 'location / {%s}' % index_section
     else:
         token = os.urandom(16).hex()
