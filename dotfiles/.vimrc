@@ -44,6 +44,7 @@ syntax on
 set hls
 
 map <Leader>w <C-w>
+map <Leader>wo :py3 print('fuck')<CR>
 map <Leader>z :wqa<CR>
 map <Leader>m :py3 f1()<CR>
 map <Leader>r :redraw!<CR>
