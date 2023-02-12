@@ -1464,6 +1464,11 @@ def desktop_services(argv):
                         ])
 
                 if len(self.events) > 0:
+                    while True:
+                        if subprocess.call(['swaymsg', '-t', 'get_version']) == 0:
+                            break
+                        time.sleep(0.5)
+
                     for o in self.events:
                         if o == 't1':
                             #if self.force_idle():
