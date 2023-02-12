@@ -175,6 +175,41 @@ def memory_stats():
     else:
         raise NotImplementedError
 
+def chrome(
+    argv
+):
+    assert isinstance(argv, list) and all([isinstance(o, str) for o in argv])
+    parser = optparse.OptionParser()
+    parser.add_option(
+        '--user_data_dir',
+        dest='user_data_dir',
+        default=None,
+        type=str,
+    )
+
+    options, args = parser.parse_args(argv)
+
+    if options.user_data_dir is None:
+        options.user_data_dir = os.path.join(
+            os.environ['HOME'],
+            '.config',
+            'google-chrome',
+        )
+
+    #assert os.path.exists(options.user_data_dir)
+
+    if sys.platform == 'linux':
+        subprocess.check_call([
+            'google-chrome-stable',
+            '--enable-features=useOzonePlatform',
+            '--ozone-platform=wayland',
+            '--process-per-site',
+            '--user-data-dir=%s' % options.user_data_dir,
+            *args,
+        ])
+    else:
+        raise NotImplementedError
+
 
 def eternal_oom(argv):
     import signal
@@ -239,12 +274,12 @@ def eternal_oom(argv):
         options.memory_limit = int(options.memory_limit)
 
     assert isinstance(options.memory_limit, int) \
-        and options.memory_limit < memory_stats()['mem_total'] * 0.8 \
+        and options.memory_limit < memory_stats()['mem_total'] * 0.95 \
         and options.memory_limit > 512 * 1024
 
     assert isinstance(options.cpu_limit, float) \
         and options.cpu_limit > 0.2 * os.cpu_count() and \
-            options.cpu_limit < os.cpu_count() * 0.8
+            options.cpu_limit < os.cpu_count() * 0.95
 
     assert options.period >= 1
 
@@ -1837,6 +1872,7 @@ def status(argv):
             'that outputs a separate status text value, ',
             'like\n',
             r'''
+ping  -w 1  -i 0.02 <hostname> -c 3 | tail -n 2| head -n 1 | grep -Po $'time\\s+.*$'
 sensors -j | jq -r '.\"coretemp-isa-0000\".\"Package id 0\".temp1_input|tostring + \" C\"'
 printf '%d RPM' $(cat /sys/devices/platform/applesmc.768/fan1_input)
 printf '% 3.0f%%' $(upower -d | grep -Po 'percentage:\\s+\\d+(\\.\\d+)?%' | grep -Po '\\d+(\\.\\d+)?' | head -n 1)
@@ -1953,22 +1989,7 @@ def commands_cli():
                 grim -g "$(slurp)" - | wl-copy
             ''', shell=True)
         elif sys.argv[1] == 'chrome':
-            user_data_dir = os.path.join(
-                os.environ['HOME'],
-                '.config',
-                'google-chrome',
-            )
-
-            if sys.platform == 'linux':
-                subprocess.check_call([
-                    'google-chrome-stable',
-                    '--enable-features=useOzonePlatform',
-                    '--ozone-platform=wayland',
-                    '--process-per-site',
-                    '--user-data-dir=%s' % user_data_dir,
-                ])
-            else:
-                raise NotImplementedError
+            chrome(sys.argv[2:])
         elif sys.argv[1] == 'eternal-oom':
             eternal_oom(sys.argv[2:])
         elif sys.argv[1] == 'resilient-vlc':
