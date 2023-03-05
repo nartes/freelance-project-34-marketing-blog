@@ -2009,8 +2009,6 @@ def media_keys(argv):
 
     msg = None
 
-    logging.info('media_keys, command = %s' % options.command)
-
     mode = None
     is_mocp = lambda : \
         subprocess.call([
@@ -2086,6 +2084,17 @@ def media_keys(argv):
         ]).decode('utf-8').strip()
     else:
         raise NotImplementedError
+
+    logging.info(
+        json.dumps(
+            dict(
+                command=options.command,
+                msg=msg,
+                mode=mode,
+            ),
+           ensure_ascii=False
+        )
+    )
 
     return dict(
         msg=msg,
