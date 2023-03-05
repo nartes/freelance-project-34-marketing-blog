@@ -1975,6 +1975,79 @@ def custom_translate(current_string, check, none_char=None,):
         A()
     )
 
+def media_keys(argv):
+    assert isinstance(argv, list) and all([isinstance(o, str) for o in argv])
+    parser = optparse.OptionParser()
+    parser.add_option(
+        '--command',
+        dest='command',
+        type=str,
+        default=None,
+    )
+
+    options, args = parser.parse_args(argv)
+
+    if options.command is None and len(args) > 0:
+        assert len(args) == 1
+        options.command = args[0]
+
+    assert options.command in [
+        'media-play-pause',
+        'media-next',
+        'media-prev',
+        'media-lower-volume',
+    ]
+
+    msg = None
+
+    logging.info('media_keys, command = %s' % options.command)
+
+    if options.command == 'media-play-pause':
+        if subprocess.call([
+            'pgrep',
+            '-u', os.environ['USER'],
+            'mocp',
+        ], stdout=subprocess.PIPE) == 0:
+            subprocess.check_call(['mocp', '-G'])
+        else:
+            subprocess.check_call(['playerctl', 'play-pause'])
+            msg = player_metadata()
+    elif sys.argv[1] == 'media-next':
+        subprocess.check_call(['playerctl', 'next'])
+        msg = player_metadata()
+    elif sys.argv[1] == 'media-prev':
+        subprocess.check_call(['playerctl', 'previous'])
+        msg = player_metadata()
+    elif sys.argv[1] == 'media-lower-volume':
+        subprocess.check_call([
+            'pactl',
+            'set-sink-volume',
+            '@DEFAULT_SINK@',
+            '-5%'
+        ])
+        msg = subprocess.check_output([
+            'pactl',
+            'get-sink-volume',
+            '@DEFAULT_SINK@'
+        ]).decode('utf-8').strip()
+    elif sys.argv[1] == 'media-raise-volume':
+        subprocess.check_call([
+            'pactl',
+            'set-sink-volume',
+            '@DEFAULT_SINK@',
+            '+5%'
+        ])
+        msg = subprocess.check_output([
+            'pactl',
+            'get-sink-volume',
+            '@DEFAULT_SINK@'
+        ]).decode('utf-8').strip()
+    else:
+        raise NotImplementedError
+
+    return dict(
+        msg=msg,
+    )
 
 def commands_cli():
     logging.getLogger().setLevel(logging.INFO)
@@ -1982,39 +2055,8 @@ def commands_cli():
     msg = None
 
     try:
-        if sys.argv[1] == 'media-play-pause':
-            subprocess.check_call(['playerctl', 'play-pause'])
-            msg = player_metadata()
-        elif sys.argv[1] == 'media-next':
-            subprocess.check_call(['playerctl', 'next'])
-            msg = player_metadata()
-        elif sys.argv[1] == 'media-prev':
-            subprocess.check_call(['playerctl', 'previous'])
-            msg = player_metadata()
-        elif sys.argv[1] == 'media-lower-volume':
-            subprocess.check_call([
-                'pactl',
-                'set-sink-volume',
-                '@DEFAULT_SINK@',
-                '-5%'
-            ])
-            msg = subprocess.check_output([
-                'pactl',
-                'get-sink-volume',
-                '@DEFAULT_SINK@'
-            ]).decode('utf-8').strip()
-        elif sys.argv[1] == 'media-raise-volume':
-            subprocess.check_call([
-                'pactl',
-                'set-sink-volume',
-                '@DEFAULT_SINK@',
-                '+5%'
-            ])
-            msg = subprocess.check_output([
-                'pactl',
-                'get-sink-volume',
-                '@DEFAULT_SINK@'
-            ]).decode('utf-8').strip()
+        if sys.argv[1].startswith('media'):
+            msg = media_keys(sys.argv[1:]).get('msg')
         elif sys.argv[1] == 'status':
             status(sys.argv[2:])
         elif sys.argv[1] == 'http-server':

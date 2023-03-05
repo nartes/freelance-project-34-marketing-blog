@@ -1,1 +1,1 @@
-yay -S light
+yay -S light playerctl
