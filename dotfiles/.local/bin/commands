@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import enum
 import datetime
 import functools
 import io
@@ -1323,35 +1324,164 @@ def desktop_services(argv):
 
     options, args = parser.parse_args(argv)
 
-    if options.backlight_increase or options.backlight_decrease:
-        if sys.platform == 'linux':
-            leds = \
-                [
-                    o.strip()
-                    for o in subprocess.check_output(['light', '-L'])\
-                        .decode('utf-8')\
-                        .splitlines()[1:]
+    class Backlight:
+        class Direction(enum.Enum):
+            increase = 'increase'
+            decrease = 'decrease'
+            absolute = 'absolute'
+            get_state = 'get_state'
+
+        class Mode(enum.Enum):
+            light = 'light'
+
+        def __init__(self):
+            self.state = []
+            self.dpms = Backlight.dpms_get()
+
+        @classmethod
+        def dpms_get(cls):
+            try:
+                t1 = subprocess.check_output(['swaymsg', '-r', '-t', 'get_outputs'])
+                t2 = t1.decode('utf-8')
+                t3 = json.loads(t2)
+                t4 = [
+                    dict(
+                        id=o['id'],
+                        name=o['name'],
+                        dpms=o['dpms'],
+                    )
+                    for o in t3
                 ]
 
-            if 'sysfs/leds/smc::kbd_backlight' in leds:
-                extra_args = []
-                if options.backlight_increase:
-                    extra_args.extend(['-A', '20'])
-                elif options.backlight_decrease:
-                    extra_args.extend(['-U', '20'])
+                return any([o['dpms'] for o in t4])
+            except:
+                return True
+
+        def check(self):
+            try:
+                new_dpms = Backlight.dpms_get()
+                if new_dpms != self.dpms:
+                    logging.info(json.dumps(dict(
+                        module='backlight',
+                        action='new_dpms',
+                        dpms=self.dpms,
+                        new_dpms=new_dpms,
+                    )))
+                    if new_dpms:
+                        Backlight.enable(self.state)
+                    else:
+                        self.state = Backlight.change(
+                            Backlight.Direction.get_state,
+                        )
+                        Backlight.disable()
+                    self.dpms = new_dpms
+            except:
+                logging.error(traceback.format_exc())
+
+        @classmethod
+        def get_state(cls):
+            raise NotImplementedError
+
+        @classmethod
+        def set_state(cls):
+            raise NotImplementedError
+
+        @classmethod
+        def disable(cls):
+            return cls.change(cls.Direction.absolute, 0)
+
+        @classmethod
+        def enable(cls, state,):
+            res = []
+            for device_state in state:
+                res.append(
+                    cls.change(
+                        direction=cls.Direction.absolute,
+                        value=device_state['value'],
+                        device_name=device_state['device_name'],
+                    )
+                )
+            return res
+
+        @classmethod
+        def change(cls, direction, value=None, device_name=None,):
+            assert isinstance(direction, Backlight.Direction)
+
+            state = []
+            devices = dict(
+                smc_kbd='sysfs/leds/smc::kbd_backlight',
+            )
+
+            if sys.platform == 'linux':
+                if device_name is None:
+                    device_name = 'smc_kbd'
+
+                leds = \
+                    [
+                        o.strip()
+                        for o in subprocess.check_output(['light', '-L'])\
+                            .decode('utf-8')\
+                            .splitlines()[1:]
+                    ]
+
+
+                if devices['smc_kbd'] in leds:
+                    extra_args = []
+                    if value is None:
+                        value = 20.0
+
+                    value2 = max(float(value), 0.0)
+
+                    assert isinstance(value2, float) and value >= -1e-8
+
+                    if direction == cls.Direction.increase:
+                        extra_args.extend(['-A', '%f' % value2])
+                    elif direction == cls.Direction.decrease:
+                        extra_args.extend(['-U', '%f' % value2])
+                    elif direction == cls.Direction.absolute:
+                        extra_args.extend(['-S', '%f' % float(value)])
+                    elif direction == cls.Direction.get_state:
+                        pass
+                    else:
+                        raise NotImplementedError
+
+                    if not (direction == cls.Direction.get_state):
+                        subprocess.check_call([
+                            'light', '-v', '3',
+                            '-s', devices['smc_kbd'],
+                            *extra_args,
+                        ], stdout=subprocess.PIPE)
+
+                    state.append(
+                        dict(
+                            mode=cls.Mode.light,
+                            device_path=devices['smc_kbd'],
+                            device_name='smc_kbd',
+                            value=float(subprocess.check_output([
+                                'light', '-G',
+                                '-s', devices['smc_kbd'],
+                            ]).decode('utf-8')),
+                        )
+                    )
                 else:
                     raise NotImplementedError
-
-                subprocess.check_call([
-                    'light', '-v', '3',
-                    '-s', 'sysfs/leds/smc::kbd_backlight',
-                    *extra_args,
-                ])
             else:
                 raise NotImplementedError
 
+            return state
+
+    if options.backlight_increase or options.backlight_decrease:
+        if options.backlight_increase:
+            direction = Backlight.Direction.increase
+        elif options.backlight_decrease:
+            direction = Backlight.Direction.decrease
         else:
             raise NotImplementedError
+
+        Backlight.change(
+            direction=direction,
+        )
+
         return
     else:
         pass
@@ -1467,6 +1597,7 @@ def desktop_services(argv):
                 )
                 self.events = []
                 self.data = []
+                self.backlight = Backlight()
 
             def poll(self):
                 return self.swayidle.poll()
@@ -1492,6 +1623,11 @@ def desktop_services(argv):
 
             def kill(self):
                 return self.swayidle.kill()
+
+            def dpms(self, direction):
+                assert direction in ['on', 'off']
+
+                raise NotImplementedError
 
             def check(self):
                 while True:
@@ -1616,6 +1752,8 @@ def desktop_services(argv):
 
                     pprint.pprint(self.events)
                     del self.events[:]
+
+                self.backlight.check()
 
         services.extend([
             subprocess.Popen(['ibus-daemon']),
