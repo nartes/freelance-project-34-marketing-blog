@@ -21,8 +21,16 @@ import logging
 
 def custom_notify(
     title=None,
-    msg=None
+    msg=None,
+    timeout=None,
 ):
+    if timeout is None:
+        timeout = 5
+
+    timeout2 = int(timeout * 1000)
+
+    assert isinstance(timeout2, int) and timeout2 >= 500
+
     if title is None:
         title = 'commands'
 
@@ -50,6 +58,7 @@ def custom_notify(
     else:
         subprocess.check_call([
             'notify-send',
+            '-t', '%d' % timeout2,
             title,
             msg[-128:]
         ])
@@ -2002,14 +2011,33 @@ def media_keys(argv):
 
     logging.info('media_keys, command = %s' % options.command)
 
-    if options.command == 'media-play-pause':
-        if subprocess.call([
+    mode = None
+    is_mocp = lambda : \
+        subprocess.call([
             'pgrep',
             '-u', os.environ['USER'],
             'mocp',
-        ], stdout=subprocess.PIPE) == 0:
+        ], stdout=subprocess.PIPE) == 0
+
+    def mocp_info():
+        t1 = subprocess.check_output(['mocp', '-i'])
+        t3 = t1.decode('utf-8')
+        t2 = dict([
+            tuple(o.split(':')[:2])
+            for o in t3.splitlines()
+        ])
+        return t2['Title'].strip()[:128]
+
+    if is_mocp:
+        mode = 'mocp'
+    else:
+        mode = 'playerctl'
+
+    if options.command == 'media-play-pause':
+        if mode == 'mocp':
             subprocess.check_call(['mocp', '-G'])
-        else:
+            msg = mocp_info()
+        elif mode == 'playerctl':
             subprocess.check_call(['playerctl', 'play-pause'])
             msg = player_metadata()
     elif sys.argv[1] == 'media-next':
