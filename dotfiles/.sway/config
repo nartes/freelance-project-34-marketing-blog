@@ -76,6 +76,8 @@ bindsym $mod+Shift+l exec loginctl list-sessions | tail '-n' +2 | head -n -2 | a
 bindsym XF86KbdBrightnessDown exec bash -c "commands desktop-services --backlight-decrease"
 bindsym XF86KbdBrightnessUp exec bash -c "commands desktop-services --backlight-increase"
 bindsym XF86AudioPlay exec bash -c "commands media-play-pause"
+bindsym XF86AudioNext exec bash -c "commands media-next"
+bindsym XF86AudioPrev exec bash -c "commands media-prev"
 
 
 # Start a terminal

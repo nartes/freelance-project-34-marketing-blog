@@ -2035,18 +2035,32 @@ def media_keys(argv):
 
     if options.command == 'media-play-pause':
         if mode == 'mocp':
-            subprocess.check_call(['mocp', '-G'])
+            subprocess.check_call(['mocp', '--toggle-pause'])
             msg = mocp_info()
         elif mode == 'playerctl':
             subprocess.check_call(['playerctl', 'play-pause'])
             msg = player_metadata()
-    elif sys.argv[1] == 'media-next':
-        subprocess.check_call(['playerctl', 'next'])
-        msg = player_metadata()
-    elif sys.argv[1] == 'media-prev':
-        subprocess.check_call(['playerctl', 'previous'])
-        msg = player_metadata()
-    elif sys.argv[1] == 'media-lower-volume':
+        else:
+            raise NotImplementedError
+    elif options.command == 'media-next':
+        if mode == 'mocp':
+            subprocess.check_call(['mocp', '--next'])
+            msg = mocp_info()
+        elif mode == 'playerctl':
+            subprocess.check_call(['playerctl', 'next'])
+            msg = player_metadata()
+        else:
+            raise NotImplementedError
+    elif options.command == 'media-prev':
+        if mode == 'mocp':
+            subprocess.check_call(['mocp', '--previous'])
+            msg = mocp_info()
+        elif mode == 'playerctl':
+            subprocess.check_call(['playerctl', 'previous'])
+            msg = player_metadata()
+        else:
+            raise NotImplementedError
+    elif options.command == 'media-lower-volume':
         subprocess.check_call([
             'pactl',
             'set-sink-volume',
@@ -2058,7 +2072,7 @@ def media_keys(argv):
             'get-sink-volume',
             '@DEFAULT_SINK@'
         ]).decode('utf-8').strip()
-    elif sys.argv[1] == 'media-raise-volume':
+    elif options.command == 'media-raise-volume':
         subprocess.check_call([
             'pactl',
             'set-sink-volume',
