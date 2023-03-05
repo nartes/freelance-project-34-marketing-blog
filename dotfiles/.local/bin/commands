@@ -522,9 +522,10 @@ def eternal_oom(argv):
         print('\n'.join([
             (
                 lambda row: \
-                    '% 8d\t% 6.3f GiB\t% 10s\t%s' % (
+                    '% 8d\t% 6.3f GiB\t% 5.2f %%\t% 10s\t%s' % (
                         row['PID_x'],
                         row['RSS_x'] / 1024 / 1024,
+                        row['CPU_x'],
                         row['USER_x'],
                         row['COMMAND_y'],
                     )
@@ -630,6 +631,7 @@ def eternal_oom(argv):
 
             if datetime.datetime.now().timestamp() - last_cpu_high > options.cpu_wait:
                 last_cpu_high = None
+                del last_total_cpu[:]
                 return True
 
         return False
@@ -660,6 +662,7 @@ def eternal_oom(argv):
             t4()
 
         if oom_cpu_high():
+            oom_display_rows(t11['by_cpu'])
             print('\n', end='')
             pprint.pprint([
                 'Killing [CPU]',
@@ -1463,12 +1466,27 @@ def desktop_services(argv):
                             )
                         ])
 
-                if len(self.events) > 0:
+                def retry(cb, cnt=None):
+                    if cnt is None:
+                        cnt = 10
+
+                    i = 0
                     while True:
-                        if subprocess.call(['swaymsg', '-t', 'get_version']) == 0:
+                        print('retry i = %d, cnt = %d' % (i, cnt))
+
+                        if not (
+                            subprocess.call(['swaymsg', '-t', 'get_version']) == 0
+                        ):
+                            continue
+
+                        if cb() == 0:
                             break
+
                         time.sleep(0.5)
 
+                        i += 1
+
+                if len(self.events) > 0:
                     for o in self.events:
                         if o == 't1':
                             #if self.force_idle():
@@ -1500,7 +1518,9 @@ def desktop_services(argv):
                             print('started timeout resume')
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
-                            subprocess.check_call(self.commands['resume'], shell=True),
+                            retry(
+                                lambda: subprocess.call(self.commands['resume'], shell=True),
+                            )
                             print('done timeout resume')
                         elif o == 't6':
                             print('started before-sleep')
@@ -1626,6 +1646,12 @@ def socat_ssh(argv):
         type=int,
     )
     parser.add_option(
+        '--ssh_command',
+        dest='ssh_command',
+        default=None,
+        type=str,
+    )
+    parser.add_option(
         '--gateway_command',
         dest='gateway_command',
         default=None,
@@ -1638,7 +1664,10 @@ def socat_ssh(argv):
     )
     options, args = parser.parse_args(argv)
 
-    ssh_command = ['ssh', '-T', '-C']
+    if options.ssh_command is None:
+        ssh_command = ['ssh', '-T', '-C']
+    else:
+        ssh_command = options.ssh_command.split()
 
     if not options.ssh_key is None:
         subprocess.check_call(['ssh-add', options.ssh_key])
@@ -1900,9 +1929,11 @@ printf '% 3.0f%%' $(upower -d | grep -Po 'percentage:\\s+\\d+(\\.\\d+)?%' | grep
         config.get('sh', [])
     )
 
-    t1 = [
-        subprocess.check_output(o, shell=True).decode('utf-8').strip()
-        for o in [
+    t1 = []
+
+    for sh_index, o in enumerate([
+        *options.sh,
+        *[
             r'''
                 free -h | \
                     grep -P Mem: | grep -Po '[\w\.\d]+' | tail -n +2 | head -n 3 | xargs echo -n;
@@ -1910,15 +1941,16 @@ printf '% 3.0f%%' $(upower -d | grep -Po 'percentage:\\s+\\d+(\\.\\d+)?%' | grep
             r'''
                 date +'%Y-%m-%d %l:%M:%S %p';
             ''',
-        ]
-    ]
+        ],
+    ]):
+        try:
+            t1.append(
+                subprocess.check_output(o, shell=True).decode('utf-8').strip()
+            )
+        except:
+            t1.append('fail %d' % sh_index)
 
-    t2 = [
-        subprocess.check_output(o, shell=True).decode('utf-8').strip()
-        for o in options.sh
-    ]
-
-    t3 = ' | '.join(t2 + t1).replace('\n\r', '')
+    t3 = ' | '.join(t1).replace('\n\r', '')
 
     sys.stdout.write(t3)
     sys.stdout.flush()
