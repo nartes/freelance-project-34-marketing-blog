@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
-import functools
-import re
-import tempfile
-import signal
 import datetime
-import sys
-import select
-import subprocess
-import pprint
-import socket
+import functools
+import io
+import json
+import logging
 import optparse
 import os
-import json
-import traceback
-import time
-import sys
-import io
+import pprint
+import re
+import select
+import signal
+import socket
 import subprocess
-import logging
+import sys
+import tempfile
+import time
+import traceback
+
 
 def custom_notify(
     title=None,
@@ -219,7 +218,6 @@ def chrome(
     else:
         raise NotImplementedError
 
-
 def eternal_oom(argv):
     import signal
     import re
@@ -239,6 +237,18 @@ def eternal_oom(argv):
         dest='mean_size',
         default=None,
         type=int,
+    )
+    parser.add_option(
+        '--one_shot_clean',
+        dest='one_shot_clean',
+        action='store_true',
+        default=None,
+    )
+    parser.add_option(
+        '--one_shot_app',
+        dest='one_shot_app',
+        default=[],
+        action='append',
     )
     parser.add_option(
         '--period',
@@ -267,6 +277,55 @@ def eternal_oom(argv):
     options, args = parser.parse_args(argv)
 
     self_pid = os.getpid()
+
+    if isinstance(options.one_shot_clean, bool) and options.one_shot_clean:
+        if len(options.one_shot_app) == 0:
+            options.one_shot_app = ['chrome', 'teams']
+
+        config = dict(
+            chrome=(r'chrome.*type=renderer', r'^.*--extension-process.*$'),
+            teams=(r'teams.*type=renderer', None),
+        )
+
+        for app in options.one_shot_app:
+            p = config[app]
+
+            try:
+                t1 = subprocess.check_output([
+                    'pgrep', '-a', '-f', p[0]
+                ]).decode('utf-8')
+            except:
+                continue
+            t2 = t1.splitlines()
+            if not p[1] is None:
+                t3 = [o for o in t2 if re.compile(p[1]).match(o) is None]
+            else:
+                t3 = t2
+            t4 = [
+                int(o.split()[0]) for o in t3
+            ]
+
+            for pid in t4:
+                if pid == self_pid:
+                    raise NotImplementedError
+
+                os.kill(pid, signal.SIGTERM)
+
+            logging.info(json.dumps(dict(
+                apps=options.one_shot_app,
+                count=len(t4),
+                processes=[
+                    o.split()[:3] for o in t3
+                ],
+            )))
+
+            if len(t4) > 0:
+                print(
+                    '\n'.join([
+                        str(o.split()[:3]) for o in t3
+                    ])
+                )
+        return
 
     if options.period is None:
         options.period = 1
