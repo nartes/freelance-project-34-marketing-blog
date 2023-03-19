@@ -1292,6 +1292,22 @@ def player_v1(folder_url, item_id):
                 assert p.returncode == 0
             progress_bar.update(1)
 
+def numpy_linspace(a, b, count):
+    pos = a
+    step = (b - a) / count
+    steps = []
+
+    for i in range(count):
+        if i == 0:
+            pos = a
+        elif i == count - 1:
+            pos = b
+        else:
+            pos = a + i * step
+        steps.append(pos)
+
+    return steps
+
 def desktop_services(argv):
     parser = optparse.OptionParser()
     parser.add_option(
@@ -1320,6 +1336,13 @@ def desktop_services(argv):
         default=False,
         action='store_true',
         help='increase keyboard backlight',
+    )
+    parser.add_option(
+        '--backlight-type',
+        dest='backlight_type',
+        default=[],
+        action='append',
+        help='backlight type, like keyboard, output',
     )
     parser.add_option(
         '--backlight-decrease',
@@ -1469,6 +1492,14 @@ def desktop_services(argv):
                         self.state = Backlight.change(
                             Backlight.Direction.get_state,
                         )
+                        logging.info(json.dumps(dict(
+                            state=pprint.pformat(
+                                self.state,
+                                width=1e+8,
+                                compact=True,
+                            ),
+                            action='disable',
+                        )))
                         Backlight.disable()
                     self.dpms = new_dpms
             except:
@@ -1484,7 +1515,10 @@ def desktop_services(argv):
 
         @classmethod
         def disable(cls):
-            return cls.change(cls.Direction.absolute, 0)
+            return cls.change(
+                cls.Direction.absolute,
+                0,
+            )
 
         @classmethod
         def enable(cls, state,):
@@ -1500,28 +1534,81 @@ def desktop_services(argv):
             return res
 
         @classmethod
-        def change(cls, direction, value=None, device_name=None,):
+        def change(
+            cls,
+            direction,
+            value=None,
+            devices=None,
+            device_name=None,
+            types=None,
+        ):
             assert isinstance(direction, Backlight.Direction)
 
             state = []
-            devices = dict(
-                smc_kbd='sysfs/leds/smc::kbd_backlight',
+            devices_all = dict(
+                smc_kbd=dict(
+                    sysfs_path='sysfs/leds/smc::kbd_backlight',
+                ),
+                intel_backlight=dict(
+                    sysfs_path='sysfs/backlight/intel_backlight',
+                ),
             )
 
+            if devices is None:
+                devices = []
+
+            if not device_name is None:
+                devices.append(device_name)
+
+            if len(devices) == 0:
+                if types is None:
+                    types = [
+                        'keyboard',
+                        'output',
+                    ]
+
+                for current_type in types:
+                    if current_type == 'keyboard':
+                        devices.extend([
+                            'smc_kbd'
+                        ])
+                    elif current_type == 'output':
+                        devices.extend([
+                            'intel_backlight',
+                        ])
+                    else:
+                        raise NotImplementedError
+            else:
+                assert types is None
+
+            devices2 = list(set(devices))
+
             if sys.platform == 'linux':
-                if device_name is None:
-                    device_name = 'smc_kbd'
+                assert all([
+                    o in devices_all
+                    for o in devices2
+                ])
 
                 leds = \
                     [
                         o.strip()
-                        for o in subprocess.check_output(['light', '-L'])\
+                        for o in subprocess.check_output(
+                            ['light', '-L'],
+                            timeout=1,
+                        )\
                             .decode('utf-8')\
                             .splitlines()[1:]
                     ]
 
 
-                if devices['smc_kbd'] in leds:
+                for current_device_name in devices2:
+                    device = devices_all[current_device_name]
+
+                    sysfs_path = device['sysfs_path']
+
+                    if not sysfs_path in leds:
+                        raise NotImplementedError
+
                     extra_args = []
                     if value is None:
                         value = 20.0
@@ -1535,32 +1622,69 @@ def desktop_services(argv):
                     elif direction == cls.Direction.decrease:
                         extra_args.extend(['-U', '%f' % value2])
                     elif direction == cls.Direction.absolute:
-                        extra_args.extend(['-S', '%f' % float(value)])
+                        extra_args.extend(['-S', '%f' % value2])
                     elif direction == cls.Direction.get_state:
                         pass
                     else:
                         raise NotImplementedError
 
+                    get_current = lambda : float(subprocess.check_output([
+                        'light', '-G',
+                        '-s', sysfs_path,
+                    ], timeout=1).decode('utf-8'))
+
                     if not (direction == cls.Direction.get_state):
-                        subprocess.check_call([
-                            'light', '-v', '3',
-                            '-s', devices['smc_kbd'],
-                            *extra_args,
-                        ], stdout=subprocess.PIPE)
+                        old_value = get_current()
+
+                        value_steps = None
+
+                        if direction == cls.Direction.decrease:
+                            value_steps = numpy_linspace(
+                                old_value,
+                                max(old_value - value2, 0),
+                                10,
+                            )
+                        elif direction == cls.Direction.increase:
+                            value_steps = numpy_linspace(
+                                old_value,
+                                min(old_value + value2, 100),
+                                10,
+                            )
+                        elif direction == cls.Direction.absolute:
+                            value_steps = numpy_linspace(
+                                old_value,
+                                min(
+                                    max(
+                                        0,
+                                        value2,
+                                    ),
+                                    100
+                                ),
+                                10,
+                            )
+                        else:
+                            raise NotImplementedError
+
+                        for current_value in value_steps:
+                            subprocess.check_call(
+                                [
+                                    'light', '-v', '3',
+                                    '-s', sysfs_path,
+                                    '-S', '%f' % current_value,
+                                ],
+                                stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE
+                            )
+                            time.sleep(0.05)
 
                     state.append(
                         dict(
                             mode=cls.Mode.light,
-                            device_path=devices['smc_kbd'],
-                            device_name='smc_kbd',
-                            value=float(subprocess.check_output([
-                                'light', '-G',
-                                '-s', devices['smc_kbd'],
-                            ]).decode('utf-8')),
+                            device_path=sysfs_path,
+                            device_name=current_device_name,
+                            value=get_current(),
                         )
                     )
-                else:
-                    raise NotImplementedError
             else:
                 raise NotImplementedError
 
@@ -1576,6 +1700,7 @@ def desktop_services(argv):
 
         Backlight.change(
             direction=direction,
+            types=options.backlight_type,
         )
 
         return
