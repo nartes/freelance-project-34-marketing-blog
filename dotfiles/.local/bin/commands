@@ -1308,6 +1308,13 @@ def desktop_services(argv):
         help='0 - mac book air (no turbo boost, max pct 30, every 4 seconds',
     )
     parser.add_option(
+        '--battery',
+        dest='battery',
+        default=None,
+        type=int,
+        help='0 - battery check with sleep <10%, every 10 seconds',
+    )
+    parser.add_option(
         '--backlight-increase',
         dest='backlight_increase',
         default=False,
@@ -1323,6 +1330,95 @@ def desktop_services(argv):
     )
 
     options, args = parser.parse_args(argv)
+
+    class Battery:
+        def __init__(self, should_start=None,):
+            if should_start is None:
+                should_start = False
+
+            assert isinstance(should_start, bool)
+
+            self.last_check = None
+            self.period = 10
+            self.is_running = should_start
+
+        def check_is_needed(self):
+            now = datetime.datetime.now(tz=datetime.timezone.utc)
+
+            is_needed = None
+
+            if self.last_check is None:
+                is_needed = True
+            else:
+                if ((now - self.last_check).total_seconds() >= self.period):
+                    is_needed = True
+                else:
+                    is_needed = False
+
+            if is_needed:
+                self.last_check = now
+
+            return is_needed
+
+        def run(self):
+            while True:
+                self.check()
+
+                time.sleep(self.period)
+
+        def terminate(self):
+            self.is_running = False
+
+        def wait(self, *args, **kwargs):
+            if self.is_running:
+                raise NotImplementedError
+
+        def poll(self):
+            if self.is_running:
+                return None
+            else:
+                return 0
+
+        def check(self):
+            try:
+                if not self.check_is_needed():
+                    return
+
+                t1 = subprocess.check_output(
+                    ['upower', '-d'],
+                    timeout=1,
+                ).decode('utf-8')
+                t2 = [
+                    o for o in t1.splitlines() if 'percentage' in o.lower()
+                ]
+                t4 = [
+                    o for o in t1.splitlines() if 'state' in o.lower()
+                ]
+                t3 = float(t2[0].split(':')[1].strip()[:-1])
+                t5 = any(['discharging' in o.lower() for o in t4])
+                if t3 < 10 and t5:
+                    logging.error(json.dumps(dict(
+                        msg='too low', t3=t3, t5=t5
+                    )))
+                    subprocess.check_call(['systemctl', 'suspend'])
+                elif t3 < 15 and t5:
+                    msg = 'battery near low'
+                    logging.error(json.dumps(dict(
+                        msg=msg, t3=t3, t5=t5
+                    )))
+                    subprocess.check_call([
+                        'notify-send', '-t', '%d' % (5 * 1000), msg
+                    ])
+                else:
+                    pass
+                    print(
+                        '\r%s % 5.2f%% %s' % (
+                            datetime.datetime.now().isoformat(), t3, str(t5)
+                        ),
+                        end=''
+                    )
+            except:
+                print(traceback.format_exc())
 
     class Backlight:
         class Direction(enum.Enum):
@@ -1760,6 +1856,16 @@ def desktop_services(argv):
             start_swayidle(),
         ])
 
+        if not options.battery is None:
+            assert options.battery in [0]
+
+            print('launching battery')
+            services.append(
+                Battery(
+                    should_start=True,
+                )
+            )
+
 
         while True:
             if shutdown:
@@ -2103,6 +2209,12 @@ def status(argv):
         type=str,
     )
     parser.add_option(
+        '--timeout',
+        dest='timeout',
+        default=None,
+        type=float,
+    )
+    parser.add_option(
         '--config',
         dest='config',
         default=None,
@@ -2121,12 +2233,20 @@ printf '% 3.0f%%' $(upower -d | grep -Po 'percentage:\\s+\\d+(\\.\\d+)?%' | grep
     )
     options, args = parser.parse_args(argv)
 
+    if options.timeout is None:
+        options.timeout = 0.5
+
+    timeout2 = max(options.timeout, 0.0)
+
+    assert timeout2 >= 0.0 and timeout2 <= 4
+
     config = dict()
     try:
-        with io.open(options.config, 'r') as f:
-            config.update(
-                json.load(f)
-            )
+        if not options.config is None:
+            with io.open(options.config, 'r') as f:
+                config.update(
+                    json.load(f)
+                )
     except:
         logging.error(traceback.format_exc())
         pass
@@ -2151,7 +2271,11 @@ printf '% 3.0f%%' $(upower -d | grep -Po 'percentage:\\s+\\d+(\\.\\d+)?%' | grep
     ]):
         try:
             t1.append(
-                subprocess.check_output(o, shell=True).decode('utf-8').strip()
+                subprocess.check_output(
+                    o,
+                    shell=True,
+                    timeout=timeout2,
+                ).decode('utf-8').strip()
             )
         except:
             t1.append('fail %d' % sh_index)
