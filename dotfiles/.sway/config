@@ -67,11 +67,22 @@ input type:touchpad {
   natural_scroll enabled
 }
 
+bindgesture swipe:4:left workspace next
+bindgesture swipe:4:right workspace prev
+
+set $lock_cmd \
+    loginctl list-sessions | \
+    tail '-n' +2 | head -n -2 | awk '{print $1}' | \
+    xargs loginctl lock-session
+
+bindgesture swipe:4:up exec $lock_cmd
+
+
 ### Key bindings
 #
 # Basics:
 #
-bindsym $mod+Shift+l exec loginctl list-sessions | tail '-n' +2 | head -n -2 | awk '{print $1}' | xargs loginctl lock-session
+bindsym $mod+Shift+l exec $lock_cmd
 
 bindsym XF86KbdBrightnessDown \
     exec commands \
@@ -256,14 +267,32 @@ bar {
         sleep 1; \
     done
 
+    status_edge_padding 0
+    status_padding 0
+    height 16
+
     colors {
-        statusline #ffffff
-        background #323232aa
-        inactive_workspace #323232aa #323232aa #ffffff
+        statusline #565656
+        background #dfdfdf
+        inactive_workspace #dfdfdf #dfdfdf #000000
+        active_workspace #dfdfdf #efefef #000000
+        focused_workspace #dfdfdf #efefef #000000
     }
 }
 
+client.focused #f3f3f3 #dfdfdf #565656 #f3f3f3 #f3f3f3
+client.unfocused #f3f3f3 #dfdfdf #565656 #f3f3f3 #f3f3f3
+
+#font pango:Helvetica Neue 10
+font pango:Terminus 10
+
+titlebar_padding 1 4
+title_align center
+
+#for_window [class=".*"] title_format "<b>%title</b>"
+
 for_window [class="^firefox$"] floating enable
+
 input * {
     xkb_layout "us,ru"
     xkb_options "grp:win_space_toggle"

@@ -1770,15 +1770,6 @@ def desktop_services(argv):
                             '"%s"' % options.background_image,
                         ]
                     )
-                    subprocess.check_call([
-                        'swaymsg',
-                        '--',
-                        'output',
-                        '*',
-                        'bg',
-                        options.background_image,
-                        'fill',
-                    ])
 
                 self.commands = dict(
                     swaylock_cmd2=' '.join(swaylock_cmd),
@@ -1819,6 +1810,28 @@ def desktop_services(argv):
                 self.events = []
                 self.data = []
                 self.backlight = Backlight()
+                self.bg = None
+                self.bg_terminate = False
+
+            def background_check(self):
+                if (
+                    self.bg is None or \
+                    not self.bg.poll() is None
+                ) and not self.bg_terminate:
+                    self.bg = subprocess.Popen([
+                        'swaybg',
+                        '--output',
+                        '*',
+                        '--image',
+                        options.background_image,
+                        '--mode',
+                        'fill',
+                    ])
+
+            def background_terminate(self, *args, **kwargs):
+                if not self.bg is None:
+                    self.bg_terminate = True
+                    self.bg.terminate(*args, **kwargs)
 
             def poll(self):
                 return self.swayidle.poll()
@@ -1837,6 +1850,8 @@ def desktop_services(argv):
                     return False
 
             def terminate(self, *args, **kwargs):
+                self.background_terminate()
+
                 return self.swayidle.terminate(*args, **kwargs)
 
             def wait(self, *args, **kwargs):
@@ -1924,6 +1939,10 @@ def desktop_services(argv):
                         elif o == 't2':
                             print('started lock')
                             if self.force_idle():
+                                custom_notify(
+                                    title='swayidle',
+                                    msg='loginctl lock started',
+                                )
                                 subprocess.check_call(self.commands['lock'], shell=True)
                                 subprocess.call(self.commands['timeout2'], shell=True)
                                 subprocess.check_call(self.commands['timeout1'], shell=True)
@@ -1975,6 +1994,8 @@ def desktop_services(argv):
                     del self.events[:]
 
                 self.backlight.check()
+
+                self.background_check()
 
         services.extend([
             subprocess.Popen(['ibus-daemon']),
