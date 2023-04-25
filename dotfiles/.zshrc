@@ -4,6 +4,7 @@ zstyle ':completion:*' completer _expand _complete _ignored _correct _approximat
 zstyle :compinstall filename '~/.zshrc'
 
 setopt INC_APPEND_HISTORY SHARE_HISTORY AUTO_PUSHD PUSHD_IGNORE_DUPS
+setopt PROMPTSUBST
 
 autoload -Uz compinit
 compinit
