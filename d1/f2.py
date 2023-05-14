@@ -463,9 +463,19 @@ class Application:
             returncode = None
 
             sent_bytes = 0
+            self.op1(
+                json_data=dict(
+                    input_content_length=input_content_length,
+                    action='curl_stdin',
+                    step='started',
+                )
+            )
+
+            started_at = datetime.datetime.now()
+
             while sent_bytes < input_content_length and p.poll() is None:
                 input_chunk = input_content.read(
-                    min(1024, input_content_length - sent_bytes)
+                    min(512 * 1024, input_content_length - sent_bytes)
                 )
                 p.stdin.write(
                     input_chunk,
@@ -473,6 +483,33 @@ class Application:
                 p.stdin.flush()
 
                 sent_bytes += len(input_chunk)
+
+                elapsed = (datetime.datetime.now() - started_at).total_seconds()
+
+                if (
+                    elapsed > Application.MAX_TIME or \
+                    elapsed > 1 and sent_bytes == 0
+                ):
+                    self.op1(
+                        json_data=dict(
+                            input_content_length=input_content_length,
+                            action='curl_stdin',
+                            step='read_timeout',
+                            chunk_len=len(input_chunk),
+                            sent_byte=sent_bytes,
+                        )
+                    )
+
+                    break
+
+            self.op1(
+                json_data=dict(
+                    input_content_length=input_content_length,
+                    action='curl_stdin',
+                    step='done',
+                )
+            )
+
             p.stdin.close()
 
             try:
