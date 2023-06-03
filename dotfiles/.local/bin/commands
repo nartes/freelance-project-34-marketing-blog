@@ -1354,6 +1354,60 @@ def desktop_services(argv):
 
     options, args = parser.parse_args(argv)
 
+    class VLC:
+        @classmethod
+        def vlc_is_playing_fullscreen(cls):
+            import subprocess
+            import json
+            import sys
+            import pprint
+
+            t2 = []
+            try:
+                t1 = subprocess.check_output(['swaymsg', '-t', 'get_tree']).decode('utf-8')
+                t2 = json.loads(t1)
+            except:
+                logging.error(traceback.format_exc())
+
+            def walk(o, cb):
+                if isinstance(o, dict):
+                    cb(o)
+                    for k, v in o.items():
+                        walk(v, cb,)
+                elif isinstance(o, list):
+                    cb(o)
+                    for o2 in o:
+                        walk(o2, cb,)
+                else:
+                    cb(o)
+
+            t3 = []
+
+            walk(t2, lambda o: [
+                t3.append(o)
+                if isinstance(o, dict) and \
+                    'fullscreen_mode' in o and \
+                    o['fullscreen_mode'] == 1 and \
+                    'window_properties' in o and \
+                    'class' in o['window_properties'] and \
+                    o['window_properties']['class'] == 'vlc'
+                else None
+            ])
+
+            t4 = False
+
+            try:
+                t4 = subprocess.check_output([
+                    'playerctl', '-p', 'vlc', 'status'
+                ]).decode('utf-8').strip() == 'Playing'
+            except:
+                logging.error(traceback.format_exc())
+
+            #pprint.pprint(t3)
+
+            return len(t3) > 0 and t4
+
+
     class Battery:
         def __init__(self, should_start=None,):
             if should_start is None:
@@ -1808,10 +1862,20 @@ def desktop_services(argv):
                     real_time=True,
                 )
                 self.events = []
+                self.last_skip_loop = None
                 self.data = []
                 self.backlight = Backlight()
                 self.bg = None
                 self.bg_terminate = False
+
+            def skip_loop_long_ago(self):
+                if self.last_skip_loop is None or (
+                    datetime.datetime.now() - self.last_skip_loop
+                ).total_seconds() >= 30:
+                    self.last_skip_loop = datetime.datetime.now()
+                    return True
+                else:
+                    return False
 
             def background_check(self):
                 if (
@@ -1866,6 +1930,8 @@ def desktop_services(argv):
                 raise NotImplementedError
 
             def check(self):
+                new_events = []
+
                 while True:
                     if self.output is None:
                         break
@@ -1894,7 +1960,7 @@ def desktop_services(argv):
                                 aggregated=False,
                             )
                         ]
-                        self.events.extend([
+                        new_events.extend([
                             line
                             for line in lines
                             if line in [
@@ -1926,8 +1992,59 @@ def desktop_services(argv):
 
                         i += 1
 
-                if len(self.events) > 0:
+                if (
+                    len(new_events) > 0 or \
+                    len(self.events) > 0 and \
+                    self.skip_loop_long_ago()
+                ):
+                    self.events.extend(new_events)
+
+                    skip_loop = False
+
+                    if (
+                        all([
+                            o in ['t1', 't4']
+                            for o in self.events
+                        ]) and \
+                        VLC.vlc_is_playing_fullscreen() and \
+                        self.backlight.dpms
+                    ):
+                        skip_loop = True
+                        print(
+                            'skip loop, %s' % (
+                                [
+                                    json.dumps(self.events),
+                                    self.backlight.dpms,
+                                    VLC.vlc_is_playing_fullscreen(),
+                                    self.events,
+                                    new_events,
+                                ],
+                            )
+                        )
+                    elif (
+                        len(new_events) == 0 and \
+                        len(self.events) > 1 and \
+                        all([
+                            o in ['t1', 't4']
+                            for o in self.events
+                        ])
+                    ):
+                        self.events = ['t4']
+                    elif len(self.events) > 1 and (
+                        self.events == ['t1', 't4', 't5', 't5'] or \
+                        self.events == ['t1', 't5', 't5'] or \
+                        self.events == ['t1', 't5']
+                    ):
+                        for o in new_events:
+                            self.release_lock()
+
+                        self.events = []
+
                     for o in self.events:
+                        if skip_loop:
+                            self.release_lock()
+                            continue
+
                         if o == 't1':
                             #if self.force_idle():
                             #    subprocess.check_call(self.commands['lock'], shell=True)
@@ -1943,9 +2060,21 @@ def desktop_services(argv):
                                     title='swayidle',
                                     msg='loginctl lock started',
                                 )
-                                subprocess.check_call(self.commands['lock'], shell=True)
-                                subprocess.call(self.commands['timeout2'], shell=True)
-                                subprocess.check_call(self.commands['timeout1'], shell=True)
+                                while True:
+                                    if not subprocess.call(
+                                        self.commands['lock'], shell=True
+                                    ) == 0:
+                                        continue
+                                    if not subprocess.call(
+                                        self.commands['timeout2'], shell=True
+                                    ) == 0:
+                                        #continue
+                                        pass
+                                    if not subprocess.call(
+                                        self.commands['timeout1'], shell=True
+                                    ) == 0:
+                                        continue
+                                    break
                             print('done lock')
                             self.release_lock()
                         elif o == 't3':
@@ -1990,8 +2119,9 @@ def desktop_services(argv):
                         else:
                             raise NotImplementedError
 
-                    pprint.pprint(self.events)
-                    del self.events[:]
+                    if not skip_loop:
+                        pprint.pprint(self.events)
+                        del self.events[:]
 
                 self.backlight.check()
 
@@ -2407,8 +2537,8 @@ printf '% 3.0f%%' $(upower -d | grep -Po 'percentage:\\s+\\d+(\\.\\d+)?%' | grep
         *options.sh,
         *[
             r'''
-                free -h | \
-                    grep -P Mem: | grep -Po '[\w\.\d]+' | tail -n +2 | head -n 3 | xargs echo -n;
+                A=$(free -h | grep -P Mem: | grep -Po '[\w\.\d]+');
+                echo -n $A | awk '{print $2, $7}';
             ''',
             r'''
                 date +'%Y-%m-%d %l:%M:%S %p';
