@@ -97,27 +97,34 @@ while True:
             except:
                 logging.error(json.dumps(dict(
                     error=traceback.format_exc(),
+                    time_iso=datetime.datetime.now().isoformat(),
                 )))
                 not_alive = True
 
             if not_alive:
                 logging.error(json.dumps(
                     dict(
-                        o=pprint.pformat(o.__dict__),
+                        args=o.args,
+                        k=k,
+                        #o=pprint.pformat(o.__dict__),
                         status='not_alive',
+                        time_iso=datetime.datetime.now().isoformat(),
                     )
                 ))
 
-                stop_task(o)
-                del t1[k]
+                #stop_task(o)
+                #del t1[k]
                 continue
 
             if not o.poll() is None:
                 logging.error(json.dumps(
                     dict(
-                        o=pprint.pformat(o.__dict__),
+                        #o=pprint.pformat(o.__dict__),
+                        args=o.args,
+                        k=k,
                         return_code=o.poll(),
                         status='crashed',
+                        time_iso=datetime.datetime.now().isoformat(),
                     )
                 ))
                 del t1[k]
