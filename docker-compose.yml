@@ -8,6 +8,16 @@ services:
       - ./d1/nginx_config.py:/app/d1/nginx_config.py:ro
       - ./tmp/cache/forward.nginx.json:/app/tmp/cache/forward.nginx.json:ro
     restart: always
+  cpanel:
+    build:
+      context: .
+      dockerfile: ./docker/cpanel/Dockerfile
+    links:
+      - app
+    volumes:
+      - ./d1/:/app/d1:ro
+      - ./tmp/d1/:/app/tmp/d1/:ro
+    restart: always
   dynu:
     build:
       context: .

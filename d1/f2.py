@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 
 class Application:
-    MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
+    MAX_FILE_SIZE = 4 * 1024 * 1024 * 1024
     CHUNK_SIZE = 4096
     MAX_OUTPUT_SIZE = 4 * 1024 * 1024
     LOG_SIZE = 10 * 1024 * 1024

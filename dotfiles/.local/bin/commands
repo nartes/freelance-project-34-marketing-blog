@@ -1039,6 +1039,7 @@ def http_server(argv):
                 -u root \
                 -it --entrypoint=/bin/bash \
                 -v $PWD:/app:ro \
+                --log-driver none \
                 nginx:latest \
                 -c 'echo "server{listen 80; charset UTF-8; root /app; %s}" > /etc/nginx/conf.d/default.conf; nginx -g "daemon off;"'
         ''' % (
@@ -1350,6 +1351,13 @@ def desktop_services(argv):
         default=False,
         action='store_true',
         help='decrease keyboard backlight',
+    )
+    parser.add_option(
+        '--backlight_service',
+        dest='backlight_service',
+        action='store_true',
+        default=False,
+        help='enable backlight_service',
     )
 
     options, args = parser.parse_args(argv)
@@ -1864,7 +1872,10 @@ def desktop_services(argv):
                 self.events = []
                 self.last_skip_loop = None
                 self.data = []
-                self.backlight = Backlight()
+                if options.backlight_service:
+                    self.backlight = Backlight()
+                else:
+                    self.backlight = None
                 self.bg = None
                 self.bg_terminate = False
 
@@ -2123,7 +2134,8 @@ def desktop_services(argv):
                         pprint.pprint(self.events)
                         del self.events[:]
 
-                self.backlight.check()
+                if not self.backlight is None:
+                    self.backlight.check()
 
                 self.background_check()
 
