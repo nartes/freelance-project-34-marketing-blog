@@ -53,47 +53,10 @@ while True:
             not_alive = None
 
             try:
-                url_content = []
-                with subprocess.Popen(
-                    [
-                        'curl',
-                        '-q', '--silent',
-                        '-v',
-                        '--max-time', '4',
-                        '--max-filesize', '%d' % (4 * 1024 * 1024),
-                        v['url'],
-                    ],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.PIPE,
-                ) as curl:
-                    def read_chunk():
-                        chunk = curl.stderr.read().decode('utf-8')
-                        if isinstance(chunk, str) and len(chunk) > 0:
-                            url_content.append(chunk)
-
-                        if isinstance(chunk, str) and 'status: ' in chunk:
-                            stop_task(curl)
-
-                        return chunk
-
-                    while curl.poll() is None:
-                        read_chunk()
-
-                    while True:
-                        chunk = read_chunk()
-
-                        if chunk is None or chunk == '':
-                            break
-
-                url_content2 = ''.join(url_content)
-
-                if not 'status: 502' in url_content2 and (
-                    'status: 200' in url_content2 or
-                    'status: 302' in url_content2
-                ):
-                    not_alive = False
-                else:
-                    not_alive = True
+                not_alive = not (
+                    requests.get(v['url'], timeout=0.5).status_code
+                    == 200
+                )
             except:
                 logging.error(json.dumps(dict(
                     error=traceback.format_exc(),
