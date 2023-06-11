@@ -11,10 +11,11 @@ services:
   ssl-app:
     build:
       context: .
-      dockerfile: ./docker/app/Dockerfile
+      dockerfile: ./docker/ssl-app/Dockerfile
     volumes:
-      - ./d1/nginx_config.py:/app/d1/nginx_config.py:ro
-      - ./tmp/cache/forward.nginx.json:/app/tmp/cache/forward.nginx.json:ro
+      - ./d1/:/app/d1/:ro
+      - ./tmp/d1/:/app/tmp/d1/:ro
+      - ./tmp/d1/letsencrypt:/etc/letsencrypt:rw
     restart: always
   cpanel:
     build:
