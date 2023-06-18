@@ -49,7 +49,7 @@ def ipython_update_shortcuts():
     t4 = t3[0]
     t2.key_bindings.remove(t4.handler)
     t2.key_bindings.add(
-        'e', filter=~prompt_toolkit.filters.vi_insert_mode,
+        '\\', 'e', filter=~prompt_toolkit.filters.vi_insert_mode,
     )(
         functools.partial(
             ipython_edit_in_vim,
@@ -63,6 +63,8 @@ def ipython_update_shortcuts():
 c.InteractiveShellApp.extensions = ['autoreload']
 c.InteractiveShell.history_length = 100 * 1000 * 1000
 c.InteractiveShell.history_load_length = 100 * 1000 * 1000
+c.InteractiveShell.enable_history_search = False
+c.InteractiveShell.autosuggestions_provider = None
 c.InteractiveShell.pdb = True
 c.TerminalInteractiveShell.editing_mode = 'vi'
 c.TerminalInteractiveShell.modal_cursor = False
