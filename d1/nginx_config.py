@@ -75,7 +75,7 @@ def forward(
 
     http {
       log_format main
-        '[$time_local][$remote_addr, $http_x_forwarded_for, $t1, $http_host]'
+        '[$time_local][$remote_addr:$remote_port, $http_x_forwarded_for, $t1, $http_host]'
         '[$request_length,$bytes_sent,$request_time]'
         '[$status][$request]'
         '[$http_user_agent][$http_referer]';
@@ -128,6 +128,8 @@ server {
   listen 443 ssl;
   server_name {server_names};
 
+  client_max_body_size {client_max_body_size};
+
   ssl_certificate {signed_chain_cert};
   ssl_certificate_key {domain_key};
 
@@ -147,6 +149,8 @@ server {
               ).replace(
                   '{signed_chain_cert}', server['signed_chain_cert'],
               ).replace(
+                  '{client_max_body_size}', server['client_max_body_size'],
+              ).replace(
                   '{domain_key}', server['domain_key'],
               )
         )
@@ -164,7 +168,7 @@ events {
 
 http {
   log_format main
-  '[$time_local][$remote_addr, $http_x_forwarded_for, $t1, $http_host]'
+  '[$time_local][$remote_addr:$remote_port, $http_x_forwarded_for, $t1, $http_host]'
   '[$request_length,$bytes_sent,$request_time]'
   '[$status][$request]'
   '[$http_user_agent][$http_referer]';
