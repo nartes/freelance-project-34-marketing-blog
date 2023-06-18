@@ -60,3 +60,4 @@ map <Leader>i3 :set t_Co=0 so=999<CR>
 map <Leader>i4 :set t_Co=256 so=0<CR>
 set foldmethod=indent
 set nofoldenable
+map <Leader>e :e #<cR>
