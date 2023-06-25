@@ -192,4 +192,4 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2 and sys.argv[1] == 'ssl':
         ssl(*sys.argv[2:])
     else:
-        forward(sys.argv[1:])
+        forward(*sys.argv[1:])
