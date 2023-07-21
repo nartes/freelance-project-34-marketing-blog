@@ -106,7 +106,7 @@ while True:
         print('\nshutting down')
         break
     finally:
-        time.sleep(10)
+        time.sleep(5 * 60)
 
 for o in t1:
     stop_task(o)
