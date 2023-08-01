@@ -518,7 +518,7 @@ def eternal_oom(argv):
             r'([^\s]+)\s*$',
         ])
 
-    def oom_get_processes():
+    def oom_get_processes(extra_filter=None,):
         with io.BytesIO(
             subprocess.check_output(
                 'ps -e -o pid,rss,user,%cpu',
@@ -560,11 +560,15 @@ def eternal_oom(argv):
 
         assert set(t6.keys()) == set(['PID', 'COMMAND'])
         t11 = pandas_merge(t1, t6, on='PID')
+        if extra_filter is None:
+            extra_filter = lambda *args : True
+
         t7 = pandas_filter_values(
             t11,
             lambda row: \
                 row['PID_x'] != self_pid and \
-                not 'freelancer' in row['COMMAND_y']
+                not 'freelancer' in row['COMMAND_y'] and \
+                extra_filter(row)
         )
 
         t8 = pandas_sort_values(
@@ -691,10 +695,13 @@ def eternal_oom(argv):
     def oom_mean_cpu():
         return sum(last_total_cpu) / (len(last_total_cpu) + 1e-8)
 
-    def oom_cpu_high():
+    def oom_cpu_high(cpu_limit=None):
+        if cpu_limit is None:
+            cpu_limit = options.cpu_limit
+
         nonlocal last_cpu_high
 
-        if oom_mean_cpu() > options.cpu_limit:
+        if oom_mean_cpu() > cpu_limit:
             if last_cpu_high is None:
                 last_cpu_high = datetime.datetime.now().timestamp()
 
@@ -705,10 +712,28 @@ def eternal_oom(argv):
 
         return False
 
+    mem_used = None
+
+    def oom_mem_high(memory_limit=None):
+        nonlocal mem_used
+
+        if memory_limit is None:
+            memory_limit = options.memory_limit
+
+        return mem_used > options.memory_limit
+
     while True:
         mem_used = memory_stats()['mem_used']
 
-        t11 = oom_get_processes()
+        if not oom_mem_high(options.memory_limit / 2):
+            extra_filters = lambda row: (
+                'chrome' in row['COMMAND_y'] and '--type=renderer' in row['COMMAND_y']
+                or not 'chrome' in row['COMMAND_y']
+            )
+        else:
+            extra_filters = None
+
+        t11 = oom_get_processes(extra_filters)
 
         oom_add_cpu(t11['total_cpu'])
 
@@ -717,11 +742,9 @@ def eternal_oom(argv):
         t9 = t8
         t4 = lambda : oom_kill(t9['PID_x'][0])
 
-        t10 = lambda : mem_used > options.memory_limit
-
         oom_status()
 
-        if t10():
+        if oom_mem_high():
             print('\n', end='')
             pprint.pprint([
                 'Killing [OOM]',
