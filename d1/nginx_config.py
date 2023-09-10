@@ -115,6 +115,37 @@ def ssl(input_json, output_conf):
 
     servers = []
 
+    if 'default_server' in ssl_nginx:
+        server = ssl_nginx['default_server']
+
+        servers.append(
+            r'''
+server {
+  set $t1 $remote_addr;
+  if ($http_x_forwarded_for)
+  {
+    set $t1 $http_x_forwarded_for;
+  }
+
+  listen 443 ssl default_server;
+  server_name _;
+
+  client_max_body_size {client_max_body_size};
+
+  ssl_certificate {signed_chain_cert};
+  ssl_certificate_key {domain_key};
+
+  return 444;
+}
+            '''.replace(
+                  '{signed_chain_cert}', server['signed_chain_cert'],
+              ).replace(
+                  '{client_max_body_size}', server['client_max_body_size'],
+              ).replace(
+                  '{domain_key}', server['domain_key'],
+              )
+        )
+
     for server in ssl_nginx['servers']:
         servers.append(
             r'''
