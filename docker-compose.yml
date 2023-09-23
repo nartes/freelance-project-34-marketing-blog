@@ -5,8 +5,8 @@ services:
       context: .
       dockerfile: ./docker/app/Dockerfile
     volumes:
-      - ./d1/nginx_config.py:/app/d1/nginx_config.py:ro
-      - ./tmp/cache/forward.nginx.json:/app/tmp/cache/forward.nginx.json:ro
+      - ./d1/:/app/d1/:ro
+      - ./tmp/cache/:/app/tmp/cache/:ro
     restart: always
   ssl-app:
     build:

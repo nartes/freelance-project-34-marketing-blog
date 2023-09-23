@@ -27,7 +27,8 @@ def forward(
                 )
             )
 
-        sections = []
+        sections = dict()
+
         for entry in forward_nginx:
             location = None
 
@@ -35,6 +36,14 @@ def forward(
                 location = '/%s/' % entry['app_name']
             else:
                 location = '/'
+
+            if 'server_name' in entry:
+                server_name = entry['server_name']
+            else:
+                server_name = 'default_server'
+
+            if not server_name in sections:
+                sections[server_name] = []
 
             if 'target_endpoint' in entry:
                 section_body = r'''
@@ -58,7 +67,7 @@ def forward(
             else:
                 raise NotImplementedError
 
-            sections.append(r'''
+            sections[server_name].append(r'''
         location ^~ {location} {
             {section_body}
         }
@@ -67,6 +76,44 @@ def forward(
             ).replace(
                 '{location}', location,
             ))
+
+        servers = []
+
+        for server_name, current_sections in sections.items():
+            servers.append(
+                r'''
+server {
+  set $t1 $remote_addr;
+  if ($http_x_forwarded_for)
+  {
+    set $t1 $http_x_forwarded_for;
+  }
+
+  server_name {server_name};
+  listen 80 {default_server};
+  client_max_body_size 50M;
+
+  {sections_config}
+}
+                '''.replace(
+                  '{sections_config}', '\n'.join(current_sections)
+                ).replace(
+                  '{server_name}',
+                  (
+                    '_'
+                    if server_name == 'default_server'
+                    else server_name
+                  ),
+                ).replace(
+                  '{default_server}',
+                  (
+                    ''
+                    if not server_name == 'default_server'
+                    else server_name
+                  )
+                )
+            )
+
         f.write(r'''
     events {
       multi_accept on;
@@ -83,19 +130,7 @@ def forward(
       access_log /dev/null combined;
       access_log /dev/stderr main;
 
-      server {
-        set $t1 $remote_addr;
-        if ($http_x_forwarded_for)
-        {
-          set $t1 $http_x_forwarded_for;
-        }
-
-
-        listen 80;
-        client_max_body_size 50M;
-
-        {sections_config}
-      }
+      {servers_config}
 
       map $http_upgrade $connection_upgrade {
         default upgrade;
@@ -103,7 +138,7 @@ def forward(
       }
     }
         '''.replace(
-          '{sections_config}', '\n'.join(sections)
+          '{servers_config}', '\n'.join(servers)
         ))
 
 def ssl(input_json, output_conf):
@@ -149,6 +184,29 @@ server {
     for server in ssl_nginx['servers']:
         servers.append(
             r'''
+
+
+server {
+  set $t1 $remote_addr;
+  if ($http_x_forwarded_for)
+  {
+    set $t1 $http_x_forwarded_for;
+  }
+
+  listen 80;
+  server_name {server_names};
+  client_max_body_size {client_max_body_size};
+
+  location ~ ^/.well-known/acme-challenge/ {
+    alias /var/www/;
+    try_files $uri =404;
+  }
+
+  location ~ {
+    return 444;
+  }
+}
+
 server {
   set $t1 $remote_addr;
   if ($http_x_forwarded_for)
