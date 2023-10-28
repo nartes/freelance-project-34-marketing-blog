@@ -42,6 +42,7 @@ colorscheme morning
 
 syntax on
 set hls
+set term=xterm-256color
 
 map <Leader>w <C-w>
 map <Leader>wo :py3 print('fuck')<CR>
@@ -61,3 +62,4 @@ map <Leader>i4 :set t_Co=256 so=0<CR>
 set foldmethod=indent
 set nofoldenable
 map <Leader>e :e #<cR>
+set mouse=a
