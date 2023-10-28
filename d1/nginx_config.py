@@ -203,7 +203,8 @@ server {
   }
 
   location ~ {
-    return 444;
+    #return 444;
+    return 301 https://$host$request_uri;
   }
 }
 
