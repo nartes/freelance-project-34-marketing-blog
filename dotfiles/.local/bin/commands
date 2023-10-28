@@ -246,6 +246,12 @@ def eternal_oom(argv):
         default=None,
     )
     parser.add_option(
+        '--cpu',
+        dest='cpu_json',
+        type=str,
+        default=None,
+    )
+    parser.add_option(
         '--one_shot_app',
         dest='one_shot_app',
         default=[],
@@ -276,6 +282,11 @@ def eternal_oom(argv):
         default=False,
     )
     options, args = parser.parse_args(argv)
+
+    if not options.cpu_json is None:
+        options.cpu = json.loads(options.cpu_json)
+    else:
+        options.cpu = True
 
     self_pid = os.getpid()
 
@@ -753,7 +764,7 @@ def eternal_oom(argv):
             ])
             t4()
 
-        if oom_cpu_high():
+        if options.cpu and oom_cpu_high():
             oom_display_rows(t11['by_cpu'])
             print('\n', end='')
             pprint.pprint([
