@@ -1037,6 +1037,12 @@ def http_server(argv):
         type='str',
         default='127.0.0.1',
     )
+    parser.add_option(
+        '--prefix',
+        dest='prefix',
+        type='str',
+        default=None,
+    )
     options, args = parser.parse_args(argv)
 
     assert options.port >= 1
@@ -1056,6 +1062,9 @@ def http_server(argv):
         location_section = 'location / {%s}' % index_section
     else:
         token = os.urandom(16).hex()
+
+        if not options.prefix is None:
+            token = options.prefix + token
         print(
             'access url is http://%s:%d/%s/' % (
                 options.host,
