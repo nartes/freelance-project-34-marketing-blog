@@ -63,3 +63,4 @@ set foldmethod=indent
 set nofoldenable
 map <Leader>e :e #<cR>
 set mouse=a
+au FileType netrw nmap <buffer> <LeftMouse> <LeftMouse> <CR>

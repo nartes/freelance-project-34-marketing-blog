@@ -1,4 +1,4 @@
-$(window).on('load', () => {
+(function() {
   window.context.books.push(`
     DEATH of a HERO
 
@@ -4747,4 +4747,5 @@ $(window).on('load', () => {
 
     In an agony of helpless grief and pity.
   `);
-});
+  window.context.update_books();
+})();

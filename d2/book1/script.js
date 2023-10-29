@@ -1,6 +1,4 @@
 $(window).on('load', () => {
-  window.context = {};
-  window.context.books = [];
 
   var synth = window.speechSynthesis;
 
@@ -29,9 +27,20 @@ $(window).on('load', () => {
       $('.screen .widget input[name=total-sentences]'),
     read_aloud:
       $('.screen .widget input[name=read-aloud]'),
+    add_book:
+      $('.screen .widget input[name=add-book]'),
     debug:
       $('.screen .widget input[name=debug]'),
   };
+  context.update_books = () => {
+    context.ui.books_select.empty();
+    window.context.books.map(
+      (o, i) => $('<option>').attr('value', '' + i).text(o.slice(0, 10))
+    ).forEach((o) => context.ui.books_select.append(o))
+  }
+
+  context.update_books();
+
   context.sentences = null;
   context.pending_stop = false;
   context.current_book = null;
@@ -328,6 +337,22 @@ $(window).on('load', () => {
 
   context.callbacks.init();
 
+  context.ui.add_book.on(
+    'click',
+    async () => {
+      alert('fuck');
+      let book = await (
+        (await fetch(
+          'books/' + prompt('enter book file', '1.txt')
+        )).text()
+      );
+      //let book = prompt('enter text', '');
+      //let title = prompt('enter title', '');
+      //window.context.books.push(title + '\n' + book);
+      window.context.books.push(book);
+      window.context.update_books();
+    },
+  );
   context.ui.read_aloud.on(
     'click',
     context.callbacks.ui_read_aloud_on_click,

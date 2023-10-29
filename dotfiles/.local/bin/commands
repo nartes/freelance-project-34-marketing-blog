@@ -724,6 +724,7 @@ def eternal_oom(argv):
         return False
 
     mem_used = None
+    mem_stat = None
 
     def oom_mem_high(memory_limit=None):
         nonlocal mem_used
@@ -731,12 +732,17 @@ def eternal_oom(argv):
         if memory_limit is None:
             memory_limit = options.memory_limit
 
-        return mem_used > options.memory_limit
+        return mem_used > memory_limit
 
     while True:
-        mem_used = memory_stats()['mem_used']
+        mem_stat = memory_stats()
+        mem_used = mem_stat['mem_used']
 
-        if not oom_mem_high(options.memory_limit / 2):
+        if options.memory_limit < mem_stat['mem_total'] and not oom_mem_high(
+            mem_stat['mem_total'] - (
+                mem_stat['mem_total'] - options.memory_limit
+            ) / 2
+        ):
             extra_filters = lambda row: (
                 'chrome' in row['COMMAND_y'] and '--type=renderer' in row['COMMAND_y']
                 or not 'chrome' in row['COMMAND_y']
@@ -1441,7 +1447,7 @@ def desktop_services(argv):
             try:
                 t4 = subprocess.check_output([
                     'playerctl', '-p', 'vlc', 'status'
-                ]).decode('utf-8').strip() == 'Playing'
+                ], timeout=1,).decode('utf-8').strip() == 'Playing'
             except:
                 logging.error(traceback.format_exc())
 
@@ -1537,7 +1543,7 @@ def desktop_services(argv):
                         end=''
                     )
             except:
-                print(traceback.format_exc())
+                logging.error(traceback.format_exc())
 
     class Backlight:
         class Direction(enum.Enum):
@@ -1556,7 +1562,10 @@ def desktop_services(argv):
         @classmethod
         def dpms_get(cls):
             try:
-                t1 = subprocess.check_output(['swaymsg', '-r', '-t', 'get_outputs'])
+                t1 = subprocess.check_output(
+                    ['swaymsg', '-r', '-t', 'get_outputs'],
+                    timeout=1
+                )
                 t2 = t1.decode('utf-8')
                 t3 = json.loads(t2)
                 t4 = [
@@ -1821,6 +1830,7 @@ def desktop_services(argv):
     shutdown = False
 
     def on_interrupt(*args, **kwargs):
+        logging.info('blah')
         nonlocal shutdown
         shutdown = True
 
@@ -1835,23 +1845,29 @@ def desktop_services(argv):
 
     try:
         if options.cpufreq == 0:
-            print('launching cpufreq, need sudo')
+            logging.info('launching cpufreq, need sudo')
             subprocess.check_call(['sudo', 'whoami'])
 
             services.append(
-                subprocess.Popen(r'''
-                    exec sudo sh -c 'echo cpufreq, user; whoami;
-                    while [[ -a /proc/{pid} ]]; do
-                        echo passive > /sys/devices/system/cpu/intel_pstate/status;
-                        echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo;
-                        echo 40 > /sys/devices/system/cpu/intel_pstate/max_perf_pct;
-                        for cpu_path in /sys/devices/system/cpu/cpu?; do
-                            echo 900000 > $cpu_path/cpufreq/scaling_max_freq;
-                            echo schedutil > $cpu_path/cpufreq/scaling_governor;
-                        done;
-                        sleep 10;
-                    done;'
-                '''.format(pid=os.getpid()), shell=True)
+                subprocess.Popen(
+                    r'''
+                        exec sudo sh -c 'echo cpufreq, user; whoami;
+                        while [[ -a /proc/{pid} ]]; do
+                            echo passive > /sys/devices/system/cpu/intel_pstate/status;
+                            echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo;
+                            echo 40 > /sys/devices/system/cpu/intel_pstate/max_perf_pct;
+                            for cpu_path in /sys/devices/system/cpu/cpu?; do
+                                echo 900000 > $cpu_path/cpufreq/scaling_max_freq;
+                                echo schedutil > $cpu_path/cpufreq/scaling_governor;
+                            done;
+                            sleep 10;
+                        done;'
+                    '''.format(pid=os.getpid()),
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL,
+                )
             )
 
         class start_swayidle:
@@ -1893,15 +1909,19 @@ def desktop_services(argv):
                             lock 'echo t2; read;' \
                             unlock 'echo t3;' \
                             before-sleep 'echo t6; read;' \
-                            after-resume 'echo t7; read;'
+                            after-resume 'echo t7; read;' 2>&1
                     ''',
                     shell=True,
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    restore_signals=False,
+                    preexec_fn=lambda : os.setpgrp(),
                 )
                 self.output = intercept_output(
                     self.swayidle,
                     real_time=True,
+                    transform_callback=lambda x: [logging.info(x), b''][-1],
                 )
                 self.events = []
                 self.last_skip_loop = None
@@ -1977,6 +1997,10 @@ def desktop_services(argv):
             def check(self):
                 new_events = []
 
+                class event_t(enum.Enum):
+                    idle_state = 'idle state'
+                    active_state = 'active state'
+
                 while True:
                     if self.output is None:
                         break
@@ -2005,17 +2029,21 @@ def desktop_services(argv):
                                 aggregated=False,
                             )
                         ]
-                        new_events.extend([
-                            line
-                            for line in lines
+                        for line in lines:
+                            if event_t.idle_state.value in line:
+                                line = event_t.idle_state.value
+                            elif event_t.active_state.value in line:
+                                line = event_t.active_state.value
+                            else:
+                                pass
+
                             if line in [
                                 't1', 't2', 't3', 't4',
                                 't5', 't5', 't6', 't7',
-                            ] or (
-                                'idle state' in line or \
-                                'active state' in line
-                            )
-                        ])
+                                event_t.idle_state.value,
+                                event_t.active_state.value,
+                            ]:
+                                new_events.append(line)
 
                 def retry(cb, cnt=None):
                     if cnt is None:
@@ -2023,7 +2051,7 @@ def desktop_services(argv):
 
                     i = 0
                     while True:
-                        print('retry i = %d, cnt = %d' % (i, cnt))
+                        logging.info('retry i = %d, cnt = %d' % (i, cnt))
 
                         if not (
                             subprocess.call(['swaymsg', '-t', 'get_version']) == 0
@@ -2055,7 +2083,7 @@ def desktop_services(argv):
                         self.backlight.dpms
                     ):
                         skip_loop = True
-                        print(
+                        logging.info(
                             'skip loop, %s' % (
                                 [
                                     json.dumps(self.events),
@@ -2093,13 +2121,13 @@ def desktop_services(argv):
                         if o == 't1':
                             #if self.force_idle():
                             #    subprocess.check_call(self.commands['lock'], shell=True)
-                            print('started t1')
+                            logging.info('started t1')
                             if self.force_idle():
                                 subprocess.check_call(self.commands['timeout1'], shell=True)
-                            print('done t1')
+                            logging.info('done t1')
                             self.release_lock()
                         elif o == 't2':
-                            print('started lock')
+                            logging.info('started lock')
                             if self.force_idle():
                                 custom_notify(
                                     title='swayidle',
@@ -2120,35 +2148,35 @@ def desktop_services(argv):
                                     ) == 0:
                                         continue
                                     break
-                            print('done lock')
+                            logging.info('done lock')
                             self.release_lock()
                         elif o == 't3':
                             pass
                         elif o == 't4':
-                            print('started t4')
+                            logging.info('started t4')
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
                                 subprocess.call(self.commands['timeout2'], shell=True)
                                 subprocess.check_call(self.commands['timeout1'], shell=True)
-                            print('done t4')
+                            logging.info('done t4')
                             self.release_lock()
                         elif o == 't5':
-                            print('started timeout resume')
+                            logging.info('started timeout resume')
                             if self.force_idle():
                                 subprocess.check_call(self.commands['lock'], shell=True)
                             retry(
                                 lambda: subprocess.call(self.commands['resume'], shell=True),
                             )
-                            print('done timeout resume')
+                            logging.info('done timeout resume')
                         elif o == 't6':
-                            print('started before-sleep')
+                            logging.info('started before-sleep')
                             if self.force_idle():
                                 subprocess.call(self.commands['timeout2'], shell=True),
                                 subprocess.check_call(self.commands['timeout1'], shell=True),
-                            print('done before-sleep')
+                            logging.info('done before-sleep')
                             self.release_lock()
                         elif o == 't7':
-                            print('started after-resume')
+                            logging.info('started after-resume')
                             #if self.force_idle():
                             #subprocess.check_call(self.commands['lock'], shell=True)
                             while True:
@@ -2159,9 +2187,15 @@ def desktop_services(argv):
                                     break
                                 else:
                                     time.sleep(0.5)
-                            print('done after-resume')
+                            logging.info('done after-resume')
                             self.release_lock()
+                        elif o in [
+                            event_t.idle_state.value,
+                            event_t.active_state.value,
+                        ]:
+                            logging.info(json.dumps(dict(o=o)))
                         else:
+                            logging.error(json.dumps(dict(o=o)))
                             raise NotImplementedError
 
                     if not skip_loop:
@@ -2174,14 +2208,19 @@ def desktop_services(argv):
                 self.background_check()
 
         services.extend([
-            subprocess.Popen(['ibus-daemon']),
+            subprocess.Popen(
+                ['ibus-daemon'],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+            ),
             start_swayidle(),
         ])
 
         if not options.battery is None:
             assert options.battery in [0]
 
-            print('launching battery')
+            logging.info('launching battery')
             services.append(
                 Battery(
                     should_start=True,
@@ -2191,11 +2230,11 @@ def desktop_services(argv):
 
         while True:
             if shutdown:
-                print('shutdown')
+                logging.info('shutdown')
                 break
 
             if all([not o.poll() is None for o in services]):
-                print('done')
+                logging.info('done')
                 break
 
             for o in services:
