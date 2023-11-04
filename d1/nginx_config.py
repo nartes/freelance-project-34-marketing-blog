@@ -129,6 +129,8 @@ server {
 
       access_log /dev/null combined;
       access_log /dev/stderr main;
+      gzip on;
+      server_tokens off;
 
       {servers_config}
 
@@ -265,6 +267,8 @@ http {
 
   access_log /dev/null combined;
   access_log /dev/stderr main;
+  gzip on;
+  server_tokens off;
 
   {servers}
 
