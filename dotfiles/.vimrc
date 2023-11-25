@@ -38,11 +38,18 @@ set wrap
 set textwidth=100
 set colorcolumn=100
 set backspace=indent,eol,start
-colorscheme morning
+
+set mouse=a
+au FileType netrw nmap <buffer> <LeftMouse> <LeftMouse> <CR>
+
+set term=xterm-256color
 
 syntax on
 set hls
-set term=xterm-256color
+
+colorscheme morning
+hi MatchParen guifg=white guibg=black gui=NONE ctermfg=1 ctermbg=0
+
 
 map <Leader>w <C-w>
 map <Leader>wo :py3 print('fuck')<CR>
@@ -63,5 +70,3 @@ map <Leader>i4 :set t_Co=256 so=0<CR>
 set foldmethod=indent
 set nofoldenable
 map <Leader>e :e #<cR>
-set mouse=a
-au FileType netrw nmap <buffer> <LeftMouse> <LeftMouse> <CR>
