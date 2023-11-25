@@ -52,6 +52,7 @@ map <Leader>r :redraw!<CR>
 map <Leader>cq :cq<CR>
 map <Leader>f2 :py3 f2()<CR>
 map <Leader>f3 :source ~/.vimrc<CR>:echo 'reloaded'<CR>
+map <Leader>f4 :set termguicolors<CR>
 map <Leader>qy :q!<CR>
 map <Leader>cq :cq1<CR>
 map <Leader>dq :cq2<CR>
