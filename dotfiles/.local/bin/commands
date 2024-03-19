@@ -1361,9 +1361,45 @@ def numpy_linspace(a, b, count):
 
 def pm_service(argv):
     parser = optparse.OptionParser()
+    parser.add_option(
+        '--events',
+        dest='events',
+        default=[],
+        action='append',
+        help='pb,tp,kb',
+    )
+    parser.add_option(
+        '--verbose',
+        dest='verbose',
+        type=str,
+        default=None,
+        help='true,false',
+    )
     options, args = parser.parse_args(argv)
 
+    if options.verbose is None:
+        options.verbose = False
+    else:
+        val = json.loads(options.verbose)
+        assert isinstance(val, bool)
+        options.verbose = val
+
+    if len(options.events) == 0:
+        options.events.extend([
+            'pb',
+            #'tp', 'kb'
+        ])
+
+    assert all([
+        o in [
+            'pb','tp', 'kb'
+        ]
+        for o in options.events
+    ])
+
     assert sys.platform == 'darwin'
+
+    wu = 0
 
     while True:
         subprocess.check_call([
@@ -1371,7 +1407,13 @@ def pm_service(argv):
             '-e',
             'tell application "Finder" to sleep'
         ])
-        subprocess.check_call(['pmset', 'sleepnow'])
+        subprocess.check_call(
+            ['pmset','sleepnow'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        wu += 1
 
 
         sample = (
@@ -1397,9 +1439,9 @@ def pm_service(argv):
 
                 if not cmd is None and 'TurnedOn' in cmd:
                     if (
-                        'AppleMultitouchDevice' in cmd or
-                        'AppleACPIButton' in cmd or
-                        'eventType:29' in cmd
+                        ('AppleMultitouchDevice' in cmd and 'tp' in options.events) or
+                        ('AppleACPIButton' in cmd and 'pb' in options.events) or
+                        ('eventType:29' in cmd and 'kb' in options.events)
                     ):
                         action = 'wake-up'
                         break
@@ -1407,7 +1449,15 @@ def pm_service(argv):
                         action = 'sleep'
                         break
 
-        logging.error(json.dumps(dict(cmd=cmd, action=action,)))
+
+        if options.verbose:
+            logging.error(json.dumps(dict(cmd=cmd, action=action,)))
+        else:
+            print('\r%s wu : %d, la : %s' % (
+                datetime.datetime.now().isoformat(),
+                wu,
+                action
+            ), end='')
 
         if action == 'wake-up':
             break
@@ -1415,6 +1465,8 @@ def pm_service(argv):
             continue
         else:
             raise NotImplementedError
+
+    print('')
 
 def desktop_services(argv):
     parser = optparse.OptionParser()
