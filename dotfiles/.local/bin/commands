@@ -1113,6 +1113,7 @@ def pass_ssh_osx(argv):
         action='append',
         default=[],
         type=str,
+        help='pass secret path, like --pass_option google.com/login/password/v1',
     )
     parser.add_option(
         '--clipboard_copy',
@@ -1357,6 +1358,52 @@ def numpy_linspace(a, b, count):
         steps.append(pos)
 
     return steps
+
+def pm_service(argv):
+    parser = optparse.OptionParser()
+    options, args = parser.parse_args(argv)
+
+    while True:
+        subprocess.check_call(['pmset', 'sleepnow'])
+
+
+        sample = (
+            r'2024-03-19 22:00:36.808589+0300 0x4caa7    Default     0x0                  102'
+            r'0    powerd: [com.apple.powerd:assertions] Process WindowServer.156 TurnedOn '
+            r'UserIsActive "com.apple.iohideventsystem.queue.tickle serviceID:10000267f '
+            r'service:AppleMultitouchDevice product:Apple Internal Keyboard / Trackpad '
+            r'eventType:11" age:00:00:00  id:38654742889 [System: PrevIdle DeclUser kDisp]'
+        )
+
+        action = None
+        with subprocess.Popen(['log', 'stream'], stdout=subprocess.PIPE) as p:
+            while True:
+                line = p.stdout.readline().decode('utf-8')
+                cmd = None
+                if 'powerd' in line:
+                    cmd = line
+
+                #cmd = subprocess.check_output(r'''
+                #    log stream | grep --line-buffered -i \
+                #    -E 'powerd.*TurnedOn.*UserIsActive' | head -n 1
+                #''', shell=True).decode('utf-8')
+
+                if not cmd is None and 'TurnedOn' in cmd:
+                    if 'AppleMultitouchDevice' in cmd:
+                        action = 'wake-up'
+                        break
+                    else:
+                        action = 'sleep'
+                        break
+
+        logging.error(json.dumps(dict(cmd=cmd, action=action,)))
+
+        if action == 'wake-up':
+            break
+        elif action == 'sleep':
+            continue
+        else:
+            raise NotImplementedError
 
 def desktop_services(argv):
     parser = optparse.OptionParser()
@@ -2843,6 +2890,8 @@ def commands_cli():
             suspend_timer(sys.argv[2:])
         elif sys.argv[1] == 'desktop-services':
             desktop_services(sys.argv[2:])
+        elif sys.argv[1] == 'pm-service':
+            pm_service(sys.argv[2:])
         else:
             raise NotImplementedError
     except SystemExit:
