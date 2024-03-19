@@ -1363,7 +1363,14 @@ def pm_service(argv):
     parser = optparse.OptionParser()
     options, args = parser.parse_args(argv)
 
+    assert sys.platform == 'darwin'
+
     while True:
+        subprocess.check_call([
+            'osascript',
+            '-e',
+            'tell application "Finder" to sleep'
+        ])
         subprocess.check_call(['pmset', 'sleepnow'])
 
 
@@ -1389,7 +1396,11 @@ def pm_service(argv):
                 #''', shell=True).decode('utf-8')
 
                 if not cmd is None and 'TurnedOn' in cmd:
-                    if 'AppleMultitouchDevice' in cmd:
+                    if (
+                        'AppleMultitouchDevice' in cmd or
+                        'AppleACPIButton' in cmd or
+                        'eventType:29' in cmd
+                    ):
                         action = 'wake-up'
                         break
                     else:
