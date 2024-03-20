@@ -69,6 +69,7 @@ def intercept_output(
     transform_callback=None,
     real_time=None,
     timeout=None,
+    need_lines=None,
 ):
     if real_time is None:
         real_time = False
@@ -80,8 +81,10 @@ def intercept_output(
 
     t1 = select.poll()
     t1.register(current_subprocess.stdout, select.POLLIN)
-    print([current_subprocess, current_subprocess.poll()])
+    #print([current_subprocess, current_subprocess.poll()])
     output = []
+    buffer = []
+    buffer_lines = []
 
     last_data = None
 
@@ -100,16 +103,42 @@ def intercept_output(
             t4 = current_subprocess.stdout.read(len(t3))
             last_data = t3
             output.append(t3)
-            yield dict(
-                data=t3,
-                aggregated=False,
-            )
+            if need_lines:
+                buffer.append(t3)
+
+            if need_lines:
+                if len(buffer_lines) > 0:
+                    yield dict(
+                        aggegated=False,
+                        line=buffer_lines[0],
+                    )
+                    del buffer_lines[0]
+
+                if b'\n' in t3:
+                    t3_pos = t3.rfind(b'\n')
+                    buffer_lines.extend([
+                        o + b'\n'
+                        for o in b''.join(
+                            buffer[:-1] + [
+                                t3[:t3_pos]
+                            ],
+                        ).splitlines()
+                    ])
+                    del buffer[:-1]
+                    buffer[0] = t3[t3_pos + 1:]
+            else:
+                yield dict(
+                    data=t3,
+                    aggregated=False,
+                )
             t6 = t3
             if not transform_callback is None:
                 t5 = transform_callback(t3)
                 if not t5 is None:
                     t6 = t5
-            os.write(sys.stdout.fileno(), t6)
+
+            if len(t6) > 0:
+                os.write(sys.stdout.fileno(), t6)
         elif real_time:
             yield dict(
                 data=b'',
@@ -1426,8 +1455,14 @@ def pm_service(argv):
 
         action = None
         with subprocess.Popen(['log', 'stream'], stdout=subprocess.PIPE) as p:
-            while True:
-                line = p.stdout.readline().decode('utf-8')
+            for chunk in intercept_output(
+                p,
+                return_aggregated=False,
+                need_lines=True,
+                transform_callback=lambda x: b'',
+            ):
+                line = chunk['line'].decode('utf-8')
+                #p.stdout.readline().decode('utf-8')
                 cmd = None
                 if 'powerd' in line:
                     cmd = line
