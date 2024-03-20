@@ -1466,7 +1466,8 @@ def pm_service(argv):
                 cmd = None
                 if 'powerd' in line:
                     cmd = line
-                    print(cmd)
+                    if options.verbose:
+                        logging.error(json.dumps(dict(line=cmd)))
 
                 #cmd = subprocess.check_output(r'''
                 #    log stream | grep --line-buffered -i \
