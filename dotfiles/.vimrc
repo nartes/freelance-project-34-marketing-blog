@@ -3,7 +3,6 @@ filetype off
 
 set viminfo+=/1000000,:1000000
 
-
 if has('python3')
   source = $HOME . '.py3.vimrmc'
 endif
@@ -46,6 +45,7 @@ map <Leader>i1 :set sw=4 sts=4 ts=4 et ai ci<CR>:retab<CR>
 map <Leader>i2 :set sw=2 sts=2 ts=2 et ai ci<CR>:retab<CR>
 map <Leader>i3 :set t_Co=0 so=999<CR>
 map <Leader>i4 :set t_Co=256 so=0<CR>
+map <Leader>i5 :set sw=2 sts=2 ts=2 noet ai ci<CR>
 set foldmethod=indent
 set nofoldenable
 map <Leader>e :e #<cR>
