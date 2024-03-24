@@ -4,7 +4,7 @@ filetype off
 set viminfo+=/1000000,:1000000
 
 if has('python3')
-  source = $HOME . '.py3.vimrmc'
+  source $HOME/.py3.vimrc
 endif
 
 filetype plugin indent on
