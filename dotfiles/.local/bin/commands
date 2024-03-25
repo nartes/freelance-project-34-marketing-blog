@@ -1474,7 +1474,10 @@ def pm_service(argv):
                 #    -E 'powerd.*TurnedOn.*UserIsActive' | head -n 1
                 #''', shell=True).decode('utf-8')
 
-                if not cmd is None and 'TurnedOn' in cmd:
+                if not cmd is None and (
+                    'TurnedOn' in cmd or
+                    'PrevIdle' in cmd
+                ):
                     if (
                         ('AppleMultitouchDevice' in cmd and 'tp' in options.events) or
                         ('AppleACPIButton' in cmd and 'pb' in options.events) or
