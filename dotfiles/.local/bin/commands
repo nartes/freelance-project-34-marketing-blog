@@ -1476,7 +1476,8 @@ def pm_service(argv):
 
                 if not cmd is None and (
                     'TurnedOn' in cmd or
-                    'PrevIdle' in cmd
+                    'PrevIdle' in cmd or
+                    'PMRD: kIOMessageSystemWillPowerOn' in cmd
                 ):
                     if (
                         ('AppleMultitouchDevice' in cmd and 'tp' in options.events) or
