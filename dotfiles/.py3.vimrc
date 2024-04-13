@@ -27,11 +27,33 @@ def f5_1(pattern, flags, info):
     import io
     import re
     import tempfile
+    import traceback
+    import logging
 
     #print([pattern, flags, info])
-    t1 = subprocess.check_output([
-        'git', 'grep', '-n', '-P', pattern,
-    ], stderr=subprocess.PIPE)
+    completed_process = None
+
+    try:
+        completed_process = subprocess.run([
+            'git', 'grep', '-n', '-P', pattern,
+        ], capture_output=True,)
+        assert (
+            completed_process.returncode == 0 or
+            (
+                completed_process.stdout == b''
+                #completed_process.stdout == b'' and
+                #completed_process.stderr == b''
+            )
+        )
+        t1 = completed_process.stdout
+    except:
+        logging.error(''.join([
+            traceback.format_exc(),
+            getattr(completed_process, 'stdout', b'').decode('utf-8'),
+            getattr(completed_process, 'stderr', b'').decode('utf-8'),
+        ]))
+        t1 = b''
+
     def watch(data):
         with tempfile.NamedTemporaryFile(suffix='.txt') as f:
             with io.open(f.name, 'wb') as f2:
@@ -62,7 +84,7 @@ def f5_1(pattern, flags, info):
     return t2
 EOF
 
-function F5(pattern, flags, info)
+function! F5(pattern, flags, info)
   let res = py3eval(
     \'f5_1(
       \vim.bindeval("a:pattern").decode("utf-8"),
