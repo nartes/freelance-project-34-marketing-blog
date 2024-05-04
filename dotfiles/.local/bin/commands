@@ -1667,6 +1667,8 @@ def scrap_yt_music(argv):
     context['http_on_event'] = http_on_event
 
     print(r'''
+        https://github.com/ExistentialAudio/BlackHole/wiki/Multi-Output-Device#5-set-audio-output-to-multi-output-device
+
         Open Youtube Music,
         and launch the following JS script:
         ```js
