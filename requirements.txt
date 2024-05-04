@@ -5,3 +5,4 @@ requests
 pyquery
 youtube-dl
 gdown
+aiohttp
