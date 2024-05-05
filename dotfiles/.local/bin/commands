@@ -1659,9 +1659,12 @@ def scrap_yt_music(argv):
     ])
 
     def http_on_event(event, events):
-        if 'title' in event:
-            with context['track_cv']:
+        with context['track_cv']:
+            if 'title' in event and event['title'].strip() != '':
                 context['track_name'] = str(event['title'])[:128].replace('\n', '')
+            else:
+                context['track_name'] = None
+
         logging.info(event)
 
     context['http_on_event'] = http_on_event
@@ -1672,20 +1675,28 @@ def scrap_yt_music(argv):
         Open Youtube Music,
         and launch the following JS script:
         ```js
-            if (timer !== undefined)
-            {
-                clearInterval(timer);
-            }
 
-            timer = setInterval(
-                function(){
-                    fetch(
-                        'http://127.0.0.1:8877/status?title=' +
-                        encodeURI($$('.ytmusic-player-bar.middle-controls')[0].innerText)
-                    );
-                },
-                5000
-            );
+
+(function(){
+  let timer = null;
+  timer = setInterval(function(){
+      let is_playing = () => $$('#play-pause-button')[0].title == 'Pause';
+      let title = () => encodeURIComponent($$('.ytmusic-player-bar.middle-controls')[0].innerText);
+      let update_status = (query) => fetch('http://127.0.0.1:8877/status?' + query);
+
+      if (is_playing())
+      {
+          update_status('title=' + title());
+      }
+      else
+      {
+          update_status('')
+          clearInterval(timer);
+      }
+    },
+    1000
+  );
+})();
         ```
     ''')
 
