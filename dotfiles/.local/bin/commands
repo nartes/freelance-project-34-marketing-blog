@@ -1612,7 +1612,7 @@ def scrap_yt_music(argv):
                 if context['shutdown']:
                     if not p is None:
                         p.terminate()
-                        break
+                    break
 
                 if p is None and not current_name is None:
                     output_name = os.path.join(
@@ -1679,24 +1679,35 @@ def scrap_yt_music(argv):
 
 (function(){
   let timer = null;
-  timer = setInterval(function(){
-      let is_playing = () => $$('#play-pause-button')[0].title == 'Pause';
-      let title = () => encodeURIComponent($$('.ytmusic-player-bar.middle-controls')[0].innerText);
-      let update_status = (query) => fetch('http://127.0.0.1:8877/status?' + query);
+  let is_first = true;
+  let last_play = null;
+  function last_play_update() {last_play = (new Date());}
+  let should_stop = () => (((new Date()).valueOf() - last_play.valueOf()) > 5 * 1000);
+  timer = setInterval(() => {
+    let is_playing = () => $$('#play-pause-button')[0].title == 'Pause';
+    let title = () => encodeURIComponent(
+      $$('.ytmusic-player-bar.middle-controls')[0].innerText
+    );
+    let update_status = (query) => fetch('http://127.0.0.1:8877/status?' + query);
 
-      if (is_playing())
+    if (is_playing())
+    {
+      last_play_update();
+      is_first = false;
+      update_status('title=' + title());
+    }
+    else if (!is_first)
+    {
+      update_status('')
+      if (should_stop())
       {
-          update_status('title=' + title());
+        console.log('should stop');
+        clearInterval(timer);
       }
-      else
-      {
-          update_status('')
-          clearInterval(timer);
-      }
-    },
-    1000
-  );
+    }
+  }, 1000);
 })();
+
         ```
     ''')
 
