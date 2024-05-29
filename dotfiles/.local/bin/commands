@@ -2828,6 +2828,12 @@ def share_wifi(argv):
         type=str,
     )
     parser.add_option(
+        '--channel',
+        dest='channel',
+        default=None,
+        type=int,
+    )
+    parser.add_option(
         '--ap-name',
         dest='ap_name',
         default=None,
@@ -2891,18 +2897,22 @@ def share_wifi(argv):
         on_interrupt,
     )
 
+    hostapd_args = [
+        'create_ap',
+        '--hostapd-timestamps',
+        options.to_wifi,
+        options.from_eth,
+        options.ap_name,
+        pw,
+    ]
+    if not options.channel is None:
+        hostapd_args.extend(['-c', '%d' % option.channell])
+
     while True:
         try:
             if hostapd is None:
                 print('\n%s, start new' % last_timestamp)
-                hostapd = subprocess.Popen([
-                    'create_ap',
-                    '--hostapd-timestamps',
-                    options.to_wifi,
-                    options.from_eth,
-                    options.ap_name,
-                    pw,
-                ])
+                hostapd = subprocess.Popen(hostapd_args)
             else:
                 if restart:
                     print('\n%s, shutdown current' % last_timestamp)
