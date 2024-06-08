@@ -1,4 +1,5 @@
 import json
+import os
 import io
 import sys
 
@@ -30,12 +31,12 @@ def forward(
         sections = dict()
 
         for entry in forward_nginx:
-            location = None
+            location_path = None
 
             if entry['app_name'] != '':
-                location = '/%s/' % entry['app_name']
+                location_path = '/%s/' % entry['app_name']
             else:
-                location = '/'
+                location_path = '/'
 
             if 'server_name' in entry:
                 server_name = entry['server_name']
@@ -45,37 +46,83 @@ def forward(
             if not server_name in sections:
                 sections[server_name] = []
 
-            if 'target_endpoint' in entry:
-                section_body = r'''
-          proxy_set_header Host $http_host;
-          proxy_set_header X-Forwarded-For $t1;
-          proxy_set_header X-Forwarded-Proto $scheme;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection $connection_upgrade;
-          proxy_redirect off;
-          proxy_buffering off;
-          proxy_pass {target_endpoint};
+
+            location_get = lambda location_body, location_path2, prefix=None,: (
+                r'''
+  location {location} {
+    {location_body}
+  }
                 '''.replace(
-                    '{target_endpoint}', entry['target_endpoint'],
+                    '{location_body}', location_body,
+                ).replace(
+                    '{location}', '%s  %s' % (
+                        (
+                            '^~'
+                            if prefix is None
+                            else prefix
+                        ),
+                        location_path2
+                    ),
                 )
+            )
+
+            if 'target_endpoint' in entry:
+                location_body_get = lambda target_endpoint: \
+                    r'''
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $t1;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_redirect off;
+    proxy_buffering off;
+    proxy_pass {target_endpoint};
+                    '''.replace(
+                        '{target_endpoint}', target_endpoint,
+                    )
+
+                if 'fallback_endpoint' in entry:
+                    fallback_name = '@fallback-%s' % os.urandom(10).hex()
+
+                    sections[server_name].append(
+                        location_get(
+                            location_body_get(entry['target_endpoint']) + r'''
+    proxy_intercept_errors on;
+    error_page 502 {fallback_name};
+                            '''.replace(
+                                '{fallback_name}', fallback_name,
+                            ),
+                            location_path,
+                        )
+                    )
+
+                    sections[server_name].append(
+                        location_get(
+                            location_body_get(entry['fallback_endpoint']),
+                            fallback_name,
+                            '',
+                        )
+                    )
+                else:
+                    sections[server_name].append(
+                        location_get(
+                            location_body_get(entry['target_endpoint']),
+                            location_path,
+                        )
+                    )
             elif 'redirect_url' in entry:
-                section_body = r'''
-          return 302 {redirect_url}$request_uri;
-                '''.replace(
-                    '{redirect_url}', entry['redirect_url'],
+                sections[server_name].append(
+                    location_get(
+                        r'''
+      return 302 {redirect_url}$request_uri;
+                        '''.replace(
+                            '{redirect_url}', entry['redirect_url'],
+                        ),
+                        location_path,
+                    )
                 )
             else:
                 raise NotImplementedError
-
-            sections[server_name].append(r'''
-        location ^~ {location} {
-            {section_body}
-        }
-            '''.replace(
-                '{section_body}', section_body,
-            ).replace(
-                '{location}', location,
-            ))
 
         servers = []
 
@@ -115,30 +162,30 @@ server {
             )
 
         f.write(r'''
-    events {
-      multi_accept on;
-      worker_connections 64;
-    }
+events {
+  multi_accept on;
+  worker_connections 64;
+}
 
-    http {
-      log_format main
-        '[$time_local][$remote_addr:$remote_port, $http_x_forwarded_for, $t1, $http_host]'
-        '[$request_length,$bytes_sent,$request_time]'
-        '[$status][$request]'
-        '[$http_user_agent][$http_referer]';
+http {
+  log_format main
+    '[$time_local][$remote_addr:$remote_port, $http_x_forwarded_for, $t1, $http_host]'
+    '[$request_length,$bytes_sent,$request_time]'
+    '[$status][$request]'
+    '[$http_user_agent][$http_referer]';
 
-      access_log /dev/null combined;
-      access_log /dev/stderr main;
-      gzip on;
-      server_tokens off;
+  access_log /dev/null combined;
+  access_log /dev/stderr main;
+  gzip on;
+  server_tokens off;
 
-      {servers_config}
+  {servers_config}
 
-      map $http_upgrade $connection_upgrade {
-        default upgrade;
-        '' close;
-      }
-    }
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+  }
+}
         '''.replace(
           '{servers_config}', '\n'.join(servers)
         ))

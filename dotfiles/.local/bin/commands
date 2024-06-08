@@ -2883,10 +2883,16 @@ def share_wifi(argv):
     last_timestamp = datetime.datetime.now()
     hostapd = None
     restart = False
+    shutdown = False
 
-    def on_interrupt(*args, **kwargs):
+    def on_interrupt(sig, *args, **kwargs):
         nonlocal restart
-        restart = True
+        if sig == signal.SIGINT:
+            restart = True
+        elif sig  == signal.SIGTERM:
+            shutdown = True
+        else:
+            raise NotImplementedError
 
     signal.signal(
         signal.SIGINT,
@@ -2906,7 +2912,7 @@ def share_wifi(argv):
         pw,
     ]
     if not options.channel is None:
-        hostapd_args.extend(['-c', '%d' % option.channell])
+        hostapd_args.extend(['-c', '%d' % options.channel])
 
     while True:
         try:
@@ -2914,7 +2920,7 @@ def share_wifi(argv):
                 print('\n%s, start new' % last_timestamp)
                 hostapd = subprocess.Popen(hostapd_args)
             else:
-                if restart:
+                if restart or shutdown:
                     print('\n%s, shutdown current' % last_timestamp)
                     os.kill(
                         hostapd.pid,
@@ -2928,6 +2934,9 @@ def share_wifi(argv):
 
                 if not hostapd.poll() is None:
                     hostapd = None
+
+            if shutdown:
+                break
 
             if (
                 datetime.datetime.now() - last_timestamp
