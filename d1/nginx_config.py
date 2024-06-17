@@ -88,7 +88,7 @@ def forward(
                         location_get(
                             location_body_get(entry['target_endpoint']) + r'''
     proxy_intercept_errors on;
-    error_page 502 {fallback_name};
+    error_page 502 =200 {fallback_name};
                             '''.replace(
                                 '{fallback_name}', fallback_name,
                             ),
